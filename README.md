@@ -474,6 +474,73 @@ Package Manager Console: Install-Package Oracle.ManagedDataAccess
 - Folder name: `ATBM-2026-[GroupCode]` (when ready to submit)
 - Include: Source code, SQL scripts, documentation, reports
 
+## GitHub Configuration
+
+### CI/CD Workflows
+
+Three automated pipelines validate code and documentation:
+
+**Subsystem 1 CI/CD** (`subsystem1-ci.yml`)
+- Triggers on PR to main/develop with changes to `Subsystem1-OracleDBAdmin/`
+- Builds .NET project and runs tests (Windows, .NET 6.0.x & 7.0.x)
+- Code quality analysis using CodeQL
+- **Status**: Currently disabled (`if: false`) — activate when source code ready
+
+**Subsystem 2 CI/CD** (`subsystem2-ci.yml`)
+- Triggers on PR to main/develop with changes to `Subsystem2-MedicalDataManagement/`
+- Builds .NET project and runs tests (Windows, .NET 6.0.x & 7.0.x)
+- Code quality analysis using CodeQL
+- **Status**: Currently disabled (`if: false`) — activate when source code ready
+
+**Database CI/CD** (`database-ci.yml`)
+- Triggers on PR to main/develop with changes to `Database/`
+- Validates SQL syntax and script structure
+- Verifies execution order of database scripts
+- **Status**: Currently disabled (`if: false`) — activate when SQL scripts ready
+
+### Issue Templates
+
+**Bug Report** (`bug_report.md`)
+- Use for reporting bugs or issues
+- Includes system info, reproduction steps, severity levels
+- Auto-labeled as `bug`
+
+**Feature Request** (`feature_request.md`)
+- Use for suggesting new features or improvements
+- Includes problem statement, proposed solution, acceptance criteria
+- Auto-labeled as `enhancement`
+
+### Pull Request Template
+
+**Template** (`pull_request_template.md`)
+- Standard format for all PRs
+- Includes description, type, related issues, testing info, checklist
+- Ensures consistent PR quality and information
+
+### Using Workflows
+
+When you're ready to activate CI/CD checks:
+
+1. Remove `if: false` from job definitions in workflow files
+2. Push changes to a feature branch
+3. Create a PR to main/develop
+4. Workflows automatically trigger based on changed files
+5. Review status checks on PR before merging
+
+### Local Development
+
+Before pushing:
+```bash
+# Run tests locally
+dotnet test
+
+# Build the project
+dotnet build --configuration Release
+
+# Create descriptive commits
+git commit -m "type(scope): description"
+```
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) file
