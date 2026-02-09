@@ -150,61 +150,44 @@ Roles: Coordinator, Doctor/Nurse, Technician, Patient
 ## Getting Started
 
 ### Prerequisites
-- .NET Framework 4.7.2+
-- Visual Studio 2019+
-- Oracle ODP.NET
-- Oracle Database with configured RBAC, VPD, OLS
+- .NET 10.0 SDK or higher
+- Visual Studio 2022 or later
+- Oracle Data Provider for .NET Core (ODP.NET Core)
+- Oracle Database Express 21c (XE) with configured RBAC, VPD, OLS
 
 ### Setup
 
 1. Run database schema scripts
 2. Execute security setup scripts
-3. Open solution in Visual Studio
-4. Install ODP.NET: `Install-Package Oracle.ManagedDataAccess`
+3. Open solution in Visual Studio 2022
+4. Install ODP.NET Core:
+   ```bash
+   dotnet add package Oracle.ManagedDataAccess.Core
+   # Or in Package Manager Console:
+   Install-Package Oracle.ManagedDataAccess.Core
+   ```
 5. Build and run
 
 ### Database Configuration
 ```bash
+# For Oracle 21c XE:
 cd Database/Schema
-sqlplus project_admin@orcl @01_CreateTables.sql
-sqlplus project_admin@orcl @02_CreateIndexes.sql
-sqlplus project_admin@orcl @03_InsertSampleData.sql
+sqlplus project_admin/your_password@localhost:1521/XE @01_CreateTables.sql
+sqlplus project_admin/your_password@localhost:1521/XE @02_CreateIndexes.sql
+sqlplus project_admin/your_password@localhost:1521/XE @03_InsertSampleData.sql
 
 cd ../Security
-sqlplus project_admin@orcl @01_RBAC_Setup.sql
-sqlplus project_admin@orcl @02_VPD_Setup.sql
-sqlplus project_admin@orcl @03_OLS_Setup.sql
-sqlplus project_admin@orcl @04_Users_Creation.sql
+sqlplus project_admin/your_password@localhost:1521/XE @01_RBAC_Setup.sql
+sqlplus project_admin/your_password@localhost:1521/XE @02_VPD_Setup.sql
+sqlplus project_admin/your_password@localhost:1521/XE @03_OLS_Setup.sql
+sqlplus project_admin/your_password@localhost:1521/XE @04_Users_Creation.sql
 ```
 
 ### Configure Connection Strings
 
-⚠️ **Security Warning**: Never commit passwords or credentials to version control. See [CONTRIBUTING.md](../../CONTRIBUTING.md#security-checklist) security guidelines.
+**Security Warning**: Never commit passwords or credentials to version control. See [CONTRIBUTING.md](../../CONTRIBUTING.md#security-checklist) security guidelines.
 
-Use one of these methods to securely provide database credentials:
-
-**Option 1: User Secrets (Development)**
-```bash
-dotnet user-secrets init
-dotnet user-secrets set "OracleDbConnection:UserId" "project_admin"
-dotnet user-secrets set "OracleDbConnection:Password" "your_secure_password"
-```
-
-**Option 2: Environment Variables (Production)**
-```bash
-# Windows
-set ORACLE_USERID=project_admin
-set ORACLE_PASSWORD=your_secure_password
-
-# Linux/macOS
-export ORACLE_USERID=project_admin
-export ORACLE_PASSWORD=your_secure_password
-```
-
-**Option 3: Local Config File (Development Only)**
-Create `appsettings.local.json` (add to `.gitignore`) with credentials.
-
-See [Subsystem1-OracleDBAdmin/README.md](../Subsystem1-OracleDBAdmin/README.md#database-connection) for detailed configuration examples.
+For detailed setup instructions on configuring connection strings (User Secrets, Environment Variables, Local Config), see [docs/SETUP_GUIDE.md](../../docs/SETUP_GUIDE.md#step-3-configure-connection-strings).
 
 ## Features by Role
 

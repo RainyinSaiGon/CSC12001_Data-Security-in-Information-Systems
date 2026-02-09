@@ -47,7 +47,9 @@ Database/
 Create and execute schema scripts:
 
 ```sql
-sqlplus sys/<SYS_PASSWORD> as sysdba
+-- For Oracle 21c XE:
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
+-- Or: sqlplus / as sysdba
 
 @Schema/01_CreateTables.sql
 @Schema/02_CreateIndexes.sql
@@ -59,7 +61,7 @@ sqlplus sys/<SYS_PASSWORD> as sysdba
 Create and execute security scripts:
 
 ```sql
-sqlplus sys/<SYS_PASSWORD> as sysdba
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
 @Security/01_RBAC_Setup.sql
 @Security/02_VPD_Setup.sql
@@ -72,7 +74,7 @@ sqlplus sys/<SYS_PASSWORD> as sysdba
 Create and execute audit scripts:
 
 ```sql
-sqlplus sys/<SYS_PASSWORD> as sysdba
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
 @Audit/01_StandardAudit_Setup.sql
 @Audit/02_FineGrainedAudit_Setup.sql
@@ -221,9 +223,9 @@ Consolidated audit trail combining multiple audit sources
 
 ## Prerequisites
 
-- Oracle Database 11g or 12c+
+- Oracle Database Express 21c (XE)
 - SQL*Plus or Oracle SQL Developer
-- DBA privileges
+- DBA privileges (SYS or SYSTEM account)
 - Sufficient tablespace (> 1GB recommended)
 
 ## Important Notes

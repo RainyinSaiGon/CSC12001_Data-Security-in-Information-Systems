@@ -140,6 +140,6 @@ Last 7 Days:
 
 ## References
 
-- See [Requirement 3 Documentation](../Requirements/README.md) for audit setup
-- See [Database README](../../Database/README.md) for audit scripts
-- Check [Database/Audit/ReadAuditLogs.sql](../../Database/Audit/ReadAuditLogs.sql) for sample queries
+- See [IMPLEMENTATION.md](IMPLEMENTATION.md) for audit setup requirements
+- See [Database README](../Database/README.md) for audit scripts
+- Check [Database/Audit/ReadAuditLogs.sql](../Database/Audit/ReadAuditLogs.sql) for sample queries

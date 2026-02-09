@@ -13,10 +13,10 @@ Thank you for contributing to CSC12001 Data Security Project! This document outl
 ## Getting Started
 
 1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/dinhdaivu/CSC12001_Data-Security-in-Information-Systems.git
-   cd CSC12001_Data-Security-in-Information-Systems
-   ```
+    ```bash
+    git clone https://github.com/dinhdaivu/CSC12001_Data-Security-in-Information-Systems.git
+    cd CSC12001_Data-Security-in-Information-Systems
+    ```
 
 2. **Create a Branch**
    ```bash
@@ -92,6 +92,10 @@ int userId = 123;
 
 ### Code Style
 ```csharp
+// .NET 10.0 with Oracle 21c XE
+using Oracle.ManagedDataAccess.Client;
+using Microsoft.Extensions.Configuration;
+
 // Proper spacing and formatting
 public void GrantPermission(string userName, string objectName, string permissionType)
 {
@@ -99,6 +103,15 @@ public void GrantPermission(string userName, string objectName, string permissio
     {
         throw new ArgumentNullException(nameof(userName));
     }
+
+    // Connection string from configuration
+    var config = new ConfigurationBuilder()
+        .AddUserSecrets<Program>()
+        .Build();
+    
+    string connectionString = $"Data Source={config["OracleDbConnection:DataSource"]};" +
+                             $"User Id={config["OracleDbConnection:UserId"]};" +
+                             $"Password={config["OracleDbConnection:Password"]};";
 
     // Comment explaining logic
     var permission = new Permission 
@@ -110,6 +123,8 @@ public void GrantPermission(string userName, string objectName, string permissio
 
     try
     {
+        using var connection = new OracleConnection(connectionString);
+        connection.Open();
         _permissionService.Grant(permission);
     }
     catch (OracleException ex)

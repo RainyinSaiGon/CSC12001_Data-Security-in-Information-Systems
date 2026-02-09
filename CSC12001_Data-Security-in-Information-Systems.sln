@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Subsystem1-OracleDBAdmin", "Subsystem1-OracleDBAdmin", "{2F0A056F-A263-66A6-A8DD-15C3C8DA37BE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{21BA218C-B29A-B55B-EF5A-F6CC09F2E35E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OracleDBAdmin", "Subsystem1-OracleDBAdmin\Source\OracleDBAdmin\OracleDBAdmin.csproj", "{BE8E1076-6E29-131F-328F-36E696095F83}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE8E1076-6E29-131F-328F-36E696095F83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE8E1076-6E29-131F-328F-36E696095F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE8E1076-6E29-131F-328F-36E696095F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE8E1076-6E29-131F-328F-36E696095F83}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{21BA218C-B29A-B55B-EF5A-F6CC09F2E35E} = {2F0A056F-A263-66A6-A8DD-15C3C8DA37BE}
+		{BE8E1076-6E29-131F-328F-36E696095F83} = {21BA218C-B29A-B55B-EF5A-F6CC09F2E35E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C0CBD8BD-E9AB-4943-A936-322579EBB9E1}
+	EndGlobalSection
+EndGlobal

@@ -7,10 +7,11 @@ A comprehensive data security project implementing two subsystems: Oracle Databa
 | Section | Description |
 |---------|-------------|
 | [Getting Started](#getting-started) | Complete setup guide |
+| [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) | Detailed setup guide for .NET 10.0 & Oracle 21c XE |
 | [Subsystem1-OracleDBAdmin/README.md](Subsystem1-OracleDBAdmin/README.md) | Database admin application setup |
 | [Subsystem2-MedicalDataManagement/README.md](Subsystem2-MedicalDataManagement/README.md) | Medical system setup |
 | [Database/README.md](Database/README.md) | Database schema & scripts |
-| [docs/README.md](docs/README.md) | Architecture & security documentation |
+| [docs/README.md](docs/README.md) | Documentation index |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development guidelines |
 
 ## Overview
@@ -27,9 +28,9 @@ This project implements a complete data security solution for a hospital managem
 
 | Component | Technology |
 |-----------|-----------|
-| **Subsystem 1** | WinForm, .NET Framework, Oracle ODP.NET |
-| **Subsystem 2** | WinForm, .NET Framework, Oracle ODP.NET |
-| **Database** | Oracle Database 11g/12c+ |
+| **Subsystem 1** | WinForm, .NET 10.0, Oracle ODP.NET |
+| **Subsystem 2** | WinForm, .NET 10.0, Oracle ODP.NET |
+| **Database** | Oracle Database Express 21c (XE) |
 | **Security** | Oracle RBAC, VPD, OLS, Audit mechanisms |
 | **Version Control** | Git/GitHub |
 | **Documentation** | Markdown, MS Word |
@@ -84,13 +85,13 @@ CSC12001_Data-Security-in-Information-Systems/
 │   │   └── 03_RecoveryScripts.sql
 │   └── README.md
 │
-├── docs/                                  # Documentation
-│   ├── README.md                          # Architecture & design docs
-│   ├── Requirements/                      # Assignment requirements
-│   ├── Architecture/                      # System architecture
-│   ├── Implementation/                    # Implementation guides
-│   ├── Reports/                           # Test results & reports
-│   └── AuditLogs/                         # Audit log samples
+├── docs/                                  # Documentation (consolidated)
+│   ├── README.md                          # Documentation index
+│   ├── ARCHITECTURE.md                    # System design & architecture
+│   ├── IMPLEMENTATION.md                  # Requirements, implementation & tests
+│   ├── AUDITLOGS.md                       # Audit log samples & analysis
+│   ├── SETUP_GUIDE.md                     # .NET & Oracle setup guide
+│   └── CHANGELOG_2026.md                  # Technology stack updates
 │
 ├── Tests/                                 # Testing (To be created)
 │   ├── TestCases/                         # Test case documentation
@@ -121,10 +122,10 @@ CSC12001_Data-Security-in-Information-Systems/
 
 ### Prerequisites
 
-- Oracle Database 11g or 12c+ installed and running
-- Visual Studio 2019 or later
-- .NET Framework 4.7.2 or higher
-- Oracle Data Provider for .NET (ODP.NET)
+- Oracle Database Express 21c (XE) installed and running
+- Visual Studio 2022 or later
+- .NET 10.0 SDK or higher
+- Oracle Data Provider for .NET (ODP.NET) for .NET Core/10+
 - SQL*Plus or Oracle SQL Developer (for database scripts)
 - Git for version control
 
@@ -134,8 +135,10 @@ CSC12001_Data-Security-in-Information-Systems/
 git clone https://github.com/dinhdaivu/CSC12001_Data-Security-in-Information-Systems.git
 cd CSC12001_Data-Security-in-Information-Systems
 
-# Install ODP.NET NuGet packages (in Visual Studio)
-# Package Manager: Install-Package Oracle.ManagedDataAccess
+# Install ODP.NET NuGet packages for .NET 10.0
+# Package Manager: Install-Package Oracle.ManagedDataAccess.Core
+# Or use dotnet CLI:
+dotnet add package Oracle.ManagedDataAccess.Core
 ```
 
 ### Step 2: Setup Oracle Database
@@ -145,10 +148,30 @@ cd CSC12001_Data-Security-in-Information-Systems
 **IMPORTANT: Use a strong, randomly-generated password (minimum 12 characters, mixed case, numbers, symbols). Set it via secrets manager or local config, never commit to repository.**
 
 ```sql
--- Connect as SYSTEM or DBA
+-- Connect to Oracle 21c XE as SYSTEM
+-- For XE: sqlplus system/your_password@localhost:1521/XE
+-- Or: sqlplus / as sysdba
+
 -- Replace <STRONG_PASSWORD> with a secure password (e.g., generate with: openssl rand -base64 12)
 CREATE USER project_admin IDENTIFIED BY <STRONG_PASSWORD>;
-GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE PROCEDURE TO project_admin;
+
+-- Grant basic privileges
+GRANT CONNECT, RESOURCE TO project_admin;
+GRANT CREATE VIEW, CREATE PROCEDURE, CREATE SEQUENCE TO project_admin;
+GRANT CREATE TRIGGER, CREATE TYPE, CREATE SYNONYM TO project_admin;
+GRANT UNLIMITED TABLESPACE TO project_admin;
+
+-- For advanced security features (RBAC, VPD, OLS)
+GRANT CREATE USER, ALTER USER, DROP USER TO project_admin;
+GRANT CREATE ROLE, DROP ANY ROLE, GRANT ANY ROLE TO project_admin;
+GRANT GRANT ANY PRIVILEGE TO project_admin;
+GRANT EXECUTE ON DBMS_RLS TO project_admin;
+GRANT AUDIT SYSTEM TO project_admin;
+GRANT SELECT ON SYS.DBA_AUDIT_TRAIL TO project_admin;
+GRANT SELECT ON SYS.DBA_FGA_AUDIT_TRAIL TO project_admin;
+
+-- Verify user creation
+SELECT username, account_status FROM dba_users WHERE username = 'PROJECT_ADMIN';
 ```
 
 **After user creation:**
@@ -164,7 +187,8 @@ GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE PROCEDURE TO project_admin;
 Create and execute SQL scripts in this order:
 
 ```bash
-sqlplus project_admin@orcl
+# For Oracle 21c XE, connect using:
+sqlplus project_admin/your_password@localhost:1521/XE
 
 -- Execute in order:
 @Database/Schema/01_CreateTables.sql
@@ -179,7 +203,7 @@ See [Database/README.md](Database/README.md) for schema definitions and SQL scri
 Create and execute security configuration scripts:
 
 ```bash
-sqlplus project_admin@orcl
+sqlplus project_admin/your_password@localhost:1521/XE
 
 @Database/Security/01_RBAC_Setup.sql
 @Database/Security/02_VPD_Setup.sql
@@ -194,14 +218,14 @@ See [Database/README.md](Database/README.md) for security mechanism details.
 Create and execute audit configuration scripts:
 
 ```bash
-sqlplus project_admin@orcl
+sqlplus project_admin/your_password@localhost:1521/XE
 
 @Database/Audit/01_StandardAudit_Setup.sql
 @Database/Audit/02_FineGrainedAudit_Setup.sql
 @Database/Audit/03_UnifiedAudit_Setup.sql
 ```
 
-See [Database/README.md](Database/README.md) and [docs/AuditLogs/README.md](docs/AuditLogs/README.md) for audit setup guidance.
+See [Database/README.md](Database/README.md) and [docs/AUDITLOGS.md](docs/AUDITLOGS.md) for audit setup guidance.
 
 ### Step 3: Configure Connection Strings
 
@@ -212,23 +236,31 @@ Use one of these secure credential management approaches:
 #### Option A: User Secrets (Development - Recommended)
 
 ```bash
-# Initialize user secrets (run in Subsystem1-OracleDBAdmin/Source directory)
+# Initialize user secrets (run in your project directory)
 dotnet user-secrets init
 
-# Set connection credentials
+# Set connection credentials for Oracle 21c XE
 dotnet user-secrets set "OracleDbConnection:UserId" "project_admin"
 dotnet user-secrets set "OracleDbConnection:Password" "your_secure_password_here"
+dotnet user-secrets set "OracleDbConnection:DataSource" "localhost:1521/XE"
 ```
 
-Update `app.config` to use User Secrets in development:
+In your C# code:
 
-```xml
-<!-- app.config - Uses placeholder for secure management -->
-<connectionStrings>
-    <add name="OracleDbConnection" 
-         connectionString="Data Source=orcl;User Id={OracleDbConnection:UserId};Password={OracleDbConnection:Password};" 
-         providerName="Oracle.ManagedDataAccess.Client" />
-</connectionStrings>
+```csharp
+using Microsoft.Extensions.Configuration;
+using Oracle.ManagedDataAccess.Client;
+
+// Load configuration from user secrets
+var config = new ConfigurationBuilder()
+    .AddUserSecrets<Program>()
+    .Build();
+
+string userId = config["OracleDbConnection:UserId"];
+string password = config["OracleDbConnection:Password"];
+string dataSource = config["OracleDbConnection:DataSource"];
+
+string connectionString = $"Data Source={dataSource};User Id={userId};Password={password};";
 ```
 
 #### Option B: Environment Variables (Production)
@@ -239,32 +271,44 @@ Set environment variables before running the application:
 # PowerShell
 $env:ORACLE_USERID = "project_admin"
 $env:ORACLE_PASSWORD = "your_secure_password_here"
+$env:ORACLE_DATASOURCE = "localhost:1521/XE"
 ```
 
 ```bash
 # Bash/Linux
 export ORACLE_USERID="project_admin"
 export ORACLE_PASSWORD="your_secure_password_here"
+export ORACLE_DATASOURCE="localhost:1521/XE"
 ```
 
 Read from environment in code:
 
 ```csharp
+using Oracle.ManagedDataAccess.Client;
+
 string userId = Environment.GetEnvironmentVariable("ORACLE_USERID");
 string password = Environment.GetEnvironmentVariable("ORACLE_PASSWORD");
-string connectionString = $"Data Source=orcl;User Id={userId};Password={password};";
+string dataSource = Environment.GetEnvironmentVariable("ORACLE_DATASOURCE");
+
+string connectionString = $"Data Source={dataSource};User Id={userId};Password={password};";
+
+using (var connection = new OracleConnection(connectionString))
+{
+    connection.Open();
+    // Your code here
+}
 ```
 
 #### Option C: Local Configuration File (Development - Not Committed)
 
-Create `appsettings.local.json` (added to `.gitignore`):
+Create `appsettings.local.json` (add to `.gitignore`):
 
 ```json
 {
   "OracleDbConnection": {
     "UserId": "project_admin",
     "Password": "your_secure_password_here",
-    "DataSource": "orcl"
+    "DataSource": "localhost:1521/XE"
   }
 }
 ```
@@ -278,6 +322,9 @@ appsettings.*.local.json
 Load in C# code:
 
 ```csharp
+using Microsoft.Extensions.Configuration;
+using Oracle.ManagedDataAccess.Client;
+
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false)
     .AddJsonFile("appsettings.local.json", optional: true)
@@ -286,6 +333,9 @@ var config = new ConfigurationBuilder()
 
 string userId = config["OracleDbConnection:UserId"];
 string password = config["OracleDbConnection:Password"];
+string dataSource = config["OracleDbConnection:DataSource"];
+
+string connectionString = $"Data Source={dataSource};User Id={userId};Password={password};";
 ```
 
 **Select the approach that matches your deployment environment and update both Subsystem1 and Subsystem2 configuration files accordingly.**
@@ -345,17 +395,18 @@ dotnet build MedicalDataSystem.sln
 ### Database Scripts
 
 ```bash
+# For Oracle 21c XE:
 # Schema setup
-sqlplus project_admin@orcl @Database/Schema/01_CreateTables.sql
+sqlplus project_admin/password@localhost:1521/XE @Database/Schema/01_CreateTables.sql
 
 # Security setup
-sqlplus project_admin@orcl @Database/Security/01_RBAC_Setup.sql
+sqlplus project_admin/password@localhost:1521/XE @Database/Security/01_RBAC_Setup.sql
 
 # Audit setup
-sqlplus project_admin@orcl @Database/Audit/01_StandardAudit_Setup.sql
+sqlplus project_admin/password@localhost:1521/XE @Database/Audit/01_StandardAudit_Setup.sql
 
 # Read audit logs
-sqlplus project_admin@orcl @Database/Audit/ReadAuditLogs.sql
+sqlplus project_admin/password@localhost:1521/XE @Database/Audit/ReadAuditLogs.sql
 ```
 
 ### Visual Studio
@@ -427,15 +478,24 @@ Build > Clean Solution           # Remove build artifacts
 
 ### Oracle Connection Issues
 ```bash
-# Verify Oracle is running
+# Verify Oracle 21c XE is running
 sqlplus /nolog
-SQL> CONNECT system/password@orcl
+SQL> CONNECT system/password@localhost:1521/XE
+
+# Or connect as SYSDBA
+SQL> CONNECT / AS SYSDBA
+
+# Check Oracle service status
+sc query OracleServiceXE
 
 # Check listener status
 lsnrctl status
 
 # Start listener if needed
 lsnrctl start
+
+# Start Oracle service if stopped
+net start OracleServiceXE
 ```
 
 ### Database Objects Not Found
@@ -444,8 +504,11 @@ lsnrctl start
 - Run `SELECT * FROM user_tables;` to verify tables exist
 
 ### ODP.NET Installation Issues
-```
-Package Manager Console: Install-Package Oracle.ManagedDataAccess
+```bash
+# For .NET 10.0 projects, use:
+dotnet add package Oracle.ManagedDataAccess.Core
+# Or in Package Manager Console:
+Install-Package Oracle.ManagedDataAccess.Core
 ```
 
 ### Application Won't Connect
@@ -482,13 +545,13 @@ Three automated pipelines validate code and documentation:
 
 **Subsystem 1 CI/CD** (`subsystem1-ci.yml`)
 - Triggers on PR to main/develop with changes to `Subsystem1-OracleDBAdmin/`
-- Builds .NET project and runs tests (Windows, .NET 6.0.x & 7.0.x)
+- Builds .NET project and runs tests (Windows, .NET 8.0.x & 10.0.x)
 - Code quality analysis using CodeQL
 - **Status**: Currently disabled (`if: false`) — activate when source code ready
 
 **Subsystem 2 CI/CD** (`subsystem2-ci.yml`)
 - Triggers on PR to main/develop with changes to `Subsystem2-MedicalDataManagement/`
-- Builds .NET project and runs tests (Windows, .NET 6.0.x & 7.0.x)
+- Builds .NET project and runs tests (Windows, .NET 8.0.x & 10.0.x)
 - Code quality analysis using CodeQL
 - **Status**: Currently disabled (`if: false`) — activate when source code ready
 

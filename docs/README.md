@@ -6,52 +6,52 @@ Complete documentation for CSC12001 - Data Security in Information Systems proje
 
 | Document | Purpose |
 |----------|---------|
-| [Architecture](Architecture/) | System design and technical architecture |
-| [Implementation](Implementation/) | Step-by-step implementation guides |
-| [Requirements](Requirements/) | Assignment requirements and specifications |
-| [Reports](Reports/) | Test results, audit findings, and analysis |
-| [AuditLogs](AuditLogs/) | Sample audit log files and analysis |
+| [SETUP_GUIDE.md](SETUP_GUIDE.md) | **Complete setup guide for .NET 10.0 & Oracle 21c XE** |
+| [CHANGELOG_2026.md](CHANGELOG_2026.md) | **Technology stack updates and migration guide** |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System design and technical architecture |
+| [IMPLEMENTATION.md](IMPLEMENTATION.md) | Requirements, implementation guides, & test results |
+| [AUDITLOGS.md](AUDITLOGS.md) | Sample audit log files and analysis |
 
 ## Overview
 
-This documentation directory contains:
+This documentation directory contains the following consolidated files:
 
-### Architecture
-- System design diagrams
+### ARCHITECTURE.md
+- System design diagrams and structure
 - Entity relationship diagrams
 - Sequence diagrams for key operations
 - Class diagrams
 - Database schema design
 
-### Implementation Guides
-- Detailed setup instructions
-- Requirement 1: Access Control & Interface
-- Requirement 2: OLS Notification System
-- Requirement 3: Audit & Monitoring
-- Requirement 4: Backup & Recovery
+### IMPLEMENTATION.md
+- Complete assignment specification with 4 requirements
+- Step-by-step implementation guides for each requirement
+- Test case descriptions and acceptance criteria
+- Security policy definitions and requirements
+- User role definitions and permissions model
+- Team member contributions and effort tracking
+- Progress tracking for each requirement
+- Test execution results and performance analysis
+- Security assessment and final summary
 
-### Requirements
-- Complete assignment specification
-- Test case descriptions
-- Security policy definitions
-- User role definitions
-
-### Reports
-- Team member contributions
-- Implementation progress
-- Test execution summaries
-- Performance analysis
-- Security assessment
-
-### Audit Logs
-- Sample audit trail outputs
-- Audit query examples
+### AUDITLOGS.md
+- Sample audit trail outputs and analysis
+- Audit query examples and templates
+- Log analysis samples and interpretations
+- Violation detection samples and patterns
 - Log analysis samples
 - Violation detection samples
 
 ## Main Topics
 
 ## 1. Database Design
+
+### Oracle Database Express 21c (XE)
+
+**Connection Details:**
+- Service: localhost:1521/XE
+- SQL*Plus: `sqlplus user/password@localhost:1521/XE`
+- ODP.NET: `Data Source=localhost:1521/XE;User Id=user;Password=password;`
 
 ### Core Entities
 - BỆNHNHÂN (Patient)
@@ -103,16 +103,18 @@ Four main roles with hierarchical permissions:
 ## 3. Application Architecture
 
 ### Subsystem 1: Oracle DB Admin
-- **Layer**: WinForm Desktop Application
+- **Framework**: .NET 10.0 WinForm
 - **Purpose**: Database administration and security management
 - **Users**: DBA and database administrators
 - **Key Functions**: User/role management, permission control
+- **Package**: Oracle.ManagedDataAccess.Core 23.26.100
 
 ### Subsystem 2: Medical System
-- **Layer**: WinForm Desktop Application
+- **Framework**: .NET 10.0 WinForm
 - **Purpose**: Medical record management
 - **Users**: Coordinators, doctors, technicians, patients
 - **Key Functions**: Patient records, consultations, diagnostics, prescriptions
+- **Package**: Oracle.ManagedDataAccess.Core 23.26.100
 
 ## 4. Implementation Steps
 
@@ -205,10 +207,8 @@ Four main roles with hierarchical permissions:
 README.md                               ← Start here
 CONTRIBUTING.md                         ← Development standards
 docs/README.md                          ← This file
-docs/Requirements/README.md             ← Assignment requirements
-docs/Implementation/README.md           ← Implementation guides
-docs/Reports/README.md                  ← Progress tracking
-docs/AuditLogs/README.md               ← Audit query examples
+docs/IMPLEMENTATION.md                  ← Requirements, guides, & test results
+docs/AUDITLOGS.md                       ← Audit query examples
 ```
 
 ### Database Structure (To Create)
