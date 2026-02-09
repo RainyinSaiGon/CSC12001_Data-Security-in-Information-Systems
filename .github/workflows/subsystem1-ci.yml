@@ -1,0 +1,63 @@
+name: Subsystem 1 CI/CD
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'Subsystem1-OracleDBAdmin/**'
+      - '.github/workflows/subsystem1-ci.yml'
+
+jobs:
+  build-and-test:
+    if: false
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x', '7.0.x']
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Restore dependencies
+        run: |
+          cd Subsystem1-OracleDBAdmin/Source
+          dotnet restore OracleDBAdmin.sln
+
+      - name: Build
+        run: |
+          cd Subsystem1-OracleDBAdmin/Source
+          dotnet build OracleDBAdmin.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          cd Subsystem1-OracleDBAdmin/Source
+          dotnet test OracleDBAdmin.sln --configuration Release --no-build --verbosity normal
+
+  code-quality:
+    if: false
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: 'cpp'
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2

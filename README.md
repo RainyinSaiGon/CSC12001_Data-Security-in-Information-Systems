@@ -1,34 +1,485 @@
-# CSC12001 — Data Security in Information Systems
+# Data Security in Information Systems - Medical & Database Administration Platform
 
-Repository for the CSC12001 course project: Data Security in Information Systems.
+A comprehensive data security project implementing two subsystems: Oracle Database Administration WinForm application and Medical Data Management System with advanced security mechanisms.
 
-Contents
-- Project description and objectives
-- How to build and run (if applicable)
-- Contributing guidelines and issue templates
+## Quick Navigation
 
-Purpose
+| Section | Description |
+|---------|-------------|
+| [Getting Started](#getting-started) | Complete setup guide |
+| [Subsystem1-OracleDBAdmin/README.md](Subsystem1-OracleDBAdmin/README.md) | Database admin application setup |
+| [Subsystem2-MedicalDataManagement/README.md](Subsystem2-MedicalDataManagement/README.md) | Medical system setup |
+| [Database/README.md](Database/README.md) | Database schema & scripts |
+| [docs/README.md](docs/README.md) | Architecture & security documentation |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development guidelines |
 
-This repo contains coursework and supporting materials for the course. Use the
-issue templates when reporting bugs or requesting new features. See the
-.gitignore for ignored files and the LICENSE for project licensing.
+## Overview
 
-Contributing
+This project implements a complete data security solution for a hospital management system, featuring:
 
-- Fork the repository and open a pull request for changes.
-- Use the GitHub issue templates for feature requests and bug reports.
-- Keep commits small and descriptive.
+- **Subsystem 1**: Oracle Database Administration WinForm application for user/role management and permission control
+- **Subsystem 2**: Medical Data Management system with patient records, doctor consultations, and diagnostic services
+- **Security Mechanisms**: RBAC (Role-Based Access Control), VPD (Virtual Private Database), OLS (Oracle Label Security)
+- **Audit & Monitoring**: Standard audit, Fine-grained audit, and Unified audit trails
+- **Backup & Recovery**: Data backup strategies and recovery procedures
 
-License
+## Technology Stack
 
-See the `LICENSE` file in the repository root.
+| Component | Technology |
+|-----------|-----------|
+| **Subsystem 1** | WinForm, .NET Framework, Oracle ODP.NET |
+| **Subsystem 2** | WinForm, .NET Framework, Oracle ODP.NET |
+| **Database** | Oracle Database 11g/12c+ |
+| **Security** | Oracle RBAC, VPD, OLS, Audit mechanisms |
+| **Version Control** | Git/GitHub |
+| **Documentation** | Markdown, MS Word |
 
-Contact
+## Project Structure
 
-Course maintainers / authors: refer to the repository owner on GitHub.
+Currently existing: Documentation files (README.md, CONTRIBUTING.md, docs/), GitHub workflows, issue templates.
 
-Docs
+To be created: Database SQL scripts, application source code, test files, utility scripts.
 
-Detailed project documentation and longer guides live in the `docs/` folder. See
-`docs/README.md` for an index of available docs and how to build or preview them
-locally (if applicable).
+```
+CSC12001_Data-Security-in-Information-Systems/
+│
+├── Subsystem1-OracleDBAdmin/              # Database Administration Application
+│   ├── Source/                            # (To be created)
+│   │   ├── OracleDBAdmin.sln
+│   │   └── OracleDBAdmin/
+│   │       ├── Forms/                    # UI Forms
+│   │       ├── Models/                   # Data models
+│   │       ├── Services/                 # Business logic
+│   │       └── Program.cs
+│   └── README.md
+│
+├── Subsystem2-MedicalDataManagement/      # Medical Data Management System
+│   ├── Source/                            # (To be created)
+│   │   ├── MedicalDataSystem.sln
+│   │   └── MedicalDataSystem/
+│   │       ├── Forms/                    # UI Forms (RBAC, VPD, OLS)
+│   │       ├── Models/                   # Entity models
+│   │       ├── Services/                 # Business logic
+│   │       └── Program.cs
+│   └── README.md
+│
+├── Database/                              # Database setup scripts (To be created)
+│   ├── Schema/                            # Data modeling
+│   │   ├── 01_CreateTables.sql
+│   │   ├── 02_CreateIndexes.sql
+│   │   └── 03_InsertSampleData.sql
+│   ├── Security/                          # Security configuration
+│   │   ├── 01_RBAC_Setup.sql
+│   │   ├── 02_VPD_Setup.sql
+│   │   ├── 03_OLS_Setup.sql
+│   │   └── 04_Users_Creation.sql
+│   ├── Audit/                             # Audit configuration
+│   │   ├── 01_StandardAudit_Setup.sql
+│   │   ├── 02_FineGrainedAudit_Setup.sql
+│   │   ├── 03_UnifiedAudit_Setup.sql
+│   │   └── ReadAuditLogs.sql
+│   ├── BackupRestore/                     # Backup & recovery scripts
+│   │   ├── 01_BackupStrategy.sql
+│   │   ├── 02_AutomaticBackup.sql
+│   │   └── 03_RecoveryScripts.sql
+│   └── README.md
+│
+├── docs/                                  # Documentation
+│   ├── README.md                          # Architecture & design docs
+│   ├── Requirements/                      # Assignment requirements
+│   ├── Architecture/                      # System architecture
+│   ├── Implementation/                    # Implementation guides
+│   ├── Reports/                           # Test results & reports
+│   └── AuditLogs/                         # Audit log samples
+│
+├── Tests/                                 # Testing (To be created)
+│   ├── TestCases/                         # Test case documentation
+│   │   ├── TC1_UserSetup.md              # Test Case #1
+│   │   ├── TC2_RBAC.md                   # Test Case #2
+│   │   ├── TC3_VPD.md                    # Test Case #3
+│   │   ├── TC4_Technician.md             # Test Case #4
+│   │   └── TC5_PatientAccess.md          # Test Case #5
+│   └── AuditTestScenarios/               # Audit test scripts
+│       ├── AuditTest_01.sql
+│       ├── AuditTest_02.sql
+│       └── ...
+│
+├── Utils/                                 # Utility scripts (To be created)
+│   ├── Scripts/                           # SQL utility scripts
+│   │   ├── CreateAllUsers.sql
+│   │   └── GrantAllPermissions.sql
+│   └── Config/
+│       └── appsettings.template.json     # Connection string template
+│
+├── README.md                              # This file
+├── CONTRIBUTING.md                        # Development guidelines
+├── LICENSE
+└── .gitignore
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Oracle Database 11g or 12c+ installed and running
+- Visual Studio 2019 or later
+- .NET Framework 4.7.2 or higher
+- Oracle Data Provider for .NET (ODP.NET)
+- SQL*Plus or Oracle SQL Developer (for database scripts)
+- Git for version control
+
+### Step 1: Clone Repository & Install Dependencies
+
+```bash
+git clone https://github.com/dinhdaivu/CSC12001_Data-Security-in-Information-Systems.git
+cd CSC12001_Data-Security-in-Information-Systems
+
+# Install ODP.NET NuGet packages (in Visual Studio)
+# Package Manager: Install-Package Oracle.ManagedDataAccess
+```
+
+### Step 2: Setup Oracle Database
+
+**2.1 Create Oracle User for Project**
+
+**IMPORTANT: Use a strong, randomly-generated password (minimum 12 characters, mixed case, numbers, symbols). Set it via secrets manager or local config, never commit to repository.**
+
+```sql
+-- Connect as SYSTEM or DBA
+-- Replace <STRONG_PASSWORD> with a secure password (e.g., generate with: openssl rand -base64 12)
+CREATE USER project_admin IDENTIFIED BY <STRONG_PASSWORD>;
+GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE PROCEDURE TO project_admin;
+```
+
+**After user creation:**
+1. Store the password in your secure credential manager:
+   - **Development**: `dotnet user-secrets set "OracleDbConnection:Password" "<STRONG_PASSWORD>"`
+   - **Production**: Set environment variable or use secrets manager (AWS Secrets Manager, Azure Key Vault, etc.)
+2. **Rotate the password** immediately after initial setup and regularly (at least quarterly)
+3. Never commit the plaintext password to the repository
+4. Use different passwords for different environments (dev, staging, production)
+
+**2.2 Run Database Schema Scripts** (To be created)
+
+Create and execute SQL scripts in this order:
+
+```bash
+sqlplus project_admin@orcl
+
+-- Execute in order:
+@Database/Schema/01_CreateTables.sql
+@Database/Schema/02_CreateIndexes.sql
+@Database/Schema/03_InsertSampleData.sql
+```
+
+See [Database/README.md](Database/README.md) for schema definitions and SQL script templates.
+
+**2.3 Setup Security (RBAC, VPD, OLS)** (To be created)
+
+Create and execute security configuration scripts:
+
+```bash
+sqlplus project_admin@orcl
+
+@Database/Security/01_RBAC_Setup.sql
+@Database/Security/02_VPD_Setup.sql
+@Database/Security/03_OLS_Setup.sql
+@Database/Security/04_Users_Creation.sql
+```
+
+See [Database/README.md](Database/README.md) for security mechanism details.
+
+**2.4 Setup Audit** (To be created)
+
+Create and execute audit configuration scripts:
+
+```bash
+sqlplus project_admin@orcl
+
+@Database/Audit/01_StandardAudit_Setup.sql
+@Database/Audit/02_FineGrainedAudit_Setup.sql
+@Database/Audit/03_UnifiedAudit_Setup.sql
+```
+
+See [Database/README.md](Database/README.md) and [docs/AuditLogs/README.md](docs/AuditLogs/README.md) for audit setup guidance.
+
+### Step 3: Configure Connection Strings
+
+**IMPORTANT: Never commit plaintext passwords to the repository!**
+
+Use one of these secure credential management approaches:
+
+#### Option A: User Secrets (Development - Recommended)
+
+```bash
+# Initialize user secrets (run in Subsystem1-OracleDBAdmin/Source directory)
+dotnet user-secrets init
+
+# Set connection credentials
+dotnet user-secrets set "OracleDbConnection:UserId" "project_admin"
+dotnet user-secrets set "OracleDbConnection:Password" "your_secure_password_here"
+```
+
+Update `app.config` to use User Secrets in development:
+
+```xml
+<!-- app.config - Uses placeholder for secure management -->
+<connectionStrings>
+    <add name="OracleDbConnection" 
+         connectionString="Data Source=orcl;User Id={OracleDbConnection:UserId};Password={OracleDbConnection:Password};" 
+         providerName="Oracle.ManagedDataAccess.Client" />
+</connectionStrings>
+```
+
+#### Option B: Environment Variables (Production)
+
+Set environment variables before running the application:
+
+```powershell
+# PowerShell
+$env:ORACLE_USERID = "project_admin"
+$env:ORACLE_PASSWORD = "your_secure_password_here"
+```
+
+```bash
+# Bash/Linux
+export ORACLE_USERID="project_admin"
+export ORACLE_PASSWORD="your_secure_password_here"
+```
+
+Read from environment in code:
+
+```csharp
+string userId = Environment.GetEnvironmentVariable("ORACLE_USERID");
+string password = Environment.GetEnvironmentVariable("ORACLE_PASSWORD");
+string connectionString = $"Data Source=orcl;User Id={userId};Password={password};";
+```
+
+#### Option C: Local Configuration File (Development - Not Committed)
+
+Create `appsettings.local.json` (added to `.gitignore`):
+
+```json
+{
+  "OracleDbConnection": {
+    "UserId": "project_admin",
+    "Password": "your_secure_password_here",
+    "DataSource": "orcl"
+  }
+}
+```
+
+Add to `.gitignore`:
+```
+appsettings.local.json
+appsettings.*.local.json
+```
+
+Load in C# code:
+
+```csharp
+var config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile("appsettings.local.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+
+string userId = config["OracleDbConnection:UserId"];
+string password = config["OracleDbConnection:Password"];
+```
+
+**Select the approach that matches your deployment environment and update both Subsystem1 and Subsystem2 configuration files accordingly.**
+
+### Step 4: Build & Run Applications
+
+**Subsystem 1 - Database Administration**
+```bash
+cd Subsystem1-OracleDBAdmin/Source
+dotnet build OracleDBAdmin.sln
+# Or open in Visual Studio and Build > Build Solution
+# Run the application
+```
+
+**Subsystem 2 - Medical Data Management**
+```bash
+cd Subsystem2-MedicalDataManagement/Source
+dotnet build MedicalDataSystem.sln
+# Or open in Visual Studio and Build > Build Solution
+# Run the application
+```
+
+### Step 5: Verify Setup
+
+- [ ] Both applications start without connection errors
+- [ ] Database tables are created successfully
+- [ ] Sample data is inserted
+- [ ] Users can log in with different roles
+- [ ] Security policies are enforced
+
+## Key Features
+
+### Subsystem 1: Oracle Database Administration
+- Create, modify, delete users and roles
+- Grant/revoke permissions on database objects
+- View user privileges and role assignments
+- WITH GRANT OPTION support for permission delegation
+- Column-level security on SELECT/UPDATE operations
+
+### Subsystem 2: Medical Data Management
+- **RBAC**: Role-based access control (Coordinator, Doctor, Technician, Patient)
+- **VPD**: Virtual Private Database for data filtering
+- **OLS**: Oracle Label Security for multi-level notifications
+- **Audit**: Track all sensitive operations (diagnoses, treatments, prescriptions)
+- **Patient Privacy**: Each user sees only their own information
+
+### Security Mechanisms
+- **RBAC**: Different roles with different permissions
+- **VPD**: Transparent row-level security
+- **OLS**: Multi-level classification and segregation
+- **Standard Audit**: Track user actions
+- **Fine-grained Audit**: Detailed operation tracking
+- **Backup & Recovery**: Data protection mechanisms
+
+## Available Commands
+
+### Database Scripts
+
+```bash
+# Schema setup
+sqlplus project_admin@orcl @Database/Schema/01_CreateTables.sql
+
+# Security setup
+sqlplus project_admin@orcl @Database/Security/01_RBAC_Setup.sql
+
+# Audit setup
+sqlplus project_admin@orcl @Database/Audit/01_StandardAudit_Setup.sql
+
+# Read audit logs
+sqlplus project_admin@orcl @Database/Audit/ReadAuditLogs.sql
+```
+
+### Visual Studio
+```
+Build > Build Solution           # Compile project
+Debug > Start Debugging          # Run with debugger
+Build > Clean Solution           # Remove build artifacts
+```
+
+## Development Workflow
+
+1. **Create Branch**
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+
+2. **Make Changes**
+   - Follow [CONTRIBUTING.md](CONTRIBUTING.md) standards
+   - Test your changes thoroughly
+   - Write/update documentation
+
+3. **Commit Changes**
+   ```bash
+   git commit -m "type: description"
+   # Examples: feat: add RBAC support, fix: connection string issue
+   ```
+
+4. **Push & Create Pull Request**
+   ```bash
+   git push origin feature/your-feature
+   ```
+
+## Documentation
+
+- [docs/README.md](docs/README.md) - System architecture and technical design
+- [Subsystem1-OracleDBAdmin/README.md](Subsystem1-OracleDBAdmin/README.md) - DB admin app documentation
+- [Subsystem2-MedicalDataManagement/README.md](Subsystem2-MedicalDataManagement/README.md) - Medical system documentation
+- [Database/README.md](Database/README.md) - Database schema and security setup
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development guidelines and standards
+- [Tests/](Tests/) - Test cases and scenarios
+
+## Requirements Implementation
+
+### Requirement 1: Access Control & Interface
+- [ ] Database setup & user account creation (TC#1)
+- [ ] RBAC implementation (TC#2, TC#4, TC#5)
+- [ ] VPD implementation (TC#3)
+- [ ] User interface for all roles
+
+### Requirement 2: Notification System with OLS
+- [ ] OLS label hierarchy setup
+- [ ] Multi-level notification classification
+- [ ] User label assignment by organization
+- [ ] Notification interface
+
+### Requirement 3: Audit & Monitoring
+- [ ] Standard audit setup
+- [ ] Fine-grained audit configuration
+- [ ] Unified audit setup
+- [ ] Test scenarios and verification
+
+### Requirement 4: Backup & Recovery
+- [ ] Backup strategy documentation
+- [ ] Automatic backup implementation
+- [ ] Recovery procedures
+- [ ] Testing and evaluation
+
+## Troubleshooting
+
+### Oracle Connection Issues
+```bash
+# Verify Oracle is running
+sqlplus /nolog
+SQL> CONNECT system/password@orcl
+
+# Check listener status
+lsnrctl status
+
+# Start listener if needed
+lsnrctl start
+```
+
+### Database Objects Not Found
+- Verify scripts executed without errors
+- Check user has proper privileges
+- Run `SELECT * FROM user_tables;` to verify tables exist
+
+### ODP.NET Installation Issues
+```
+Package Manager Console: Install-Package Oracle.ManagedDataAccess
+```
+
+### Application Won't Connect
+- Check connection string in app.config
+- Verify TNS_ADMIN environment variable is set
+- Ensure firewall allows Oracle port (1521)
+- Test connection with SQL*Plus first
+
+## Course Information
+
+- **Course**: CSC12001 - Data Security in Information Systems
+- **Institution**: University of Science - Faculty of Information Technology
+- **Academic Year**: 2025-2026
+- **Assignment Type**: Team project (2 subsystems)
+
+## Submission Requirements
+
+1. **Project Structure**: Proper folder organization as specified
+2. **Source Code**: Well-commented, follows C# conventions
+3. **Database Scripts**: Fully functional SQL scripts
+4. **Documentation**: Complete theoretical explanation and implementation guide
+5. **Team Contribution**: Clear assignment of work to team members
+6. **Test Results**: Evidence of all test cases passing
+
+**Submission Format**: 
+- Folder name: `ATBM-2026-[GroupCode]` (when ready to submit)
+- Include: Source code, SQL scripts, documentation, reports
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file
+
+---
+
+**Ready to start?** Follow the Getting Started section above!
+
+For questions or contributions, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
