@@ -200,24 +200,59 @@ Four main roles with hierarchical permissions:
 
 ## 7. Critical Files
 
-### Database Scripts
+### Documentation (Ready)
+```
+README.md                               ← Start here
+CONTRIBUTING.md                         ← Development standards
+docs/README.md                          ← This file
+docs/Requirements/README.md             ← Assignment requirements
+docs/Implementation/README.md           ← Implementation guides
+docs/Reports/README.md                  ← Progress tracking
+docs/AuditLogs/README.md               ← Audit query examples
+```
+
+### Database Structure (To Create)
 ```
 Database/
-├── Schema/01_CreateTables.sql           ← Execute first
-├── Security/01_RBAC_Setup.sql          ← Execute second
-├── Audit/01_StandardAudit_Setup.sql    ← Execute third
-└── BackupRestore/01_BackupStrategy.sql ← Execute last
+├── Schema/                (Create SQL files)
+│   ├── 01_CreateTables.sql
+│   ├── 02_CreateIndexes.sql
+│   └── 03_InsertSampleData.sql
+├── Security/              (Create SQL files)
+│   ├── 01_RBAC_Setup.sql
+│   ├── 02_VPD_Setup.sql
+│   ├── 03_OLS_Setup.sql
+│   └── 04_Users_Creation.sql
+├── Audit/                 (Create SQL files)
+│   ├── 01_StandardAudit_Setup.sql
+│   ├── 02_FineGrainedAudit_Setup.sql
+│   ├── 03_UnifiedAudit_Setup.sql
+│   └── ReadAuditLogs.sql
+└── BackupRestore/         (Create SQL files)
+    ├── 01_BackupStrategy.sql
+    ├── 02_AutomaticBackup.sql
+    └── 03_RecoveryScripts.sql
 ```
 
-### Application Source Code
+### Application Source Code (To Create)
 ```
-Subsystem1-OracleDBAdmin/Source/        → Build & deploy
-Subsystem2-MedicalDataManagement/Source/ → Build & deploy
-```
+Subsystem1-OracleDBAdmin/
+└── Source/
+    ├── OracleDBAdmin/
+    │   ├── Forms/        → Create UI forms
+    │   ├── Models/       → Create data models
+    │   ├── Services/     → Create business logic
+    │   └── Program.cs
+    └── OracleDBAdmin.sln
 
-### Documentation
-```
-docs/README.md                          ← Start here
+Subsystem2-MedicalDataManagement/
+└── Source/
+    ├── MedicalDataSystem/
+    │   ├── Forms/        → Create UI forms
+    │   ├── Models/       → Create entity models
+    │   ├── Services/     → Create business logic
+    │   └── Program.cs
+    └── MedicalDataSystem.sln
 ```
 
 ## 8. Key Concepts

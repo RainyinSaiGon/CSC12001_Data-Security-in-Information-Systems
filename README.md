@@ -36,11 +36,15 @@ This project implements a complete data security solution for a hospital managem
 
 ## Project Structure
 
+Currently existing: Documentation files (README.md, CONTRIBUTING.md, docs/), GitHub workflows, issue templates.
+
+To be created: Database SQL scripts, application source code, test files, utility scripts.
+
 ```
 CSC12001_Data-Security-in-Information-Systems/
 │
 ├── Subsystem1-OracleDBAdmin/              # Database Administration Application
-│   ├── Source/
+│   ├── Source/                            # (To be created)
 │   │   ├── OracleDBAdmin.sln
 │   │   └── OracleDBAdmin/
 │   │       ├── Forms/                    # UI Forms
@@ -50,7 +54,7 @@ CSC12001_Data-Security-in-Information-Systems/
 │   └── README.md
 │
 ├── Subsystem2-MedicalDataManagement/      # Medical Data Management System
-│   ├── Source/
+│   ├── Source/                            # (To be created)
 │   │   ├── MedicalDataSystem.sln
 │   │   └── MedicalDataSystem/
 │   │       ├── Forms/                    # UI Forms (RBAC, VPD, OLS)
@@ -59,7 +63,7 @@ CSC12001_Data-Security-in-Information-Systems/
 │   │       └── Program.cs
 │   └── README.md
 │
-├── Database/                              # Database setup scripts
+├── Database/                              # Database setup scripts (To be created)
 │   ├── Schema/                            # Data modeling
 │   │   ├── 01_CreateTables.sql
 │   │   ├── 02_CreateIndexes.sql
@@ -88,23 +92,24 @@ CSC12001_Data-Security-in-Information-Systems/
 │   ├── Reports/                           # Test results & reports
 │   └── AuditLogs/                         # Audit log samples
 │
-├── Tests/                                 # Testing
-│   ├── TestCases/
-│   │   ├── TC1_UserSetup.md
-│   │   ├── TC2_RBAC.md
-│   │   ├── TC3_VPD.md
-│   │   ├── TC4_Technician.md
-│   │   └── TC5_PatientAccess.md
-│   └── AuditTestScenarios/
+├── Tests/                                 # Testing (To be created)
+│   ├── TestCases/                         # Test case documentation
+│   │   ├── TC1_UserSetup.md              # Test Case #1
+│   │   ├── TC2_RBAC.md                   # Test Case #2
+│   │   ├── TC3_VPD.md                    # Test Case #3
+│   │   ├── TC4_Technician.md             # Test Case #4
+│   │   └── TC5_PatientAccess.md          # Test Case #5
+│   └── AuditTestScenarios/               # Audit test scripts
 │       ├── AuditTest_01.sql
 │       ├── AuditTest_02.sql
 │       └── ...
 │
-├── Utils/                                 # Utility scripts
-│   ├── Scripts/
+├── Utils/                                 # Utility scripts (To be created)
+│   ├── Scripts/                           # SQL utility scripts
 │   │   ├── CreateAllUsers.sql
 │   │   └── GrantAllPermissions.sql
-│   └── ConnectionStrings.config
+│   └── Config/
+│       └── appsettings.template.json     # Connection string template
 │
 ├── README.md                              # This file
 ├── CONTRIBUTING.md                        # Development guidelines
@@ -136,13 +141,28 @@ cd CSC12001_Data-Security-in-Information-Systems
 ### Step 2: Setup Oracle Database
 
 **2.1 Create Oracle User for Project**
+
+**IMPORTANT: Use a strong, randomly-generated password (minimum 12 characters, mixed case, numbers, symbols). Set it via secrets manager or local config, never commit to repository.**
+
 ```sql
 -- Connect as SYSTEM or DBA
-CREATE USER project_admin IDENTIFIED BY project_admin123;
+-- Replace <STRONG_PASSWORD> with a secure password (e.g., generate with: openssl rand -base64 12)
+CREATE USER project_admin IDENTIFIED BY <STRONG_PASSWORD>;
 GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE PROCEDURE TO project_admin;
 ```
 
-**2.2 Run Database Schema Scripts**
+**After user creation:**
+1. Store the password in your secure credential manager:
+   - **Development**: `dotnet user-secrets set "OracleDbConnection:Password" "<STRONG_PASSWORD>"`
+   - **Production**: Set environment variable or use secrets manager (AWS Secrets Manager, Azure Key Vault, etc.)
+2. **Rotate the password** immediately after initial setup and regularly (at least quarterly)
+3. Never commit the plaintext password to the repository
+4. Use different passwords for different environments (dev, staging, production)
+
+**2.2 Run Database Schema Scripts** (To be created)
+
+Create and execute SQL scripts in this order:
+
 ```bash
 sqlplus project_admin@orcl
 
@@ -152,7 +172,12 @@ sqlplus project_admin@orcl
 @Database/Schema/03_InsertSampleData.sql
 ```
 
-**2.3 Setup Security (RBAC, VPD, OLS)**
+See [Database/README.md](Database/README.md) for schema definitions and SQL script templates.
+
+**2.3 Setup Security (RBAC, VPD, OLS)** (To be created)
+
+Create and execute security configuration scripts:
+
 ```bash
 sqlplus project_admin@orcl
 
@@ -162,7 +187,12 @@ sqlplus project_admin@orcl
 @Database/Security/04_Users_Creation.sql
 ```
 
-**2.4 Setup Audit**
+See [Database/README.md](Database/README.md) for security mechanism details.
+
+**2.4 Setup Audit** (To be created)
+
+Create and execute audit configuration scripts:
+
 ```bash
 sqlplus project_admin@orcl
 
@@ -171,20 +201,94 @@ sqlplus project_admin@orcl
 @Database/Audit/03_UnifiedAudit_Setup.sql
 ```
 
+See [Database/README.md](Database/README.md) and [docs/AuditLogs/README.md](docs/AuditLogs/README.md) for audit setup guidance.
+
 ### Step 3: Configure Connection Strings
 
-Edit connection strings in both subsystems:
+**IMPORTANT: Never commit plaintext passwords to the repository!**
+
+Use one of these secure credential management approaches:
+
+#### Option A: User Secrets (Development - Recommended)
+
+```bash
+# Initialize user secrets (run in Subsystem1-OracleDBAdmin/Source directory)
+dotnet user-secrets init
+
+# Set connection credentials
+dotnet user-secrets set "OracleDbConnection:UserId" "project_admin"
+dotnet user-secrets set "OracleDbConnection:Password" "your_secure_password_here"
+```
+
+Update `app.config` to use User Secrets in development:
 
 ```xml
-<!-- Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/app.config -->
+<!-- app.config - Uses placeholder for secure management -->
 <connectionStrings>
     <add name="OracleDbConnection" 
-         connectionString="Data Source=orcl;User Id=project_admin;Password=project_admin123;" 
+         connectionString="Data Source=orcl;User Id={OracleDbConnection:UserId};Password={OracleDbConnection:Password};" 
          providerName="Oracle.ManagedDataAccess.Client" />
 </connectionStrings>
 ```
 
-Same for Subsystem2.
+#### Option B: Environment Variables (Production)
+
+Set environment variables before running the application:
+
+```powershell
+# PowerShell
+$env:ORACLE_USERID = "project_admin"
+$env:ORACLE_PASSWORD = "your_secure_password_here"
+```
+
+```bash
+# Bash/Linux
+export ORACLE_USERID="project_admin"
+export ORACLE_PASSWORD="your_secure_password_here"
+```
+
+Read from environment in code:
+
+```csharp
+string userId = Environment.GetEnvironmentVariable("ORACLE_USERID");
+string password = Environment.GetEnvironmentVariable("ORACLE_PASSWORD");
+string connectionString = $"Data Source=orcl;User Id={userId};Password={password};";
+```
+
+#### Option C: Local Configuration File (Development - Not Committed)
+
+Create `appsettings.local.json` (added to `.gitignore`):
+
+```json
+{
+  "OracleDbConnection": {
+    "UserId": "project_admin",
+    "Password": "your_secure_password_here",
+    "DataSource": "orcl"
+  }
+}
+```
+
+Add to `.gitignore`:
+```
+appsettings.local.json
+appsettings.*.local.json
+```
+
+Load in C# code:
+
+```csharp
+var config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile("appsettings.local.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+
+string userId = config["OracleDbConnection:UserId"];
+string password = config["OracleDbConnection:Password"];
+```
+
+**Select the approach that matches your deployment environment and update both Subsystem1 and Subsystem2 configuration files accordingly.**
 
 ### Step 4: Build & Run Applications
 

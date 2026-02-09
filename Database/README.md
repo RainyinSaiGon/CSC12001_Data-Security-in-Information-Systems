@@ -4,44 +4,50 @@ Complete Oracle database setup including schema definition, security configurati
 
 ## Overview
 
-This directory contains all SQL scripts organized by functionality:
-- **Schema/**: Table creation and sample data
-- **Security/**: RBAC, VPD, OLS configuration
-- **Audit/**: Audit trail setup
-- **BackupRestore/**: Backup and recovery procedures
+This directory will contain all SQL scripts organized by functionality. Currently, only this README exists—SQL scripts must be created following the structure below:
 
-## Directory Structure
+- **Schema/**: Table creation and sample data scripts (to create)
+- **Security/**: RBAC, VPD, OLS configuration scripts (to create)
+- **Audit/**: Audit trail setup scripts (to create)
+- **BackupRestore/**: Backup and recovery scripts (to create)
+
+## Planned Directory Structure
+
+The following structure shows where SQL scripts should be created:
 
 ```
 Database/
-├── Schema/
-│   ├── 01_CreateTables.sql          # Create all tables
-│   ├── 02_CreateIndexes.sql         # Create indexes for performance
-│   └── 03_InsertSampleData.sql      # Sample data for testing
-├── Security/
-│   ├── 01_RBAC_Setup.sql            # Role-Based Access Control
-│   ├── 02_VPD_Setup.sql             # Virtual Private Database
-│   ├── 03_OLS_Setup.sql             # Oracle Label Security
-│   └── 04_Users_Creation.sql        # Create database users
-├── Audit/
+├── Schema/                            (Create these files)
+│   ├── 01_CreateTables.sql           # Create all tables
+│   ├── 02_CreateIndexes.sql          # Create indexes for performance
+│   └── 03_InsertSampleData.sql       # Sample data for testing
+├── Security/                          (Create these files)
+│   ├── 01_RBAC_Setup.sql             # Role-Based Access Control
+│   ├── 02_VPD_Setup.sql              # Virtual Private Database
+│   ├── 03_OLS_Setup.sql              # Oracle Label Security
+│   └── 04_Users_Creation.sql         # Create database users
+├── Audit/                             (Create these files)
 │   ├── 01_StandardAudit_Setup.sql
 │   ├── 02_FineGrainedAudit_Setup.sql
 │   ├── 03_UnifiedAudit_Setup.sql
 │   └── ReadAuditLogs.sql
-├── BackupRestore/
+├── BackupRestore/                     (Create these files)
 │   ├── 01_BackupStrategy.sql
 │   ├── 02_AutomaticBackup.sql
-│   ├── 03_RecoveryScripts.sql
-│   └── README.md
-└── AdminDB/
-    └── AdminScripts.sql
+│   └── 03_RecoveryScripts.sql
+└── README.md                          (This file)
 ```
 
-## Execution Order
+## Execution Order (When Scripts are Created)
+
+**Warning:** Replace `<SYS_PASSWORD>` with your actual SYS account password. Never commit or share real credentials in documentation.
 
 ### 1. Initial Setup (Run First)
+
+Create and execute schema scripts:
+
 ```sql
-sqlplus sys/password as sysdba
+sqlplus sys/<SYS_PASSWORD> as sysdba
 
 @Schema/01_CreateTables.sql
 @Schema/02_CreateIndexes.sql
@@ -49,8 +55,11 @@ sqlplus sys/password as sysdba
 ```
 
 ### 2. Security Configuration (Run Second)
+
+Create and execute security scripts:
+
 ```sql
-sqlplus sys/password as sysdba
+sqlplus sys/<SYS_PASSWORD> as sysdba
 
 @Security/01_RBAC_Setup.sql
 @Security/02_VPD_Setup.sql
@@ -59,8 +68,11 @@ sqlplus sys/password as sysdba
 ```
 
 ### 3. Audit Configuration (Run Third)
+
+Create and execute audit scripts:
+
 ```sql
-sqlplus sys/password as sysdba
+sqlplus sys/<SYS_PASSWORD> as sysdba
 
 @Audit/01_StandardAudit_Setup.sql
 @Audit/02_FineGrainedAudit_Setup.sql
@@ -68,6 +80,9 @@ sqlplus sys/password as sysdba
 ```
 
 ### 4. Backup/Recovery Setup (Optional)
+
+Create and execute backup scripts:
+
 ```sql
 @BackupRestore/01_BackupStrategy.sql
 @BackupRestore/02_AutomaticBackup.sql

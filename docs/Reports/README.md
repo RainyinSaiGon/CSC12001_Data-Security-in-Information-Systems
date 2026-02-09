@@ -17,7 +17,7 @@ Test results, audit findings, and project progress reports.
 - [ ] 25% Complete
 - [ ] 50% Complete
 - [ ] 75% Complete
-- [ ] 100% Complete ✓
+- [ ] 100% Complete
 
 ### Requirement 2: OLS Notification
 - [ ] 0% Complete

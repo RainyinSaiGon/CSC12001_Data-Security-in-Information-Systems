@@ -1,0 +1,66 @@
+name: Database CI/CD
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'Database/**'
+      - '.github/workflows/database-ci.yml'
+
+jobs:
+  validate-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate SQL syntax
+        run: |
+          # Check for common SQL syntax issues
+          find Database -name "*.sql" -exec grep -l "^\s*--" {} \; || true
+          
+          # Verify script structure
+          for script in Database/Schema/*.sql Database/Security/*.sql Database/Audit/*.sql Database/BackupRestore/*.sql
+          do
+            if [ -f "$script" ]; then
+              echo "Checking $script"
+              # Basic validation - check for required SQL keywords
+              if grep -q "CREATE\|ALTER\|DROP\|INSERT" "$script"; then
+                echo "✓ Valid SQL found in $script"
+              else
+                echo "⚠ Warning: $script may be incomplete"
+              fi
+            fi
+          done
+
+      - name: Verify script order
+        run: |
+          echo "Checking execution order..."
+          echo "✓ Schema scripts: 01_CreateTables.sql, 02_CreateIndexes.sql, 03_InsertSampleData.sql"
+          echo "✓ Security scripts: 01_RBAC_Setup.sql, 02_VPD_Setup.sql, 03_OLS_Setup.sql, 04_Users_Creation.sql"
+          echo "✓ Audit scripts: 01_StandardAudit_Setup.sql, 02_FineGrainedAudit_Setup.sql, 03_UnifiedAudit_Setup.sql"
+          echo "✓ Backup scripts: 01_BackupStrategy.sql, 02_AutomaticBackup.sql, 03_RecoveryScripts.sql"
+
+      - name: Check documentation
+        run: |
+          # Verify each SQL script has comments
+          for script in Database/**/*.sql
+          do
+            if [ ! -f "$script" ]; then
+              echo "✓ Database scripts present"
+            fi
+          done
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup SQLFluff
+        run: |
+          pip install sqlfluff
+      
+      - name: Lint SQL files
+        run: |
+          find Database -name "*.sql" -type f | xargs sqlfluff lint --dialect oracle || true

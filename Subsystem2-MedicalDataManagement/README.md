@@ -15,36 +15,62 @@ A comprehensive HIPAA-compliant medical management system with:
 
 ## Architecture
 
+### Intended Project Structure
+
+The following architecture outlines the planned directory structure for this application. Create these files and folders as you implement features:
+
 ```
-MedicalDataSystem/
-├── Forms/
-│   ├── LoginForm.cs                # User authentication
-│   ├── MainForm.cs                 # Main application window
-│   ├── CoordinatorForm.cs          # Coordinator UI (RBAC)
-│   ├── DoctorForm.cs               # Doctor UI (VPD)
-│   ├── TechnicianForm.cs           # Technician UI (RBAC)
-│   ├── PatientForm.cs              # Patient UI (Row-level)
-│   └── NotificationForm.cs         # OLS notification viewer
-├── Models/
+Subsystem2-MedicalDataManagement/Source/MedicalDataSystem/
+├── Forms/                                # [CREATE] UI Forms & Windows
+│   ├── LoginForm.cs                     # User authentication
+│   ├── LoginForm.Designer.cs
+│   ├── MainForm.cs                      # Main application window
+│   ├── MainForm.Designer.cs
+│   ├── CoordinatorForm.cs               # Coordinator UI (RBAC)
+│   ├── CoordinatorForm.Designer.cs
+│   ├── DoctorForm.cs                    # Doctor UI (VPD)
+│   ├── DoctorForm.Designer.cs
+│   ├── TechnicianForm.cs                # Technician UI (RBAC)
+│   ├── TechnicianForm.Designer.cs
+│   ├── PatientForm.cs                   # Patient UI (Row-level)
+│   ├── PatientForm.Designer.cs
+│   └── NotificationForm.cs              # OLS notification viewer
+│
+├── Models/                               # [CREATE] Entity Models
 │   ├── Patient.cs
 │   ├── Staff.cs
 │   ├── MedicalRecord.cs
 │   ├── DiagnosticService.cs
 │   ├── Prescription.cs
 │   └── Notification.cs
-├── Services/
-│   ├── AuthenticationService.cs    # Login & session management
-│   ├── OracleConnectionService.cs
-│   ├── RBACService.cs              # Role-based access
-│   ├── VPDService.cs               # Virtual private database
-│   ├── OLSService.cs               # Label security
-│   ├── PatientService.cs
-│   ├── DoctorService.cs
-│   ├── CoordinatorService.cs
-│   └── AuditService.cs
-├── MedicalDataSystem.csproj
-└── Program.cs
+│
+├── Services/                             # [CREATE] Business Logic & Database Access
+│   ├── AuthenticationService.cs         # Login & session management
+│   ├── OracleConnectionService.cs       # Database connection management
+│   ├── RBACService.cs                   # Role-based access control
+│   ├── VPDService.cs                    # Virtual private database filtering
+│   ├── OLSService.cs                    # Label security management
+│   ├── PatientService.cs                # Patient operations
+│   ├── DoctorService.cs                 # Doctor operations
+│   ├── CoordinatorService.cs            # Coordinator operations
+│   ├── AuditService.cs                  # Audit logging
+│   └── ValidationService.cs             # Input validation & error handling
+│
+├── Program.cs                            # Application entry point
+├── App.config                            # Application configuration
+└── MedicalDataSystem.csproj             # Project file
 ```
+
+### File Creation Guide
+
+When implementing features in order:
+
+1. **Start with Models** — Define data structures and entity classes
+2. **Create Services** — Implement business logic and Oracle database access
+3. **Build Forms** — Create UI forms that use services
+4. **Add Program.cs** — Main entry point and application initialization
+
+See [Development](#development) section below for implementation details.
 
 ## Entities & Schema
 
@@ -150,6 +176,35 @@ sqlplus project_admin@orcl @02_VPD_Setup.sql
 sqlplus project_admin@orcl @03_OLS_Setup.sql
 sqlplus project_admin@orcl @04_Users_Creation.sql
 ```
+
+### Configure Connection Strings
+
+⚠️ **Security Warning**: Never commit passwords or credentials to version control. See [CONTRIBUTING.md](../../CONTRIBUTING.md#security-checklist) security guidelines.
+
+Use one of these methods to securely provide database credentials:
+
+**Option 1: User Secrets (Development)**
+```bash
+dotnet user-secrets init
+dotnet user-secrets set "OracleDbConnection:UserId" "project_admin"
+dotnet user-secrets set "OracleDbConnection:Password" "your_secure_password"
+```
+
+**Option 2: Environment Variables (Production)**
+```bash
+# Windows
+set ORACLE_USERID=project_admin
+set ORACLE_PASSWORD=your_secure_password
+
+# Linux/macOS
+export ORACLE_USERID=project_admin
+export ORACLE_PASSWORD=your_secure_password
+```
+
+**Option 3: Local Config File (Development Only)**
+Create `appsettings.local.json` (add to `.gitignore`) with credentials.
+
+See [Subsystem1-OracleDBAdmin/README.md](../Subsystem1-OracleDBAdmin/README.md#database-connection) for detailed configuration examples.
 
 ## Features by Role
 
