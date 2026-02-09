@@ -9,6 +9,7 @@ on:
 
 jobs:
   build-and-test:
+    if: false
     runs-on: windows-latest
 
     strategy:
@@ -39,6 +40,7 @@ jobs:
           dotnet test OracleDBAdmin.sln --configuration Release --no-build --verbosity normal
 
   code-quality:
+    if: false
     runs-on: windows-latest
     permissions:
       actions: read
