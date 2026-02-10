@@ -26,7 +26,7 @@ DELETE FROM HSBA WHERE MAHSBA = 'HSBA001';
 -- Expected: Denied
 
 -- Attempt to GRANT role to self (extreme escalation)
-GRANT ROLE_DOCTOR TO TECHNICIAN001;
+GRANT DOCTOR TO TECHNICIAN001;
 -- Expected: ORA-01031 insufficient privileges
 
 -- =====================

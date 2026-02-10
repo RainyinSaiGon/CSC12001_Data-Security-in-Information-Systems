@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        dotnet-version: ['8.0.x', '10.0.x']
+        dotnet-version: ['10.0.x']
 
     steps:
       - uses: actions/checkout@v3
@@ -27,17 +27,17 @@ jobs:
       - name: Restore dependencies
         run: |
           cd Subsystem1-OracleDBAdmin/Source
-          dotnet restore OracleDBAdmin.sln
+          dotnet restore OracleDBAdmin.slnx
 
       - name: Build
         run: |
           cd Subsystem1-OracleDBAdmin/Source
-          dotnet build OracleDBAdmin.sln --configuration Release --no-restore
+          dotnet build OracleDBAdmin.slnx --configuration Release --no-restore
 
       - name: Run tests
         run: |
           cd Subsystem1-OracleDBAdmin/Source
-          dotnet test OracleDBAdmin.sln --configuration Release --no-build --verbosity normal
+          dotnet test OracleDBAdmin.slnx --configuration Release --no-build --verbosity normal
 
   code-quality:
     if: false

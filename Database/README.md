@@ -95,20 +95,17 @@ Create and execute backup scripts:
 ### Core Tables
 
 **BENHNHAN** (Patient)
+
 ```sql
 CREATE TABLE BENHNHAN (
-    MABN NUMBER PRIMARY KEY,
-    TENBN VARCHAR2(100) NOT NULL,
+    MABENHNHAN NUMBER PRIMARY KEY,
+    HOTEN VARCHAR2(100) NOT NULL,
     PHAI CHAR(1),
     NGAYSINH DATE,
     CCCD VARCHAR2(20) UNIQUE,
-    SONHA VARCHAR2(10),
-    TENDUONG VARCHAR2(100),
-    QUANHUYEN VARCHAR2(50),
-    TINHTP VARCHAR2(50),
-    TIENSUBENH CLOB,
-    TIENSUBENHGD CLOB,
-    DIUNGTHUOC CLOB
+    DIENTHOAI VARCHAR2(15),
+    DIACHI VARCHAR2(200),
+    DIUNG CLOB
 );
 ```
 
@@ -118,54 +115,54 @@ CREATE TABLE BENHNHAN (
 CREATE TABLE NHANVIEN (
     MANV NUMBER PRIMARY KEY,
     HOTEN VARCHAR2(100) NOT NULL,
-    PHAI CHAR(1),
-    NGAYSINH DATE,
-    CMND VARCHAR2(20) UNIQUE,
-    QUEQUAN VARCHAR2(100),
-    SODT VARCHAR2(15),
-    VAITRO VARCHAR2(50), -- Dieu phoi vien, Bac si/Y si, Ky thuat vien
+    VAITRO VARCHAR2(50), -- COORDINATOR, DOCTOR, TECHNICIAN
     CHUYENKHOA VARCHAR2(50)
 );
 ```
 
 **HSBA** (Medical Record)
+
 ```sql
 CREATE TABLE HSBA (
     MAHSBA NUMBER PRIMARY KEY,
-    MABN NUMBER REFERENCES BENHNHAN(MABN),
-    NGAY DATE,
+    MABENHNHAN NUMBER REFERENCES BENHNHAN(MABENHNHAN),
+    NGAYTAO DATE,
     CHANDOAN CLOB,
     DIEUTRI CLOB,
-    MABS NUMBER REFERENCES NHANVIEN(MANV),
-    MAKHOA VARCHAR2(50),
-    KETLUAN CLOB
+    KETLUAN CLOB,
+    MABACSI NUMBER REFERENCES NHANVIEN(MANV) -- Doctor assigned
 );
 ```
 
 **HSBA_DV** (Diagnostic Service)
+
 ```sql
 CREATE TABLE HSBA_DV (
+    MADICHVU NUMBER PRIMARY KEY,
     MAHSBA NUMBER REFERENCES HSBA(MAHSBA),
-    LOAIDV VARCHAR2(100),
-    NGAYDV DATE,
-    MAKTV NUMBER REFERENCES NHANVIEN(MANV),
+    TENDICHVU VARCHAR2(100),
+    NGAY DATE,
     KETQUA CLOB,
-    PRIMARY KEY (MAHSBA, LOAIDV)
+    HOANTHANH NUMBER(1) DEFAULT 0,
+    MAKYTHUATVIEN NUMBER REFERENCES NHANVIEN(MANV) -- Technician performing
 );
 ```
 
 **DONTHUOC** (Prescription)
+
 ```sql
 CREATE TABLE DONTHUOC (
+    MADONTHUOC NUMBER PRIMARY KEY,
     MAHSBA NUMBER REFERENCES HSBA(MAHSBA),
-    NGAYDT DATE,
     TENTHUOC VARCHAR2(100),
     LIEUDUNG VARCHAR2(200),
-    PRIMARY KEY (MAHSBA, TENTHUOC)
+    HUONGDAN VARCHAR2(200),
+    NGAYDANGKY DATE
 );
 ```
 
 **THONGBAO** (Notification - required for OLS)
+
 ```sql
 CREATE TABLE THONGBAO (
     MATHONG NUMBER PRIMARY KEY,
@@ -178,18 +175,21 @@ CREATE TABLE THONGBAO (
 ## Security Mechanisms
 
 ### RBAC (Role-Based Access Control)
-- **COORDINATOR_ROLE**: Access to patient data, record assignment
-- **DOCTOR_ROLE**: Access to assigned patient records, diagnoses
-- **TECHNICIAN_ROLE**: Access to diagnostic services
-- **PATIENT_ROLE**: Access to own medical records
+
+- **COORDINATOR**: Access to patient data, record assignment
+- **DOCTOR**: Access to assigned patient records, diagnoses
+- **TECHNICIAN**: Access to diagnostic services
+- **PATIENT**: Access to own medical records
 
 ### VPD (Virtual Private Database)
+
 - Doctors see only their patients
 - Coordinators see records they assigned
 - Technicians see assigned services
 - Transparent row filtering
 
 ### OLS (Oracle Label Security)
+
 - 3 hierarchy levels: Director, Department Head, Staff
 - 3 departments: Cardiology, Gastroenterology, Neurology
 - 3 locations: HCM, Hai Phong, Ha Noi
@@ -198,25 +198,31 @@ CREATE TABLE THONGBAO (
 ## Audit Setup
 
 ### Standard Audit
+
 Tracks user logins, object access, administrative actions
 
 ### Fine-Grained Audit
+
 Detailed logging of specific operations:
+
 - Diagnosis/treatment updates with timestamps
 - Prescription modifications
 - User ID for all actions
 
 ### Unified Audit
+
 Consolidated audit trail combining multiple audit sources
 
 ## Backup & Recovery
 
 ### Backup Methods
+
 1. **RMAN**: Recovery Manager for full/incremental backups
 2. **Export/Datapump**: Logical backups for portability
 3. **OS-level**: Operating system file backups
 
 ### Recovery Procedures
+
 1. Point-in-time recovery
 2. Full database recovery
 3. Table-level recovery
@@ -241,25 +247,32 @@ Consolidated audit trail combining multiple audit sources
 ## Troubleshooting
 
 ### "ORA-01920: user name already exists"
+
 Drop the user first:
+
 ```sql
 DROP USER project_admin CASCADE;
 ```
 
 ### "ORA-00959: tablespace is not online"
+
 Check available tablespaces:
+
 ```sql
 SELECT tablespace_name FROM user_tablespaces;
 ```
 
 ### "ORA-04043: object does not exist"
+
 Verify script executed successfully by checking:
+
 ```sql
 SELECT * FROM user_tables;
 SELECT * FROM dba_tables WHERE owner='PROJECT_ADMIN';
 ```
 
 ### "ORA-01031: insufficient privileges"
+
 Ensure commands run as SYSDBA or user with proper grants
 
 ## Verification Commands
@@ -274,7 +287,7 @@ SELECT * FROM user_tables;
 SELECT username FROM dba_users WHERE username LIKE 'DOCTOR%' OR username LIKE 'PATIENT%';
 
 -- Check roles
-SELECT role FROM dba_roles WHERE role LIKE '%ROLE';
+SELECT role FROM dba_roles WHERE role IN ('COORDINATOR', 'DOCTOR', 'TECHNICIAN', 'PATIENT');
 
 -- Check VPD policies
 SELECT object_owner, object_name, policy_name FROM dba_policies;

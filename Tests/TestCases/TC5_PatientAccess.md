@@ -75,14 +75,14 @@ SELECT DIENTHOAI FROM BENHNHAN;
 CONNECT PATIENT001/[password]@XE;
 
 -- Should succeed: Read own medical records
-SELECT MAHSBA, NGAY, CHANDOAN FROM HSBA;
+SELECT MAHSBA, NGAYTAO, CHANDOAN FROM HSBA;
 
 -- Should succeed: Read own prescriptions
 SELECT * FROM DONTHUOC dt
 JOIN HSBA h ON dt.MAHSBA = h.MAHSBA;
 
 -- Should succeed: Read own diagnostic services
-SELECT * FROM DICHVU dv
+SELECT * FROM HSBA_DV dv
 JOIN HSBA h ON dv.MAHSBA = h.MAHSBA;
 ```
 
@@ -103,7 +103,7 @@ WHERE MAHSBA = [own_record_id];
 
 -- Should FAIL: Cannot insert medical records
 INSERT INTO HSBA (MAHSBA, MABENHNHAN, CHANDOAN)
-VALUES ('FAKE', [own_id], 'Fake Record');
+VALUES (99999, [own_id], 'Fake Record');
 
 -- Should FAIL: Cannot delete records
 DELETE FROM BENHNHAN WHERE MABENHNHAN = [own_id];

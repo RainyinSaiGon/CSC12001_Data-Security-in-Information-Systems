@@ -28,12 +28,12 @@ Verify that technicians can only view their assigned diagnostic services, update
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should return ONLY services assigned to TECHNICIAN001
-SELECT MADV, MALOAIDV, MABENHNHAN, NGAY, KETQUA
-FROM DICHVU
+SELECT MADICHVU, TENDICHVU, MAHSBA, NGAY, KETQUA
+FROM HSBA_DV
 ORDER BY NGAY DESC;
 
 -- Count verification
-SELECT COUNT(*) AS my_services FROM DICHVU;
+SELECT COUNT(*) AS my_services FROM HSBA_DV;
 ```
 
 **Expected Result:** Only TECHNICIAN001's assigned services returned
@@ -43,12 +43,12 @@ SELECT COUNT(*) AS my_services FROM DICHVU;
 ```sql
 -- TECHNICIAN001 should NOT see TECHNICIAN002's services
 CONNECT TECHNICIAN001/[password]@XE;
-SELECT COUNT(*) FROM DICHVU WHERE assigned_tech = [TECHNICIAN002_staff_id];
+SELECT COUNT(*) FROM HSBA_DV WHERE MAKYTHUATVIEN = [TECHNICIAN002_staff_id];
 -- Should return 0 (VPD filters them out)
 
 -- Verify by connecting as TECHNICIAN002
 CONNECT TECHNICIAN002/[password]@XE;
-SELECT COUNT(*) AS tech2_services FROM DICHVU;
+SELECT COUNT(*) AS tech2_services FROM HSBA_DV;
 -- Should return different count from TECHNICIAN001
 ```
 
@@ -60,12 +60,12 @@ SELECT COUNT(*) AS tech2_services FROM DICHVU;
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should succeed: Update result of assigned service
-UPDATE DICHVU
+UPDATE HSBA_DV
 SET KETQUA = 'Ket qua binh thuong'
-WHERE MADV = [assigned_service_id];
+WHERE MADICHVU = [assigned_service_id];
 
 -- Verify the update
-SELECT MADV, KETQUA FROM DICHVU WHERE MADV = [assigned_service_id];
+SELECT MADICHVU, KETQUA FROM HSBA_DV WHERE MADICHVU = [assigned_service_id];
 ```
 
 **Expected Result:** UPDATE succeeds, result stored correctly
@@ -93,17 +93,17 @@ SELECT * FROM DONTHUOC;
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should FAIL: Cannot update another technician's service
-UPDATE DICHVU
+UPDATE HSBA_DV
 SET KETQUA = 'Tampered'
-WHERE MADV = [other_tech_service_id];
+WHERE MADICHVU = [other_tech_service_id];
 -- VPD should make this update 0 rows
 
 -- Should FAIL: Cannot insert new services
-INSERT INTO DICHVU (MADV, MALOAIDV, KETQUA)
-VALUES ('FAKE_DV', 'XN001', 'Fake Result');
+INSERT INTO HSBA_DV (MADICHVU, TENDICHVU, KETQUA)
+VALUES (99999, 'Fake Service', 'Fake Result');
 
 -- Should FAIL: Cannot delete services
-DELETE FROM DICHVU WHERE MADV = [any_service];
+DELETE FROM HSBA_DV WHERE MADICHVU = [any_service_id];
 ```
 
 **Expected Result:** Update impacts 0 rows; INSERT/DELETE denied
@@ -114,7 +114,7 @@ DELETE FROM DICHVU WHERE MADV = [any_service];
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Simple query without WHERE — VPD adds filter automatically
-SELECT * FROM DICHVU;
+SELECT * FROM HSBA_DV;
 
 -- Technician doesn't need to know about the filter
 -- The application code should work identically for all technicians

@@ -1,6 +1,6 @@
 # Task 06: Database Schema Setup - Tables, Indexes, Sample Data
 
-**Assigned to:** Person 5 (Part B)  
+**Assigned to:** Ngọc, Vũ (Part B)  
 **Type:** Database Administration  
 **Duration:** 8 hours  
 **Priority:** Critical (blocks all other work)  
@@ -144,10 +144,10 @@ After completion:
 | Aspect | Details |
 |--------|---------|
 | **Related Requirement** | Req 1: Access Control & Interface |
-| **Primary Owner** | **Person 5 (Database)**, Person 2 (Service), Person 1 (Form) |
+| **Primary Owner** | **Ngọc, Vũ (Database)**, Duyên, Triết (Service), Duyên, Triết (Form) |
 | **Test Timeline** | End of Week 1 (Fri Feb 14) |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|

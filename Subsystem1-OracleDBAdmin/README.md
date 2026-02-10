@@ -135,7 +135,7 @@ For detailed setup instructions on configuring connection strings (User Secrets,
 ### Building
 
 ```bash
-dotnet build OracleDBAdmin.sln
+dotnet build OracleDBAdmin.slnx
 ```
 
 ### Testing

@@ -1,6 +1,6 @@
 # Task 03: Subsystem 2 - Medical Data Management UI Forms
 
-**Assigned to:** Person 3  
+**Assigned to:** Duyên  
 **Type:** Front-end Implementation  
 **Duration:** 25-30 hours  
 **Priority:** High  
@@ -33,7 +33,7 @@ Implement 7 role-specific Windows Forms for medical data management with automat
 ## Requirements
 
 - Windows Forms (C#) with role-based interfaces
-- Integrate with Person 4's security services (AuthenticationService, RBACService, VPDService, OLSService)
+- Integrate with Phôn's security services (AuthenticationService, RBACService, VPDService, OLSService)
 - Forms display data pre-filtered by database security policies
 - Automatic role detection after login
 - DataGrids for patient/record/service lists
@@ -42,9 +42,9 @@ Implement 7 role-specific Windows Forms for medical data management with automat
 
 ## Dependencies
 
-- **Requires:** Person 5's database + security setup (Fri Feb 21)
-- **Requires:** Person 4's security services (available Fri Feb 21)
-- **Requires:** Person 5's business services for data access
+- **Requires:** Ngọc, Vũ's database + security setup (Fri Feb 21)
+- **Requires:** Phôn's security services (available Fri Feb 21)
+- **Requires:** Phôn's business services for data access
 - **Blocks:** System testing (Week 4)
 
 ## Success Criteria
@@ -71,7 +71,7 @@ Entry point for entire system:
 
 ## Security Implementation
 
-All forms leverage Person 4 security services:
+All forms leverage Phôn security services:
 
 - AuthenticationService.Login() for credential validation
 - RBACService.CheckPermission() for action authorization
@@ -88,7 +88,7 @@ All forms leverage Person 4 security services:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 2 |
 
-**Person 3 Deliverables:**
+**Duyên Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -107,7 +107,7 @@ All forms leverage Person 4 security services:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 2 |
 
-**Person 3 Deliverables:**
+**Duyên Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -129,7 +129,7 @@ All forms leverage Person 4 security services:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 2-3 |
 
-**Person 3 Deliverables:**
+**Duyên Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -151,7 +151,7 @@ All forms leverage Person 4 security services:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 3 |
 
-**Person 3 Deliverables:**
+**Duyên Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -177,7 +177,7 @@ All forms leverage Person 4 security services:
 | **Related Requirement** | Req 2: OLS Notification System |
 | **Test Timeline** | End of Week 3 |
 
-**Person 3 Deliverables:**
+**Duyên Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -198,4 +198,3 @@ All forms leverage Person 4 security services:
 - Task 06-08: Database setup (enables all security)
 
 ---
-

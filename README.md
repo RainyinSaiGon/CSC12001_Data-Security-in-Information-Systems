@@ -46,7 +46,7 @@ CSC12001_Data-Security-in-Information-Systems/
 │
 ├── Subsystem1-OracleDBAdmin/              # Database Administration Application
 │   ├── Source/                            # (To be created)
-│   │   ├── OracleDBAdmin.sln
+│   │   ├── OracleDBAdmin.slnx
 │   │   └── OracleDBAdmin/
 │   │       ├── Forms/                    # UI Forms
 │   │       ├── Models/                   # Data models
@@ -56,7 +56,7 @@ CSC12001_Data-Security-in-Information-Systems/
 │
 ├── Subsystem2-MedicalDataManagement/      # Medical Data Management System
 │   ├── Source/                            # (To be created)
-│   │   ├── MedicalDataSystem.sln
+│   │   ├── MedicalDataSystem.slnx
 │   │   └── MedicalDataSystem/
 │   │       ├── Forms/                    # UI Forms (RBAC, VPD, OLS)
 │   │       ├── Models/                   # Entity models
@@ -102,8 +102,8 @@ CSC12001_Data-Security-in-Information-Systems/
 │   │   ├── TC4_Technician.md             # Test Case #4
 │   │   └── TC5_PatientAccess.md          # Test Case #5
 │   └── AuditTestScenarios/               # Audit test scripts
-│       ├── AuditTest_01.sql
-│       ├── AuditTest_02.sql
+│       ├── AuditTest_01_UnauthorizedAccess.sql
+│       ├── AuditTest_02_PrivilegeEscalation.sql
 │       └── ...
 │
 ├── Utils/                                 # Utility scripts (To be created)
@@ -349,7 +349,7 @@ string connectionString = $"Data Source={dataSource};User Id={userId};Password={
 
 ```bash
 cd Subsystem1-OracleDBAdmin/Source
-dotnet build OracleDBAdmin.sln
+dotnet build OracleDBAdmin.slnx
 # Or open in Visual Studio and Build > Build Solution
 # Run the application
 ```
@@ -358,7 +358,7 @@ dotnet build OracleDBAdmin.sln
 
 ```bash
 cd Subsystem2-MedicalDataManagement/Source
-dotnet build MedicalDataSystem.sln
+dotnet build MedicalDataSystem.slnx
 # Or open in Visual Studio and Build > Build Solution
 # Run the application
 ```

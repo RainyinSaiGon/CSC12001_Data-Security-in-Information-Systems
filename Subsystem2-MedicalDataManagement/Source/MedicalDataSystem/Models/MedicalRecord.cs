@@ -4,9 +4,10 @@ namespace MedicalDataSystem.Models;
 public class MedicalRecord
 {
     public string MAHSBA { get; set; } = string.Empty;
-    public string MABN { get; set; } = string.Empty;
+    public string MABENHNHAN { get; set; } = string.Empty;
     public string CHANDOAN { get; set; } = string.Empty;
     public string DIEUTRI { get; set; } = string.Empty;
     public string KETLUAN { get; set; } = string.Empty;
-    public DateTime TaoBanGhi { get; set; }
+    public string MABACSI { get; set; } = string.Empty;
+    public DateTime NGAYTAO { get; set; }
 }

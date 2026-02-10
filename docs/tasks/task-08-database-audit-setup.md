@@ -1,6 +1,6 @@
 # Task 08: Database Audit Setup - Standard, Fine-Grained, Unified Audit
 
-**Assigned to:** Person 5 (Part B)  
+**Assigned to:** Ngọc, Vũ (Part B)  
 **Type:** Database Administration  
 **Duration:** 7 hours  
 **Priority:** Medium-High  
@@ -85,7 +85,7 @@ Policy on DONTHUOC (Prescriptions):
 Table: DONTHUOC
 Monitored Operations: All (SELECT, INSERT, UPDATE, DELETE)
 Audit: Complete prescription management
-Column Focus: TENHOA (drug name), LIEU (dosage)
+Column Focus: TENTHUOC (drug name), LIEUDUNG (dosage)
 ```
 
 Policy on BENHNHAN - Sensitive Columns:
@@ -102,7 +102,7 @@ Monitor SELECT: Track who views sensitive patient data
 ```
 -- Add each policy with DBMS_FGA.ADD_POLICY:
 DBMS_FGA.ADD_POLICY(
-  object_schema => 'public',
+  object_schema => 'PROJECT_ADMIN',
   object_name => 'HSBA',
   policy_name => 'FGA_HSBA_POLICY',
   audit_condition => NULL,  -- Always audit
@@ -337,7 +337,7 @@ COMMIT;
 | **Related Requirement** | Req 3: Audit & Monitoring |
 | **Test Timeline** | End of Week 2 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -361,7 +361,7 @@ COMMIT;
 | **Related Requirement** | Req 3: Audit & Monitoring |
 | **Test Timeline** | End of Week 2 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -390,7 +390,7 @@ COMMIT;
 | **Related Requirement** | Req 4: Backup & Recovery |
 | **Test Timeline** | End of Week 3 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -414,7 +414,7 @@ COMMIT;
 | **Related Requirement** | Req 4: Backup & Recovery |
 | **Test Timeline** | End of Week 3 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -587,5 +587,3 @@ Last 7 Days:
 - All other tasks: Audited by these mechanisms
 
 ---
-
-

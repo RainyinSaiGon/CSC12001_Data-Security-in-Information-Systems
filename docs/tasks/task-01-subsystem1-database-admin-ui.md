@@ -1,6 +1,6 @@
 # Task 01: Subsystem 1 - Database Admin UI Forms
 
-**Assigned to:** Person 1  
+**Assigned to:** Duyên, Triết  
 **Type:** Front-end Implementation  
 **Duration:** 20-25 hours  
 **Priority:** High  
@@ -31,7 +31,7 @@ Implement 5 Windows Forms for Oracle database administration:
 ## Requirements
 
 - Professional Windows Forms UI (C#)
-- Integrate with Person 2's business services (UserService, RoleService, etc.)
+- Integrate with Duyên, Triết's business services (UserService, RoleService, etc.)
 - Form-level input validation
 - DataGrid display with sorting/filtering
 - Clear error handling and user feedback
@@ -39,8 +39,8 @@ Implement 5 Windows Forms for Oracle database administration:
 
 ## Dependencies
 
-- **Requires:** Person 5's database completion (Fri Feb 14)
-- **Requires:** Person 2's services (available Wed Feb 19)
+- **Requires:** Ngọc, Vũ's database completion (Fri Feb 14)
+- **Requires:** Duyên, Triết's services (available Wed Feb 19)
 - **Ready to start:** With UI design and framework
 
 ## Success Criteria
@@ -108,16 +108,16 @@ Implement 5 Windows Forms for Oracle database administration:
 | Aspect | Details |
 |--------|---------|
 | **Related Requirement** | Req 1: Access Control & Interface |
-| **Primary Owner** | Person 5 (Database), Person 2 (Service), **Person 1 (Form)** |
+| **Primary Owner** | Ngọc, Vũ (Database), Duyên, Triết (Service), **Duyên, Triết (Form)** |
 | **Test Timeline** | End of Week 2 (after database and services ready) |
 
-**Person 1 Deliverables:**
+**Duyên, Triết Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
 | `Forms/UserManagementForm.cs` | Required | Week 3 |
 
-**Pass Criteria (Person 1):**
+**Pass Criteria (Duyên, Triết):**
 
 - ✓ UserManagementForm displays all users in DataGrid
 - ✓ UserManagementForm input validation prevents invalid data
@@ -131,16 +131,16 @@ Implement 5 Windows Forms for Oracle database administration:
 | Aspect | Details |
 |--------|---------|
 | **Related Requirement** | Req 1: Access Control & Interface |
-| **Primary Owner** | Person 5 (Database), Person 4 (Service), Person 3 & **Person 1** (Forms) |
+| **Primary Owner** | Ngọc, Vũ (Database), Phôn (Service), Duyên & **Duyên, Triết** (Forms) |
 | **Test Timeline** | End of Week 2 (after RBAC setup) |
 
-**Person 1 Deliverables:**
+**Duyên, Triết Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
 | `Forms/MainForm.cs` (menu/button enablement based on role) | Required | Week 3 |
 
-**Pass Criteria (Person 1):**
+**Pass Criteria (Duyên, Triết):**
 
 - ✓ MainForm enables/disables buttons based on user's role
 
@@ -148,7 +148,7 @@ Implement 5 Windows Forms for Oracle database administration:
 
 ## Related Tasks
 
-- Task 02: Person 2 implements the services used by these forms
+- Task 02: Duyên, Triết implements the services used by these forms
 - Task 03-05: Medical UI forms (similar architecture for Subsystem 2)
 
 ---

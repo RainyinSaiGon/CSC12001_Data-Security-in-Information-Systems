@@ -1,6 +1,6 @@
 # Task 04: Subsystem 2 - Security Services Implementation
 
-**Assigned to:** Person 4  
+**Assigned to:** Phôn  
 **Type:** Backend Security Services  
 **Duration:** 30-35 hours  
 **Priority:** Critical (blocks Task 03)  
@@ -43,9 +43,9 @@ Implement 6 critical security services implementing all access control mechanism
 
 ## Dependencies
 
-- **Requires:** Person 5's database users and security setup (Wed Feb 19 for RBAC, Thu Feb 20 for VPD/OLS)
+- **Requires:** Ngọc, Vũ's database users and security setup (Wed Feb 19 for RBAC, Thu Feb 20 for VPD/OLS)
 - **Blocks:** Task 03 (forms need these services)
-- **Uses:** OracleConnectionService from this or Person 2
+- **Uses:** OracleConnectionService from this or Duyên, Triết
 
 ## Success Criteria
 
@@ -86,7 +86,7 @@ Implement 6 critical security services implementing all access control mechanism
 
 ## VPD Setup
 
-Policies must be configured at database level by Person 5:
+Policies must be configured at database level by Ngọc, Vũ:
 
 - HSBA policy (medical records filtering)
 - HSBA_DV policy (diagnostic service filtering)
@@ -111,7 +111,7 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 2 |
 
-**Person 4 Deliverables:**
+**Phôn Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -141,7 +141,7 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 2 |
 
-**Person 4 Deliverables:**
+**Phôn Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -168,7 +168,7 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 | **Related Requirement** | Req 2: OLS Notification System |
 | **Test Timeline** | End of Week 3 |
 
-**Person 4 Deliverables:**
+**Phôn Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -194,5 +194,3 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 - Task 06-08: Database must provide VPD/OLS infrastructure
 
 ---
-
-
