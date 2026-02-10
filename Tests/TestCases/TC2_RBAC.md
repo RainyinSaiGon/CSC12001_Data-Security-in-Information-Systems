@@ -40,9 +40,9 @@ CONNECT COORDINATOR001/[password]@XE;
 
 -- Should succeed: Full access to patient management
 SELECT COUNT(*) FROM BENHNHAN;
-INSERT INTO BENHNHAN (MABENHNHAN, HOTEN) VALUES ('TEST_P', 'Test Patient');
-UPDATE BENHNHAN SET HOTEN = 'Updated' WHERE MABENHNHAN = 'TEST_P';
-DELETE FROM BENHNHAN WHERE MABENHNHAN = 'TEST_P';
+INSERT INTO BENHNHAN (MABENHNHAN, HOTEN) VALUES (99999, 'Test Patient');
+UPDATE BENHNHAN SET HOTEN = 'Updated' WHERE MABENHNHAN = 99999;
+DELETE FROM BENHNHAN WHERE MABENHNHAN = 99999;
 
 -- Should succeed: Access to medical records
 SELECT COUNT(*) FROM HSBA;
@@ -64,7 +64,7 @@ UPDATE HSBA SET CHANDOAN = 'Test Diagnosis'
 WHERE MAHSBA = [assigned_record_id];
 
 -- Should FAIL: Cannot manage staff
-INSERT INTO NHANVIEN (MANV, HOTEN) VALUES ('TEST', 'Test');
+INSERT INTO NHANVIEN (MANV, HOTEN) VALUES (99999, 'Test');
 ```
 
 **Expected Result:** SELECT/UPDATE on medical tables succeeds; INSERT to NHANVIEN denied
@@ -76,16 +76,16 @@ INSERT INTO NHANVIEN (MANV, HOTEN) VALUES ('TEST', 'Test');
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should succeed: View assigned diagnostic services
-SELECT * FROM DICHVU WHERE assigned_tech = 'TECHNICIAN001';
+SELECT * FROM HSBA_DV WHERE MAKYTHUATVIEN = [TECHNICIAN001_staff_id];
 
 -- Should succeed: Update service results
-UPDATE DICHVU SET KETQUA = 'Normal' WHERE MADV = [assigned_service];
+UPDATE HSBA_DV SET KETQUA = 'Normal' WHERE MADICHVU = [assigned_service_id];
 
 -- Should FAIL: Cannot access patient records
 SELECT * FROM HSBA;
 
 -- Should FAIL: Cannot modify patient data
-UPDATE BENHNHAN SET HOTEN = 'Hacked' WHERE MABENHNHAN = 'BN001';
+UPDATE BENHNHAN SET HOTEN = 'Hacked' WHERE MABENHNHAN = 1;
 ```
 
 **Expected Result:** Service operations succeed; patient data access denied
@@ -113,15 +113,15 @@ SELECT * FROM BENHNHAN WHERE MABENHNHAN != [own_id];
 ```sql
 -- DOCTOR should NOT be able to do COORDINATOR actions
 CONNECT DOCTOR001/[password]@XE;
-DELETE FROM BENHNHAN WHERE MABENHNHAN = 'BN001';  -- Should FAIL
+DELETE FROM BENHNHAN WHERE MABENHNHAN = 1;  -- Should FAIL
 
 -- TECHNICIAN should NOT be able to do DOCTOR actions
 CONNECT TECHNICIAN001/[password]@XE;
-UPDATE HSBA SET CHANDOAN = 'Fake' WHERE MAHSBA = 'HSBA001';  -- Should FAIL
+UPDATE HSBA SET CHANDOAN = 'Fake' WHERE MAHSBA = 1;  -- Should FAIL
 
 -- PATIENT should NOT be able to do TECHNICIAN actions
 CONNECT PATIENT001/[password]@XE;
-UPDATE DICHVU SET KETQUA = 'Fake' WHERE MADV = 'DV001';  -- Should FAIL
+UPDATE HSBA_DV SET KETQUA = 'Fake' WHERE MADICHVU = 1;  -- Should FAIL
 ```
 
 **Expected Result:** All cross-role actions denied with `ORA-01031` or `ORA-00942`

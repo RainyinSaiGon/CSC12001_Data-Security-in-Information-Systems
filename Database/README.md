@@ -287,7 +287,7 @@ SELECT * FROM user_tables;
 SELECT username FROM dba_users WHERE username LIKE 'DOCTOR%' OR username LIKE 'PATIENT%';
 
 -- Check roles
-SELECT role FROM dba_roles WHERE role LIKE '%ROLE';
+SELECT role FROM dba_roles WHERE role IN ('COORDINATOR', 'DOCTOR', 'TECHNICIAN', 'PATIENT');
 
 -- Check VPD policies
 SELECT object_owner, object_name, policy_name FROM dba_policies;

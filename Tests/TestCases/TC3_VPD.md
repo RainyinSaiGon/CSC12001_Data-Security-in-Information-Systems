@@ -33,7 +33,7 @@ WHERE object_owner = 'HOSPITAL_ADMIN'
 ORDER BY object_name;
 ```
 
-**Expected Result:** Policies active on BENHNHAN, HSBA, HSBA_DV, DICHVU tables
+**Expected Result:** Policies active on BENHNHAN, HSBA, HSBA_DV tables
 
 ### Step 2: Doctor Data Isolation — HSBA Table
 
@@ -90,11 +90,11 @@ SELECT MABENHNHAN, HOTEN FROM BENHNHAN ORDER BY MABENHNHAN;
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should see only assigned diagnostic services
-SELECT MADV, MALOAIDV, KETQUA FROM DICHVU;
+SELECT MADICHVU, TENDICHVU, KETQUA FROM HSBA_DV;
 
 -- Verify: all returned services are assigned to TECHNICIAN001
-SELECT MADV FROM DICHVU
-WHERE assigned_tech != [TECHNICIAN001_staff_id];
+SELECT MADICHVU FROM HSBA_DV
+WHERE MAKYTHUATVIEN != [TECHNICIAN001_staff_id];
 -- Should return 0 rows (VPD filters them out)
 ```
 
@@ -135,7 +135,7 @@ SELECT COUNT(*) FROM HSBA;
 
 ## Pass Criteria
 
-- [ ] VPD policies active on BENHNHAN, HSBA, HSBA_DV, DICHVU
+- [ ] VPD policies active on BENHNHAN, HSBA, HSBA_DV
 - [ ] Doctor sees only assigned patients (HSBA filtered by MABACSI)
 - [ ] Two doctors see completely disjoint patient sets
 - [ ] Coordinator sees records in assigned scope
