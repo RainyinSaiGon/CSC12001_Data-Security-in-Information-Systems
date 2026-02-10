@@ -67,14 +67,14 @@ SELECT
     returncode
 FROM dba_audit_trail
 WHERE action IN (2, 3, 6, 7, 8, 9, 11, 12)
-    AND obj_name IN ('BỆNHNHÂN', 'NHÂNVIÊN', 'HSBA', 'ĐƠNTHUỐC')
+    AND obj_name IN ('BENHNHAN', 'NHANVIEN', 'HSBA', 'DONTHUOC')
 ORDER BY timestamp# DESC;
 
 
 -- ============================================
 -- 5. AUDIT TRAIL FOR SPECIFIC TABLE
 -- ============================================
--- Get all audit records for a specific table (e.g., BỆNHNHÂN - Patient records)
+-- Get all audit records for a specific table (e.g., BENHNHAN - Patient records)
 SELECT 
     username, 
     action_name, 
@@ -83,7 +83,7 @@ SELECT
     priv_used,
     returncode
 FROM dba_audit_trail
-WHERE obj_name = 'BỆNHNHÂN'
+WHERE obj_name = 'BENHNHAN'
 ORDER BY timestamp# DESC;
 
 

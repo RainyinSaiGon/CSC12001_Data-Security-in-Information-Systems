@@ -32,7 +32,7 @@ public class DoctorService
     // Update prescription
     public bool UpdatePrescription(Prescription prescription)
     {
-        // TODO: Update prescription in ĐƠNTHUỐC table with audit logging
+        // TODO: Update prescription in DONTHUOC table with audit logging
         return true;
     }
 

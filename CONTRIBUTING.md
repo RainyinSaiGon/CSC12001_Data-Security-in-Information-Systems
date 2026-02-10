@@ -222,7 +222,7 @@ END;
 ## Test Case: TC#1 - User Setup and Account Creation
 
 ### Objective
-Verify that DBA can create user accounts linked to NHÂNVIÊN records
+Verify that DBA can create user accounts linked to NHANVIEN records
 
 ### Prerequisites
 - Oracle database initialized

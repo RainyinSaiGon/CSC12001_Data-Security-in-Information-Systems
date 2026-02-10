@@ -79,12 +79,12 @@ LoginForm (Authentication)
 - `OracleObject`: Database object metadata
 
 **Subsystem 2 Models:**
-- `Patient`: BỆNHNHÂN table mapping
-- `Staff`: NHÂNVIÊN table mapping
+- `Patient`: BENHNHAN table mapping
+- `Staff`: NHANVIEN table mapping
 - `MedicalRecord`: HSBA table mapping
 - `DiagnosticService`: HSBA_DV table mapping
-- `Prescription`: ĐƠNTHUỐC table mapping
-- `Notification`: THÔNGBÁO table mapping
+- `Prescription`: DONTHUOC table mapping
+- `Notification`: THONGBAO table mapping
 
 ### 4. Database Layer (Oracle 21c XE)
 
@@ -93,54 +93,54 @@ Connection: `localhost:1521/XE`
 ## Entity Relationship Diagram (ERD)
 
 ```
-BỆNHNHÂN (Patient)
-├── MÃBN (PK)
-├── TÊNBN
-├── PHÁI
-├── NGÀYSINH
+BENHNHAN (Patient)
+├── MABN (PK)
+├── TENBN
+├── PHAI
+├── NGAYSINH
 ├── CCCD (UNIQUE)
 ├── DiaChi
 └── DiUng
     │
     └─── Has Multiple ──► HSBA (Medical Record)
-                         ├── MÃHSBA (PK)
-                         ├── MÃBN (FK to Patient)
-                         ├── MÃNV (FK to Doctor)
-                         ├── CHẨNĐOÁN
-                         ├── ĐIỀUTRỊ
-                         ├── KẾTLUẬN
+                         ├── MAHSBA (PK)
+                         ├── MABN (FK to Patient)
+                         ├── MANV (FK to Doctor)
+                         ├── CHANDOAN
+                         ├── DIEUTRI
+                         ├── KETLUAN
                          └─── Related To ──► HSBA_DV (Diagnostic Service)
-                                            ├── MÃDV (PK)
-                                            ├── MÃHSBA (FK)
-                                            ├── MÃNV_Technician (FK)
+                                            ├── MADV (PK)
+                                            ├── MAHSBA (FK)
+                                            ├── MANV_Technician (FK)
                                             ├── TenDichVu
                                             ├── Ngay
-                                            └── KẾTQUẢ
+                                            └── KETQUA
                                             
-                                 Related To ──► ĐƠNTHUỐC (Prescription)
-                                                ├── MÃĐƠN (PK)
-                                                ├── MÃHSBA (FK)
-                                                ├── TÊNHÓA
-                                                ├── LIỀU
-                                                └── HƯỚNGDẪN
+                                 Related To ──► DONTHUOC (Prescription)
+                                                ├── MADON (PK)
+                                                ├── MAHSBA (FK)
+                                                ├── TENHOA
+                                                ├── LIEU
+                                                └── HUONGDAN
 
-NHÂNVIÊN (Staff)
-├── MÃNV (PK)
-├── HỌTÊN
-├── VAITRÒ [Coordinator|Doctor|Technician]
-├── CHUYÊNKHOA
+NHANVIEN (Staff)
+├── MANV (PK)
+├── HOTEN
+├── VAITRO [Coordinator|Doctor|Technician]
+├── CHUYENKHOA
 └── Email
     │
     └─── Assigned As ──► Doctor in HSBA
     └─── Assigned As ──► Technician in HSBA_DV
     └─── Can Create ──► HSBA (Medical Records)
-    └─── Can Create ──► ĐƠNTHUỐC (Prescriptions)
+    └─── Can Create ──► DONTHUOC (Prescriptions)
 
-THÔNGBÁO (Notification) - OLS Label Security
-├── MÃTHÔNG (PK)
+THONGBAO (Notification) - OLS Label Security
+├── MATHONG (PK)
 ├── Title
 ├── Content
-├── Ngày  
+├── Ngay  
 ├── Department (Label Component 1)
 ├── Location (Label Component 2)
 └── Classification (Label Component 3)
@@ -179,29 +179,29 @@ Legend: [S1] = Subsystem 1  [S2] = Subsystem 2
 
 ```
 Coordinator Access:
-├─ SELECT, INSERT, UPDATE on BỆNHNHÂN
+├─ SELECT, INSERT, UPDATE on BENHNHAN
 ├─ SELECT, INSERT, UPDATE on HSBA
-├─ SELECT on NHÂNVIÊN
+├─ SELECT on NHANVIEN
 └─ VIEW: All Patients, Assignment Records
 
 Doctor Access (VPD Filtered):
-├─ SELECT on BỆNHNHÂN (only assigned patients)
+├─ SELECT on BENHNHAN (only assigned patients)
 ├─ SELECT, INSERT, UPDATE on HSBA (own patients)
-├─ INSERT, UPDATE on ĐƠNTHUỐC
+├─ INSERT, UPDATE on DONTHUOC
 ├─ INSERT on HSBA_DV
 └─ VIEW: Assigned Patients Only (transparent filtering)
 
 Technician Access (VPD Filtered):
 ├─ SELECT on HSBA_DV (assigned services only)
 ├─ UPDATE on HSBA_DV
-├─ SELECT on BỆNHNHÂN (for reference)
+├─ SELECT on BENHNHAN (for reference)
 └─ VIEW: Assigned Services Only
 
 Patient Access (Row-Level Security):
-├─ SELECT on BỆNHNHÂN (self only)
-├─ UPDATE on BỆNHNHÂN (contact info only)
+├─ SELECT on BENHNHAN (self only)
+├─ UPDATE on BENHNHAN (contact info only)
 ├─ SELECT on HSBA (own records)
-├─ SELECT on ĐƠNTHUỐC (own prescriptions)
+├─ SELECT on DONTHUOC (own prescriptions)
 └─ VIEW: Own Medical Records Only (read-only)
 ```
 
@@ -218,9 +218,9 @@ User Input (Username/Password)
         ├─► AuthenticationService.Login()
         │        │
         │        ▼
-        │   Query NHÂNVIÊN table
+        │   Query NHANVIEN table
         │        │
-        │        ├─► Valid? ───► Get VAITRÒ (Role)
+        │        ├─► Valid? ───► Get VAITRO (Role)
         │        │                    │
         │        │                    ▼
         │        │            Return Role String
@@ -247,8 +247,8 @@ Doctor Queries Patient Records
         ├─► VPDService.GetVisiblePatients()
         │        │
         │        ▼
-        │   Executes: SELECT * FROM BỆNHNHÂN
-        │            WHERE MÃNV = SYS_CONTEXT(...)
+        │   Executes: SELECT * FROM BENHNHAN
+        │            WHERE MANV = SYS_CONTEXT(...)
         │        │
         │        ▼
         │   VPD Policy Applied Automatically
@@ -366,7 +366,7 @@ Patient    PatientForm    PatientService    OracleConn    Database
   │            │                │                │            │
   │            │                │   SELECT from HSBA        │
   │            │                ├────────────────────────────►│
-  │            │                │   WHERE MÃBN = patient_id  │
+  │            │                │   WHERE MABN = patient_id  │
   │            │                │   AND row-level security   │
   │            │                │                            │
   │            │                │   VPD Policy Applied      │
@@ -410,12 +410,12 @@ Legend: ● = Database access
 │  │  └─ Audit (Standard, Fine-grained, Unified)  │
 │  │                                               │
 │  └─ Tables:                                     │
-│     ├─ BỆNHNHÂN (100K+ patients)                │
-│     ├─ NHÂNVIÊN (170+ staff)                    │
+│     ├─ BENHNHAN (100K+ patients)                │
+│     ├─ NHANVIEN (170+ staff)                    │
 │     ├─ HSBA (Medical records)                   │
 │     ├─ HSBA_DV (Diagnostic services)            │
-│     ├─ ĐƠNTHUỐC (Prescriptions)                │
-│     ├─ THÔNGBÁO (Notifications)                 │
+│     ├─ DONTHUOC (Prescriptions)                │
+│     ├─ THONGBAO (Notifications)                 │
 │     └─ AuditLog (Audit trails)                  │
 └─────────────────────────────────────────────────┘
 ```

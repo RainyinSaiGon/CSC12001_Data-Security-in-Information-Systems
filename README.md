@@ -88,10 +88,11 @@ CSC12001_Data-Security-in-Information-Systems/
 ├── docs/                                  # Documentation (consolidated)
 │   ├── README.md                          # Documentation index
 │   ├── ARCHITECTURE.md                    # System design & architecture
-│   ├── IMPLEMENTATION.md                  # Requirements, implementation & tests
-│   ├── AUDITLOGS.md                       # Audit log samples & analysis
 │   ├── SETUP_GUIDE.md                     # .NET & Oracle setup guide
-│   └── CHANGELOG_2026.md                  # Technology stack updates
+│   ├── CHANGELOG_2026.md                  # Technology stack updates
+│   └── tasks/                             # Organized task files with requirements
+│       ├── README.md                      # Task assignment summary
+│       └── task-01 to task-08             # Per-deliverable task specs
 │
 ├── Tests/                                 # Testing (To be created)
 │   ├── TestCases/                         # Test case documentation
@@ -175,6 +176,7 @@ SELECT username, account_status FROM dba_users WHERE username = 'PROJECT_ADMIN';
 ```
 
 **After user creation:**
+
 1. Store the password in your secure credential manager:
    - **Development**: `dotnet user-secrets set "OracleDbConnection:Password" "<STRONG_PASSWORD>"`
    - **Production**: Set environment variable or use secrets manager (AWS Secrets Manager, Azure Key Vault, etc.)
@@ -225,7 +227,7 @@ sqlplus project_admin/your_password@localhost:1521/XE
 @Database/Audit/03_UnifiedAudit_Setup.sql
 ```
 
-See [Database/README.md](Database/README.md) and [docs/AUDITLOGS.md](docs/AUDITLOGS.md) for audit setup guidance.
+See [Database/README.md](Database/README.md) and [docs/tasks/task-08-database-audit-setup.md](docs/tasks/task-08-database-audit-setup.md) for audit setup guidance.
 
 ### Step 3: Configure Connection Strings
 

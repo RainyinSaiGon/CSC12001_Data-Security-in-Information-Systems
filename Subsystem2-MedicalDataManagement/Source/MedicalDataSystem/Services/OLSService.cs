@@ -16,7 +16,7 @@ public class OLSService
     {
         // TODO: Query OLS user labels from Oracle
         // Levels: Department (Cardiology, Gastroenterology, Neurology)
-        //         Location (Hồ Chí Minh, Hải Phòng, Hà Nội)
+        //         Location (Ho Chi Minh, Hai Phong, Ha Noi)
         //         Classification (Director, Department Head, Staff)
         return (string.Empty, string.Empty, string.Empty);
     }

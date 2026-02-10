@@ -25,7 +25,7 @@ public class TechnicianService
     // Update service results after testing
     public bool UpdateServiceResult(string serviceId, string result)
     {
-        // TODO: Update KẾTQUẢ in HSBA_DV table with audit logging
+        // TODO: Update KETQUA in HSBA_DV table with audit logging
         return true;
     }
 

@@ -15,7 +15,7 @@ public class PatientService
     // Get patient details (row-level security applied)
     public Patient? GetPatient(string patientId)
     {
-        // TODO: Query patient from BỆNHNHÂN table with row-level security
+        // TODO: Query patient from BENHNHAN table with row-level security
         return null;
     }
 

@@ -1,12 +1,12 @@
 namespace MedicalDataSystem.Models;
 
-// Prescription entity from ĐƠNTHUỐC table
+// Prescription entity from DONTHUOC table
 public class Prescription
 {
-    public string MÃĐƠN { get; set; } = string.Empty;
-    public string MÃHSBA { get; set; } = string.Empty;
-    public string TÊNHÓA { get; set; } = string.Empty;
-    public string LIỀU { get; set; } = string.Empty;
-    public string HƯỚNGDẪN { get; set; } = string.Empty;
+    public string MADON { get; set; } = string.Empty;
+    public string MAHSBA { get; set; } = string.Empty;
+    public string TENHOA { get; set; } = string.Empty;
+    public string LIEU { get; set; } = string.Empty;
+    public string HUONGDAN { get; set; } = string.Empty;
     public DateTime NgayDangKy { get; set; }
 }

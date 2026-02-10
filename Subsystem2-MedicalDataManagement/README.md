@@ -74,31 +74,31 @@ See [Development](#development) section below for implementation details.
 
 ## Entities & Schema
 
-### BỆNHNHÂN (Patient)
-- MÃBN: Patient ID
-- TÊNBN: Patient Name
-- PHÁI: Gender
-- NGÀYSINH: Birth Date
+### BENHNHAN (Patient)
+- MABN: Patient ID
+- TENBN: Patient Name
+- PHAI: Gender
+- NGAYSINH: Birth Date
 - CCCD: ID Number
 - Address fields, Medical history, Drug allergies
 
-### NHÂNVIÊN (Staff)
-- MÃNV: Staff ID
-- HỌTÊN: Full Name
-- VAITRÒ: Role (Coordinator, Doctor/Nurse, Technician)
-- CHUYÊNKHOA: Specialty
+### NHANVIEN (Staff)
+- MANV: Staff ID
+- HOTEN: Full Name
+- VAITRO: Role (Coordinator, Doctor/Nurse, Technician)
+- CHUYENKHOA: Specialty
 
 ### HSBA (Medical Record)
-- MÃHSBA: Record ID
-- MÃBN: Patient Reference
-- CHẨNĐOÁN: Diagnosis
-- ĐIỀUTRỊ: Treatment
-- KẾTLUẬN: Conclusion
+- MAHSBA: Record ID
+- MABN: Patient Reference
+- CHANDOAN: Diagnosis
+- DIEUTRI: Treatment
+- KETLUAN: Conclusion
 
 ### HSBA_DV (Diagnostic Service)
 - Service type, Date, Results
 
-### ĐƠNTHUỐC (Prescription)
+### DONTHUOC (Prescription)
 - Drug name, Dosage, Instructions
 
 ## Security Implementation
@@ -112,7 +112,7 @@ Roles: Coordinator, Doctor/Nurse, Technician, Patient
 - Technicians see assigned services
 
 ### 3. OLS (Oracle Label Security)
-- Hospital locations: Hồ Chí Minh, Hải Phòng, Hà Nội
+- Hospital locations: Ho Chi Minh, Hai Phong, Ha Noi
 - Departments: Cardiology, Gastroenterology, Neurology
 - Hierarchy: Director > Department Head > Staff
 
@@ -280,19 +280,19 @@ dotnet run --project MedicalDataSystem/MedicalDataSystem.csproj --configuration 
 ### Authentication Issues
 
 **Problem:** "Invalid username/password" error
-- **Solution**: Verify user exists in NHÂNVIÊN table
+- **Solution**: Verify user exists in NHANVIEN table
 - **Solution**: Check password is correct
 - **Solution**: Ensure user account is enabled in database
 
 **Problem:** "Role not determined after login"
-- **Solution**: Verify VAITRÒ column populated in NHÂNVIÊN
+- **Solution**: Verify VAITRO column populated in NHANVIEN
 - **Solution**: Check AuthenticationService retrieves role correctly
 - **Solution**: Ensure user has valid role (Coordinator/Doctor/Technician/Patient)
 
 ### Permission Denied Errors
 
 **Problem:** "User does not have permission for this action"
-- **Solution**: Check user role in NHÂNVIÊN table
+- **Solution**: Check user role in NHANVIEN table
 - **Solution**: Verify RBAC roles created in database
 - **Solution**: Check RBAC grants for user's role
 
@@ -319,7 +319,7 @@ dotnet run --project MedicalDataSystem/MedicalDataSystem.csproj --configuration 
 
 **Problem:** Slow data loading or timeouts
 - **Solution**: Check if indexes created (Database/Schema/02_CreateIndexes.sql)
-- **Solution**: Verify VPD policy efficiency (may need index on MÃNV in VPD policies)
+- **Solution**: Verify VPD policy efficiency (may need index on MANV in VPD policies)
 - **Solution**: Monitor database query plans
 - **Solution**: Consider table statistics updates
 

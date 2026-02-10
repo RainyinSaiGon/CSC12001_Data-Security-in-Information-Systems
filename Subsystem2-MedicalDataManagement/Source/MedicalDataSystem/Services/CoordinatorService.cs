@@ -16,21 +16,21 @@ public class CoordinatorService
     // Get all patients (coordinators can see all)
     public List<Patient> GetAllPatients()
     {
-        // TODO: Query all patients from BỆNHNHÂN table
+        // TODO: Query all patients from BENHNHAN table
         return new List<Patient>();
     }
 
     // Add new patient
     public bool AddPatient(Patient patient)
     {
-        // TODO: Insert new patient into BỆNHNHÂN table
+        // TODO: Insert new patient into BENHNHAN table
         return true;
     }
 
     // Edit patient information
     public bool EditPatient(Patient patient)
     {
-        // TODO: Update patient record in BỆNHNHÂN table
+        // TODO: Update patient record in BENHNHAN table
         return true;
     }
 
