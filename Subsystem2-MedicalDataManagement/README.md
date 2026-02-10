@@ -192,90 +192,167 @@ For detailed setup instructions on configuring connection strings (User Secrets,
 ## Features by Role
 
 ### Coordinator Dashboard
-- [ ] Patient management (add/edit)
-- [ ] Medical record assignment
-- [ ] Doctor & technician coordination
-- [ ] Record status tracking
+- Patient management (add/edit/delete)
+- Medical record creation and assignment
+- Doctor & technician coordination
+- Record status tracking and workflow
+- Comprehensive patient database access
 
-### Doctor Dashboard
-- [ ] Patient lookup (assigned)
-- [ ] Medical history review
-- [ ] Diagnosis & treatment input
-- [ ] Prescription management
-- [ ] Service ordering
+### Doctor Dashboard  
+- Patient lookup (assigned patients only - VPD filtered)
+- Medical history review and allergies
+- Diagnosis & treatment input and management
+- Prescription creation and updates
+- Diagnostic service ordering
+- Patient consultation tracking
 
 ### Technician Dashboard
-- [ ] Service list for assignment
-- [ ] Result data entry
-- [ ] Service completion
+- Service list (assigned services only - VPD filtered)
+- Result data entry and tracking
+- Service completion marking
+- Test result management
+- Equipment/resource tracking
 
 ### Patient Portal
-- [ ] Personal information view/edit
-- [ ] Medical history review
-- [ ] Appointment tracking
-- [ ] Notification viewing
+- Personal information view and edit
+- Medical history review (read-only)
+- Appointment tracking and scheduling
+- Notification viewing (OLS label filtered)
+- Prescription access
 
-## Testing Scenarios
-
-### Test Case 1: User Setup
-- [ ] Users created per role
-- [ ] Accounts accessible
-- [ ] Password policies enforced
-
-### Test Case 2: RBAC
-- [ ] Technician can't view doctors' functions
-- [ ] Patient can only see own data
-- [ ] Coordinator can assign records
-
-### Test Case 3: VPD
-- [ ] Doctor A can't see Doctor B's patients
-- [ ] Transparent filtering works
-- [ ] Performance acceptable
-
-### Test Case 4: Audit
-- [ ] Sensitive operations logged
-- [ ] Unauthorized access blocked
-- [ ] Audit trails readable
+### Notification System
+- Label-based filtering (Department, Location, Classification)
+- Department-wide notifications
+- Location-specific messages
+- Classification-level access control
 
 ## Development
 
 ### Code Standards
-- Follow Microsoft C# guidelines
+- Follow Microsoft C# coding guidelines
+- Named parameters for clarity
+- Meaningful variable names and method names
+- Exception handling with specific exception types
+- Input validation on all user inputs
 - XML documentation on public methods
-- Proper exception handling
-- Input validation for all forms
+- Proper null checking and defensive programming
 
-### Building
+### Building and Running
+
 ```bash
+# Build the solution
+cd Subsystem2-MedicalDataManagement/Source
 dotnet build MedicalDataSystem.sln
+
+# Run the application
+dotnet run --project MedicalDataSystem/MedicalDataSystem.csproj
+
+# Run as release build
+dotnet run --project MedicalDataSystem/MedicalDataSystem.csproj --configuration Release
 ```
 
-### Testing
-- Test each role's functionality separately
-- Verify data isolation between users
-- Check audit logging
-- Performance test with 100k patients
+### Testing Strategy
+
+**Unit Testing:** Test individual services with mock data
+- `AuthenticationService`: Test login with valid/invalid credentials
+- `RBACService`: Test role permissions
+- `PatientService`: Test patient data retrieval
+
+**Integration Testing:** Test form-service interactions
+- LoginForm with AuthenticationService
+- CoordinatorForm with CoordinatorService
+- DoctorForm with VPD filtering
+
+**Security Testing:** Verify access control mechanisms
+- RBAC: User can only perform role-appropriate actions
+- VPD: Users see only authorized rows (transparent filtering)
+- OLS: Notifications filtered by user labels
+- Audit: All sensitive operations logged
+
+**Performance Testing:** Test with realistic data volumes
+- 100,000+ patient records
+- 170+ staff members
+- 1M+ medical records and services
+- Verify query response times < 500ms
 
 ## Troubleshooting
 
+### Authentication Issues
+
+**Problem:** "Invalid username/password" error
+- **Solution**: Verify user exists in NHÂNVIÊN table
+- **Solution**: Check password is correct
+- **Solution**: Ensure user account is enabled in database
+
+**Problem:** "Role not determined after login"
+- **Solution**: Verify VAITRÒ column populated in NHÂNVIÊN
+- **Solution**: Check AuthenticationService retrieves role correctly
+- **Solution**: Ensure user has valid role (Coordinator/Doctor/Technician/Patient)
+
 ### Permission Denied Errors
-- Check user role in NHÂNVIÊN table
-- Verify VPD policies applied
-- Check RBAC grants
+
+**Problem:** "User does not have permission for this action"
+- **Solution**: Check user role in NHÂNVIÊN table
+- **Solution**: Verify RBAC roles created in database
+- **Solution**: Check RBAC grants for user's role
+
+**Problem:** "Access denied" error when viewing data
+- **Solution**: Verify VPD policies applied to HSBA, HSBA_DV tables
+- **Solution**: Check user-doctor assignment table exists
+- **Solution**: Verify database session context properly configured
 
 ### Data Not Displaying
-- Verify VPD filters
-- Check audit trail for access denials
-- Confirm user's organization level
+
+**Problem:** Forms show no data even when data exists
+- **Solution**: Verify VPD filters (doctor should see assigned patients)
+- **Solution**: Check audit trail for access denials
+- **Solution**: Confirm user's organization level and assignments
+- **Solution**: Verify connection string and database connectivity
+
+**Problem:** OLS labels not filtering notifications properly
+- **Solution**: Verify user labels assigned in database
+- **Solution**: Check notification labels match user levels
+- **Solution**: Verify label hierarchy configured correctly
+- **Solution**: Test with direct SQL query to verify filtering
 
 ### Performance Issues
-- Check index creation
-- Verify VPD policy efficiency
-- Monitor query execution
+
+**Problem:** Slow data loading or timeouts
+- **Solution**: Check if indexes created (Database/Schema/02_CreateIndexes.sql)
+- **Solution**: Verify VPD policy efficiency (may need index on MÃNV in VPD policies)
+- **Solution**: Monitor database query plans
+- **Solution**: Consider table statistics updates
+
+**Problem:** Form freezes during data retrieval
+- **Solution**: Implement async/await for database calls
+- **Solution**: Add progress indicators for long operations
+- **Solution**: Consider paging for large result sets
+- **Solution**: Check for blocking locks in database
 
 ## References
 
-- [Oracle RBAC Documentation](https://docs.oracle.com/database/121/DBSEG/authorization.htm)
-- [Oracle VPD Guide](https://docs.oracle.com/database/121/DBSEG/vpd.htm)
+### Oracle Documentation
+- [Oracle Role-Based Access Control](https://docs.oracle.com/database/121/DBSEG/authorization.htm)
+- [Oracle Virtual Private Database](https://docs.oracle.com/database/121/DBSEG/vpd.htm)
 - [Oracle Label Security](https://docs.oracle.com/database/121/DBSEG/label_security.htm)
-- [HIPAA Compliance](https://www.hhs.gov/hipaa/)
+- [Oracle Audit & Compliance](https://docs.oracle.com/database/121/DBSEG/audit.htm)
+- [Oracle ODP.NET Documentation](https://www.oracle.com/database/technologies/appdev/dotnet.html)
+
+### Healthcare & Compliance
+- [HIPAA Security Rule](https://www.hhs.gov/hipaa/for-professionals/security/)
+- [HIPAA Minimum Necessary Principle](https://www.hhs.gov/hipaa/for-professionals/privacy/)
+- [GDPR Data Protection](https://gdpr-info.eu/)
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
+
+### Security Best Practices
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [CIS Database Security Best Practices](https://www.cisecurity.org/benchmarks/databases)
+- [SQL Injection Prevention](https://owasp.org/www-community/attacks/SQL_Injection)
+
+## Support & Contact
+
+For questions or issues related to this subsystem:
+1. Check [Troubleshooting](#troubleshooting) section above
+2. Review [Subsystem Architecture](#architecture)
+3. Consult [docs/SETUP_GUIDE.md](../../docs/SETUP_GUIDE.md)
+4. Contact project lead for complex issues
