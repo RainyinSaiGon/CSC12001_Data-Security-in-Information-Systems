@@ -1,6 +1,6 @@
 # Task 07: Database Security Setup - RBAC, VPD, OLS, Users
 
-**Assigned to:** Person 5 (Part B)  
+**Assigned to:** Ngọc, Vũ (Part B)  
 **Type:** Database Administration  
 **Duration:** 10 hours  
 **Priority:** Critical (blocks Task 04)  
@@ -205,12 +205,12 @@ Create OLS policy using DBMS_MACADM:
 ## Implementation Schedule
 
 - **Wed Feb 19:** 04_Users_Creation.sql + 05_RBAC_Setup.sql
-  - Unblocks Person 4 to start AuthenticationService
+  - Unblocks Phôn to start AuthenticationService
   - Allows testing of role-based access
 
 - **Thu Feb 20:** 06_VPD_Setup.sql + 07_OLS_Setup.sql
-  - Unblocks Person 4 VPDService and OLSService
-  - Unblocks Person 3 medical forms
+  - Unblocks Phôn VPDService and OLSService
+  - Unblocks Duyên medical forms
 
 ## Testing Checklist
 
@@ -233,7 +233,7 @@ After implementation:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | Wed Feb 19 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -265,7 +265,7 @@ After implementation:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | Thu Feb 20 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -294,7 +294,7 @@ After implementation:
 | **Related Requirement** | Req 2: OLS Notification System |
 | **Test Timeline** | Thu-Fri Feb 20-21 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|

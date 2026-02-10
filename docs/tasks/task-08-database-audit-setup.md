@@ -1,6 +1,6 @@
 # Task 08: Database Audit Setup - Standard, Fine-Grained, Unified Audit
 
-**Assigned to:** Person 5 (Part B)  
+**Assigned to:** Ngọc, Vũ (Part B)  
 **Type:** Database Administration  
 **Duration:** 7 hours  
 **Priority:** Medium-High  
@@ -337,7 +337,7 @@ COMMIT;
 | **Related Requirement** | Req 3: Audit & Monitoring |
 | **Test Timeline** | End of Week 2 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -361,7 +361,7 @@ COMMIT;
 | **Related Requirement** | Req 3: Audit & Monitoring |
 | **Test Timeline** | End of Week 2 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -390,7 +390,7 @@ COMMIT;
 | **Related Requirement** | Req 4: Backup & Recovery |
 | **Test Timeline** | End of Week 3 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -414,7 +414,7 @@ COMMIT;
 | **Related Requirement** | Req 4: Backup & Recovery |
 | **Test Timeline** | End of Week 3 |
 
-**Person 5 Database Deliverables:**
+**Ngọc, Vũ Database Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|

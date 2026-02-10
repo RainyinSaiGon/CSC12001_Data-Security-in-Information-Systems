@@ -1,6 +1,6 @@
 # Task 02: Subsystem 1 - Business Logic Services
 
-**Assigned to:** Person 2  
+**Assigned to:** Duyên, Triết  
 **Type:** Backend Services  
 **Duration:** 25-30 hours  
 **Priority:** Critical (blocks Task 01)  
@@ -40,8 +40,8 @@ Implement 6 foundational services for database user/role/permission management:
 
 ## Dependencies
 
-- **Requires:** Person 5's database setup (Fri Feb 14)
-- **Blocks:** Task 01 (Person 1 needs these services)
+- **Requires:** Ngọc, Vũ's database setup (Fri Feb 14)
+- **Blocks:** Task 01 (Duyên, Triết needs these services)
 - **Models needed:** User.cs, Role.cs, Permission.cs, OracleObject.cs
 
 ## Success Criteria
@@ -51,7 +51,7 @@ Implement 6 foundational services for database user/role/permission management:
 ✓ All CRUD operations functional  
 ✓ SQL queries correct and efficient  
 ✓ Exception handling comprehensive  
-✓ Services work with Person 1's forms  
+✓ Services work with Duyên, Triết's forms  
 ✓ No hardcoded data or credentials
 
 ## Critical: OracleConnectionService
@@ -122,10 +122,10 @@ Must implement FIRST - all other services depend on it:
 | Aspect | Details |
 |--------|---------|
 | **Related Requirement** | Req 1: Access Control & Interface |
-| **Primary Owner** | Person 5 (Database), **Person 2 (Service)**, Person 1 (Form) |
+| **Primary Owner** | Ngọc, Vũ (Database), **Duyên, Triết (Service)**, Duyên, Triết (Form) |
 | **Test Timeline** | End of Week 2 |
 
-**Person 2 Deliverables:**
+**Duyên, Triết Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
@@ -133,7 +133,7 @@ Must implement FIRST - all other services depend on it:
 | `ValidationService.cs` — ValidateUsername, ValidatePassword | Required | Week 2 - Early |
 | `UserService.cs` — CreateUser(), ListUsers(), DeleteUser(), ModifyUser() | Required | Week 2 - Early |
 
-**Pass Criteria (Person 2):**
+**Pass Criteria (Duyên, Triết):**
 
 - ✓ OracleConnectionService successfully connects to database
 - ✓ ValidationService validates username format (3-30 chars, alphanumeric + underscore, no reserved keywords)
@@ -160,5 +160,3 @@ Must implement FIRST - all other services depend on it:
 - Task 04: Security services use similar connection approach
 
 ---
-
-

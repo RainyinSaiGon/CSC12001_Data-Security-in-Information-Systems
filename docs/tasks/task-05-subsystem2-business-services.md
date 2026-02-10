@@ -1,6 +1,6 @@
 # Task 05: Subsystem 2 - Medical Business Logic Services
 
-**Assigned to:** Person 5 (Part A)  
+**Assigned to:** Phôn (Part A)  
 **Type:** Backend Services  
 **Duration:** 20 hours  
 **Priority:** High  
@@ -40,7 +40,7 @@ Implement 5 business logic services for medical operations:
 
 ## Dependencies
 
-- **Requires:** Person 5's database tables (Fri Feb 14)
+- **Requires:** Ngọc, Vũ's database tables (Fri Feb 14)
 - **Requires:** Task 04's security services for validation
 - **Unblocks:** Task 03 (forms need these services)
 
@@ -100,7 +100,7 @@ Implement 5 business logic services for medical operations:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 2-3 |
 
-**Person 5 Deliverables:**
+**Phôn Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -123,7 +123,7 @@ Implement 5 business logic services for medical operations:
 | **Related Requirement** | Req 1: Access Control & Interface |
 | **Test Timeline** | End of Week 3 |
 
-**Person 5 Deliverables:**
+**Phôn Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
@@ -147,7 +147,7 @@ Implement 5 business logic services for medical operations:
 | **Related Requirement** | Req 3: Audit & Monitoring |
 | **Test Timeline** | End of Week 2 |
 
-**Person 5 Deliverables:**
+**Phôn Deliverables:**
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
