@@ -85,7 +85,7 @@ Policy on DONTHUOC (Prescriptions):
 Table: DONTHUOC
 Monitored Operations: All (SELECT, INSERT, UPDATE, DELETE)
 Audit: Complete prescription management
-Column Focus: TENHOA (drug name), LIEU (dosage)
+Column Focus: TENTHUOC (drug name), LIEUDUNG (dosage)
 ```
 
 Policy on BENHNHAN - Sensitive Columns:
@@ -102,7 +102,7 @@ Monitor SELECT: Track who views sensitive patient data
 ```
 -- Add each policy with DBMS_FGA.ADD_POLICY:
 DBMS_FGA.ADD_POLICY(
-  object_schema => 'public',
+  object_schema => 'PROJECT_ADMIN',
   object_name => 'HSBA',
   policy_name => 'FGA_HSBA_POLICY',
   audit_condition => NULL,  -- Always audit
@@ -587,5 +587,3 @@ Last 7 Days:
 - All other tasks: Audited by these mechanisms
 
 ---
-
-

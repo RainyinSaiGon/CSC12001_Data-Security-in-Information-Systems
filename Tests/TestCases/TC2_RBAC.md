@@ -27,7 +27,7 @@ Verify that Role-Based Access Control is correctly configured with 4 roles (COOR
 ```sql
 -- Check all 4 roles exist
 SELECT role FROM dba_roles
-WHERE role IN ('ROLE_COORDINATOR', 'ROLE_DOCTOR', 'ROLE_TECHNICIAN', 'ROLE_PATIENT');
+WHERE role IN ('COORDINATOR', 'DOCTOR', 'TECHNICIAN', 'PATIENT');
 ```
 
 **Expected Result:** 4 roles returned
@@ -44,8 +44,8 @@ INSERT INTO BENHNHAN (MABENHNHAN, HOTEN) VALUES ('TEST_P', 'Test Patient');
 UPDATE BENHNHAN SET HOTEN = 'Updated' WHERE MABENHNHAN = 'TEST_P';
 DELETE FROM BENHNHAN WHERE MABENHNHAN = 'TEST_P';
 
--- Should succeed: Access to appointment scheduling
-SELECT COUNT(*) FROM LICHKHAM;
+-- Should succeed: Access to medical records
+SELECT COUNT(*) FROM HSBA;
 ```
 
 **Expected Result:** All operations succeed for COORDINATOR

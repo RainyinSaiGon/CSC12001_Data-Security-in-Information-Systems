@@ -7,7 +7,6 @@ Complete documentation for CSC12001 - Data Security in Information Systems proje
 | Document | Purpose |
 |----------|---------|
 | [SETUP_GUIDE.md](SETUP_GUIDE.md) | **Complete setup guide for .NET 10.0 & Oracle 21c XE** |
-| [CHANGELOG_2026.md](CHANGELOG_2026.md) | **Technology stack updates and migration guide** |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design and technical architecture |
 | [tasks/README.md](tasks/README.md) | Task assignments, requirements, & progress tracking |
 | [tasks/task-08](tasks/task-08-database-audit-setup.md) | Audit setup, log samples, & test scenarios |
@@ -260,7 +259,7 @@ Subsystem1-OracleDBAdmin/
     │   ├── Models/       → Create data models
     │   ├── Services/     → Create business logic
     │   └── Program.cs
-    └── OracleDBAdmin.sln
+    └── OracleDBAdmin.slnx
 
 Subsystem2-MedicalDataManagement/
 └── Source/
@@ -269,7 +268,7 @@ Subsystem2-MedicalDataManagement/
     │   ├── Models/       → Create entity models
     │   ├── Services/     → Create business logic
     │   └── Program.cs
-    └── MedicalDataSystem.sln
+    └── MedicalDataSystem.slnx
 ```
 
 ## 8. Key Concepts
@@ -312,10 +311,8 @@ For detailed guidance on specific topics:
 
 ### Oracle Documentation
 
-- [Oracle Database Security Guide](https://docs.oracle.com/database/121/DBSEG/)
-- [Oracle Virtual Private Database](https://docs.oracle.com/database/121/DBSEG/vpd.htm)
-- [Oracle Label Security](https://docs.oracle.com/database/121/DBSEG/label_security.htm)
-- [Oracle Auditing](https://docs.oracle.com/database/121/DBSEG/audit.htm)
+- [Oracle Database Security Guide](https://docs.oracle.com/en/database/oracle/oracle-database/26/dbseg/index.html)
+
 
 ### Security Best Practices
 

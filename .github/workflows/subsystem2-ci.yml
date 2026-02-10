@@ -27,17 +27,17 @@ jobs:
       - name: Restore dependencies
         run: |
           cd Subsystem2-MedicalDataManagement/Source
-          dotnet restore MedicalDataSystem.sln
+          dotnet restore MedicalDataSystem.slnx
 
       - name: Build
         run: |
           cd Subsystem2-MedicalDataManagement/Source
-          dotnet build MedicalDataSystem.sln --configuration Release --no-restore
+          dotnet build MedicalDataSystem.slnx --configuration Release --no-restore
 
       - name: Run tests
         run: |
           cd Subsystem2-MedicalDataManagement/Source
-          dotnet test MedicalDataSystem.sln --configuration Release --no-build --verbosity normal
+          dotnet test MedicalDataSystem.slnx --configuration Release --no-build --verbosity normal
 
   code-quality:
     if: false

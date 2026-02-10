@@ -3,10 +3,10 @@ namespace MedicalDataSystem.Models;
 // Prescription entity from DONTHUOC table
 public class Prescription
 {
-    public string MADON { get; set; } = string.Empty;
+    public string MADONTHUOC { get; set; } = string.Empty;
     public string MAHSBA { get; set; } = string.Empty;
-    public string TENHOA { get; set; } = string.Empty;
-    public string LIEU { get; set; } = string.Empty;
+    public string TENTHUOC { get; set; } = string.Empty;
+    public string LIEUDUNG { get; set; } = string.Empty;
     public string HUONGDAN { get; set; } = string.Empty;
-    public DateTime NgayDangKy { get; set; }
+    public DateTime NGAYDANGKY { get; set; }
 }
