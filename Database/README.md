@@ -47,7 +47,9 @@ Database/
 Create and execute schema scripts:
 
 ```sql
-sqlplus sys/<SYS_PASSWORD> as sysdba
+-- For Oracle 21c XE:
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
+-- Or: sqlplus / as sysdba
 
 @Schema/01_CreateTables.sql
 @Schema/02_CreateIndexes.sql
@@ -59,7 +61,7 @@ sqlplus sys/<SYS_PASSWORD> as sysdba
 Create and execute security scripts:
 
 ```sql
-sqlplus sys/<SYS_PASSWORD> as sysdba
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
 @Security/01_RBAC_Setup.sql
 @Security/02_VPD_Setup.sql
@@ -72,7 +74,7 @@ sqlplus sys/<SYS_PASSWORD> as sysdba
 Create and execute audit scripts:
 
 ```sql
-sqlplus sys/<SYS_PASSWORD> as sysdba
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
 @Audit/01_StandardAudit_Setup.sql
 @Audit/02_FineGrainedAudit_Setup.sql
@@ -92,83 +94,84 @@ Create and execute backup scripts:
 
 ### Core Tables
 
-**BỆNHNHÂN** (Patient)
+**BENHNHAN** (Patient)
 ```sql
-CREATE TABLE BỆNHNHÂN (
-    MÃBN NUMBER PRIMARY KEY,
-    TÊNBN VARCHAR2(100) NOT NULL,
-    PHÁI CHAR(1),
-    NGÀYSINH DATE,
+CREATE TABLE BENHNHAN (
+    MABN NUMBER PRIMARY KEY,
+    TENBN VARCHAR2(100) NOT NULL,
+    PHAI CHAR(1),
+    NGAYSINH DATE,
     CCCD VARCHAR2(20) UNIQUE,
-    SỐNHÀ VARCHAR2(10),
-    TÊNĐƯỜNG VARCHAR2(100),
-    QUẬNHUYỆN VARCHAR2(50),
-    TỈNHTP VARCHAR2(50),
-    TIỀNSỬBỆNH CLOB,
-    TIỀNSỬBỆNHGĐ CLOB,
-    DỊỨNGTHUỐC CLOB
+    SONHA VARCHAR2(10),
+    TENDUONG VARCHAR2(100),
+    QUANHUYEN VARCHAR2(50),
+    TINHTP VARCHAR2(50),
+    TIENSUBENH CLOB,
+    TIENSUBENHGD CLOB,
+    DIUNGTHUOC CLOB
 );
 ```
 
-**NHÂNVIÊN** (Staff)
+**NHANVIEN** (Staff)
+
 ```sql
-CREATE TABLE NHÂNVIÊN (
-    MÃNV NUMBER PRIMARY KEY,
-    HỌTÊN VARCHAR2(100) NOT NULL,
-    PHÁI CHAR(1),
-    NGÀYSINH DATE,
+CREATE TABLE NHANVIEN (
+    MANV NUMBER PRIMARY KEY,
+    HOTEN VARCHAR2(100) NOT NULL,
+    PHAI CHAR(1),
+    NGAYSINH DATE,
     CMND VARCHAR2(20) UNIQUE,
-    QUÊQUÁN VARCHAR2(100),
-    SỐĐT VARCHAR2(15),
-    VAITRÒ VARCHAR2(50), -- Điều phối viên, Bác sĩ/Y sĩ, Kỹ thuật viên
-    CHUYÊNKHOA VARCHAR2(50)
+    QUEQUAN VARCHAR2(100),
+    SODT VARCHAR2(15),
+    VAITRO VARCHAR2(50), -- Dieu phoi vien, Bac si/Y si, Ky thuat vien
+    CHUYENKHOA VARCHAR2(50)
 );
 ```
 
 **HSBA** (Medical Record)
 ```sql
 CREATE TABLE HSBA (
-    MÃHSBA NUMBER PRIMARY KEY,
-    MÃBN NUMBER REFERENCES BỆNHNHÂN(MÃBN),
-    NGÀY DATE,
-    CHẨNĐOÁN CLOB,
-    ĐIỀUTRỊ CLOB,
-    MÃBS NUMBER REFERENCES NHÂNVIÊN(MÃNV),
-    MÃKHOA VARCHAR2(50),
-    KẾTLUẬN CLOB
+    MAHSBA NUMBER PRIMARY KEY,
+    MABN NUMBER REFERENCES BENHNHAN(MABN),
+    NGAY DATE,
+    CHANDOAN CLOB,
+    DIEUTRI CLOB,
+    MABS NUMBER REFERENCES NHANVIEN(MANV),
+    MAKHOA VARCHAR2(50),
+    KETLUAN CLOB
 );
 ```
 
 **HSBA_DV** (Diagnostic Service)
 ```sql
 CREATE TABLE HSBA_DV (
-    MÃHSBA NUMBER REFERENCES HSBA(MÃHSBA),
-    LOẠIDV VARCHAR2(100),
-    NGÀYDV DATE,
-    MÃKTV NUMBER REFERENCES NHÂNVIÊN(MÃNV),
-    KẾTQUẢ CLOB,
-    PRIMARY KEY (MÃHSBA, LOẠIDV)
+    MAHSBA NUMBER REFERENCES HSBA(MAHSBA),
+    LOAIDV VARCHAR2(100),
+    NGAYDV DATE,
+    MAKTV NUMBER REFERENCES NHANVIEN(MANV),
+    KETQUA CLOB,
+    PRIMARY KEY (MAHSBA, LOAIDV)
 );
 ```
 
-**ĐƠNTHUỐC** (Prescription)
+**DONTHUOC** (Prescription)
 ```sql
-CREATE TABLE ĐƠNTHUỐC (
-    MÃHSBA NUMBER REFERENCES HSBA(MÃHSBA),
-    NGÀYĐT DATE,
-    TÊNTHUỐC VARCHAR2(100),
-    LIỀUDÙNG VARCHAR2(200),
-    PRIMARY KEY (MÃHSBA, TÊNTHUỐC)
+CREATE TABLE DONTHUOC (
+    MAHSBA NUMBER REFERENCES HSBA(MAHSBA),
+    NGAYDT DATE,
+    TENTHUOC VARCHAR2(100),
+    LIEUDUNG VARCHAR2(200),
+    PRIMARY KEY (MAHSBA, TENTHUOC)
 );
 ```
 
-**THÔNGBÁO** (Notification - required for OLS)
+**THONGBAO** (Notification - required for OLS)
 ```sql
-CREATE TABLE THÔNGBÁO (
-    MÃTHÔNG NUMBER PRIMARY KEY,
-    NỘIDUNG CLOB,
-    NGÀYGIỜ TIMESTAMP,
-    ĐỊAĐIỂM VARCHAR2(100)
+CREATE TABLE THONGBAO (
+    MATHONG NUMBER PRIMARY KEY,
+    NOIDUNG CLOB,
+    NGAYGIO TIMESTAMP,
+    DIADIEM VARCHAR2(100)
 );
 ```
 
@@ -221,9 +224,9 @@ Consolidated audit trail combining multiple audit sources
 
 ## Prerequisites
 
-- Oracle Database 11g or 12c+
+- Oracle Database Express 21c (XE)
 - SQL*Plus or Oracle SQL Developer
-- DBA privileges
+- DBA privileges (SYS or SYSTEM account)
 - Sufficient tablespace (> 1GB recommended)
 
 ## Important Notes
