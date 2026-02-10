@@ -13,12 +13,14 @@ Thank you for contributing to CSC12001 Data Security Project! This document outl
 ## Getting Started
 
 1. **Clone the Repository**
+
     ```bash
     git clone https://github.com/dinhdaivu/CSC12001_Data-Security-in-Information-Systems.git
     cd CSC12001_Data-Security-in-Information-Systems
     ```
 
 2. **Create a Branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    # or
@@ -32,6 +34,7 @@ Thank you for contributing to CSC12001 Data Security Project! This document outl
    - Commit frequently with descriptive messages
 
 4. **Push to Remote**
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -46,6 +49,7 @@ Thank you for contributing to CSC12001 Data Security Project! This document outl
 Format: `<type>(<scope>): <subject>`
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -55,13 +59,16 @@ Types:
 - `chore`: Build, dependencies, etc.
 
 Scope (optional):
+
 - `subsystem1`: Oracle DB Admin changes
 - `subsystem2`: Medical system changes
 - `database`: Database scripts
 - `docs`: Documentation
 
 Examples:
-```
+
+```gitcommit
+
 feat(subsystem1): add user creation form
 fix(subsystem2): resolve VPD policy issue
 docs(database): update schema documentation
@@ -72,6 +79,7 @@ test(audit): add audit verification tests
 ## C# Code Standards
 
 ### Naming Conventions
+
 ```csharp
 // Classes and public methods
 public class UserManagementForm { }
@@ -91,6 +99,7 @@ int userId = 123;
 ```
 
 ### Code Style
+
 ```csharp
 // .NET 10.0 with Oracle 21c XE
 using Oracle.ManagedDataAccess.Client;
@@ -136,6 +145,7 @@ public void GrantPermission(string userName, string objectName, string permissio
 ```
 
 ### XML Documentation
+
 ```csharp
 /// <summary>
 /// Grants permission to a database user.
@@ -154,6 +164,7 @@ public bool GrantPermission(string userName, string objectName, string permissio
 ## Database Script Standards
 
 ### SQL Script Rules
+
 1. Always include transaction control
 2. Add comments explaining complex logic
 3. Use consistent naming conventions
@@ -192,18 +203,21 @@ END;
 ## Testing Guidelines
 
 ### Unit Testing
+
 - Write tests for business logic
 - Use Assert statements effectively
 - Test both success and failure cases
 - Mock external dependencies
 
 ### Integration Testing
+
 - Test with actual Oracle database
 - Verify security policies work correctly
 - Test multi-user scenarios
 - Validate audit logging
 
 ### Test Case Documentation
+
 ```markdown
 ## Test Case: TC#1 - User Setup and Account Creation
 
@@ -232,12 +246,14 @@ Verify that DBA can create user accounts linked to NHÂNVIÊN records
 ## Documentation Standards
 
 ### README Files
+
 - Clear, concise descriptions
 - Easy-to-follow setup steps
 - Troubleshooting sections
 - Links to relevant resources
 
 ### Code Comments
+
 ```csharp
 // Use single-line comments for brief explanations
 int userCount = 0; // Track number of users created
@@ -263,6 +279,7 @@ foreach (var role in roles)
    - [ ] Documentation updated
 
 2. **PR Description Template**
+
    ```markdown
    ## Description
    Brief description of changes
@@ -296,6 +313,7 @@ foreach (var role in roles)
 ## Issue Reporting
 
 ### Bug Report Template
+
 ```markdown
 ## Description
 [Clear description of the bug]
@@ -322,6 +340,7 @@ foreach (var role in roles)
 ```
 
 ### Feature Request Template
+
 ```markdown
 ## Feature Description
 [Clear description of requested feature]
@@ -339,6 +358,7 @@ foreach (var role in roles)
 ## Code Review Checklist
 
 Reviewers should verify:
+
 - [ ] Code follows project standards
 - [ ] Tests are included and pass
 - [ ] Documentation is updated
@@ -351,6 +371,7 @@ Reviewers should verify:
 ## Security Checklist
 
 Before committing sensitive code:
+
 - [ ] No credentials in code
 - [ ] SQL injection prevention implemented
 - [ ] Input validation present
@@ -362,6 +383,7 @@ Before committing sensitive code:
 ## Deployment Checklist
 
 Before merging to main:
+
 - [ ] All tests pass
 - [ ] Code review approved
 - [ ] Database migrations tested
@@ -373,12 +395,14 @@ Before merging to main:
 ## Tools & Resources
 
 ### Development Tools
-- Visual Studio 2019+
+
+- Visual Studio 2022+
 - Oracle SQL Developer
 - Git for version control
 - Postman (for API testing if applicable)
 
 ### Documentation
+
 - [Microsoft C# Coding Guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 - [Oracle Database Documentation](https://docs.oracle.com/database/)
 - [Git Workflow Guide](https://guides.github.com/introduction/flow/)
@@ -386,9 +410,10 @@ Before merging to main:
 ## Questions?
 
 If you have questions:
+
 1. Check existing issues/discussions
 2. Ask in team meetings
-3. Create an issue with `[QUESTION]` tag
+3. Create an issue with `[Question]` tag
 4. Contact team leads
 
 ## License

@@ -113,6 +113,7 @@ CREATE TABLE BỆNHNHÂN (
 ```
 
 **NHÂNVIÊN** (Staff)
+
 ```sql
 CREATE TABLE NHÂNVIÊN (
     MÃNV NUMBER PRIMARY KEY,

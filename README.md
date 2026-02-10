@@ -314,7 +314,8 @@ Create `appsettings.local.json` (add to `.gitignore`):
 ```
 
 Add to `.gitignore`:
-```
+
+``` text
 appsettings.local.json
 appsettings.*.local.json
 ```
@@ -343,6 +344,7 @@ string connectionString = $"Data Source={dataSource};User Id={userId};Password={
 ### Step 4: Build & Run Applications
 
 **Subsystem 1 - Database Administration**
+
 ```bash
 cd Subsystem1-OracleDBAdmin/Source
 dotnet build OracleDBAdmin.sln
@@ -351,6 +353,7 @@ dotnet build OracleDBAdmin.sln
 ```
 
 **Subsystem 2 - Medical Data Management**
+
 ```bash
 cd Subsystem2-MedicalDataManagement/Source
 dotnet build MedicalDataSystem.sln
@@ -369,6 +372,7 @@ dotnet build MedicalDataSystem.sln
 ## Key Features
 
 ### Subsystem 1: Oracle Database Administration
+
 - Create, modify, delete users and roles
 - Grant/revoke permissions on database objects
 - View user privileges and role assignments
@@ -376,6 +380,7 @@ dotnet build MedicalDataSystem.sln
 - Column-level security on SELECT/UPDATE operations
 
 ### Subsystem 2: Medical Data Management
+
 - **RBAC**: Role-based access control (Coordinator, Doctor, Technician, Patient)
 - **VPD**: Virtual Private Database for data filtering
 - **OLS**: Oracle Label Security for multi-level notifications
@@ -383,6 +388,7 @@ dotnet build MedicalDataSystem.sln
 - **Patient Privacy**: Each user sees only their own information
 
 ### Security Mechanisms
+
 - **RBAC**: Different roles with different permissions
 - **VPD**: Transparent row-level security
 - **OLS**: Multi-level classification and segregation
@@ -410,7 +416,8 @@ sqlplus project_admin/password@localhost:1521/XE @Database/Audit/ReadAuditLogs.s
 ```
 
 ### Visual Studio
-```
+
+```text
 Build > Build Solution           # Compile project
 Debug > Start Debugging          # Run with debugger
 Build > Clean Solution           # Remove build artifacts
@@ -419,6 +426,7 @@ Build > Clean Solution           # Remove build artifacts
 ## Development Workflow
 
 1. **Create Branch**
+
    ```bash
    git checkout -b feature/your-feature
    ```
@@ -429,12 +437,14 @@ Build > Clean Solution           # Remove build artifacts
    - Write/update documentation
 
 3. **Commit Changes**
+
    ```bash
    git commit -m "type: description"
    # Examples: feat: add RBAC support, fix: connection string issue
    ```
 
 4. **Push & Create Pull Request**
+
    ```bash
    git push origin feature/your-feature
    ```
@@ -451,24 +461,28 @@ Build > Clean Solution           # Remove build artifacts
 ## Requirements Implementation
 
 ### Requirement 1: Access Control & Interface
+
 - [ ] Database setup & user account creation (TC#1)
 - [ ] RBAC implementation (TC#2, TC#4, TC#5)
 - [ ] VPD implementation (TC#3)
 - [ ] User interface for all roles
 
 ### Requirement 2: Notification System with OLS
+
 - [ ] OLS label hierarchy setup
 - [ ] Multi-level notification classification
 - [ ] User label assignment by organization
 - [ ] Notification interface
 
 ### Requirement 3: Audit & Monitoring
+
 - [ ] Standard audit setup
 - [ ] Fine-grained audit configuration
 - [ ] Unified audit setup
 - [ ] Test scenarios and verification
 
 ### Requirement 4: Backup & Recovery
+
 - [ ] Backup strategy documentation
 - [ ] Automatic backup implementation
 - [ ] Recovery procedures
@@ -477,6 +491,7 @@ Build > Clean Solution           # Remove build artifacts
 ## Troubleshooting
 
 ### Oracle Connection Issues
+
 ```bash
 # Verify Oracle 21c XE is running
 sqlplus /nolog
@@ -499,11 +514,13 @@ net start OracleServiceXE
 ```
 
 ### Database Objects Not Found
+
 - Verify scripts executed without errors
 - Check user has proper privileges
 - Run `SELECT * FROM user_tables;` to verify tables exist
 
 ### ODP.NET Installation Issues
+
 ```bash
 # For .NET 10.0 projects, use:
 dotnet add package Oracle.ManagedDataAccess.Core
@@ -512,6 +529,7 @@ Install-Package Oracle.ManagedDataAccess.Core
 ```
 
 ### Application Won't Connect
+
 - Check connection string in app.config
 - Verify TNS_ADMIN environment variable is set
 - Ensure firewall allows Oracle port (1521)
@@ -533,10 +551,6 @@ Install-Package Oracle.ManagedDataAccess.Core
 5. **Team Contribution**: Clear assignment of work to team members
 6. **Test Results**: Evidence of all test cases passing
 
-**Submission Format**: 
-- Folder name: `ATBM-2026-[GroupCode]` (when ready to submit)
-- Include: Source code, SQL scripts, documentation, reports
-
 ## GitHub Configuration
 
 ### CI/CD Workflows
@@ -544,18 +558,21 @@ Install-Package Oracle.ManagedDataAccess.Core
 Three automated pipelines validate code and documentation:
 
 **Subsystem 1 CI/CD** (`subsystem1-ci.yml`)
+
 - Triggers on PR to main/develop with changes to `Subsystem1-OracleDBAdmin/`
 - Builds .NET project and runs tests (Windows, .NET 8.0.x & 10.0.x)
 - Code quality analysis using CodeQL
 - **Status**: Currently disabled (`if: false`) — activate when source code ready
 
 **Subsystem 2 CI/CD** (`subsystem2-ci.yml`)
+
 - Triggers on PR to main/develop with changes to `Subsystem2-MedicalDataManagement/`
 - Builds .NET project and runs tests (Windows, .NET 8.0.x & 10.0.x)
 - Code quality analysis using CodeQL
 - **Status**: Currently disabled (`if: false`) — activate when source code ready
 
 **Database CI/CD** (`database-ci.yml`)
+
 - Triggers on PR to main/develop with changes to `Database/`
 - Validates SQL syntax and script structure
 - Verifies execution order of database scripts
@@ -564,11 +581,13 @@ Three automated pipelines validate code and documentation:
 ### Issue Templates
 
 **Bug Report** (`bug_report.md`)
+
 - Use for reporting bugs or issues
 - Includes system info, reproduction steps, severity levels
 - Auto-labeled as `bug`
 
 **Feature Request** (`feature_request.md`)
+
 - Use for suggesting new features or improvements
 - Includes problem statement, proposed solution, acceptance criteria
 - Auto-labeled as `enhancement`
@@ -576,6 +595,7 @@ Three automated pipelines validate code and documentation:
 ### Pull Request Template
 
 **Template** (`pull_request_template.md`)
+
 - Standard format for all PRs
 - Includes description, type, related issues, testing info, checklist
 - Ensures consistent PR quality and information
@@ -593,6 +613,7 @@ When you're ready to activate CI/CD checks:
 ### Local Development
 
 Before pushing:
+
 ```bash
 # Run tests locally
 dotnet test

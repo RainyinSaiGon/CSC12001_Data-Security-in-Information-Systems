@@ -5,6 +5,7 @@ WinForm-based database administration tool for managing Oracle users, roles, and
 ## Overview
 
 This application provides a comprehensive interface for DBA operations including:
+
 - User and role management
 - Permission granting/revoking with WITH GRANT OPTION support
 - Column-level security for SELECT/UPDATE operations
@@ -72,6 +73,7 @@ See [Development](#development) section below for implementation details.
 ## Getting Started
 
 ### Prerequisites
+
 - .NET 10.0 SDK or higher
 - Visual Studio 2022 or later
 - Oracle Data Provider for .NET Core (ODP.NET Core)
@@ -81,11 +83,13 @@ See [Development](#development) section below for implementation details.
 
 1. Open the solution in Visual Studio 2022
 2. Install NuGet package for .NET 10.0:
+
    ```bash
    dotnet add package Oracle.ManagedDataAccess.Core
    # Or in Package Manager Console:
    Install-Package Oracle.ManagedDataAccess.Core
    ```
+
 3. Configure database credentials (see Database Connection section below)
 4. Build and run
 
@@ -98,12 +102,14 @@ For detailed setup instructions on configuring connection strings (User Secrets,
 ## Usage Guide
 
 ### Creating a User
+
 1. Open Main Form
 2. Click "User Management"
 3. Enter username and password
 4. Click "Create User"
 
 ### Granting Permissions
+
 1. Open "Permission Management"
 2. Select user/role and object (table, view, etc.)
 3. Choose permission type (SELECT, INSERT, UPDATE, DELETE)
@@ -112,6 +118,7 @@ For detailed setup instructions on configuring connection strings (User Secrets,
 6. Click "Grant"
 
 ### Viewing Permissions
+
 1. Open "Privilege Viewer"
 2. Select user or role
 3. View all granted permissions and objects
@@ -119,17 +126,20 @@ For detailed setup instructions on configuring connection strings (User Secrets,
 ## Development
 
 ### Code Standards
+
 - Follow Microsoft C# coding guidelines
 - Use meaningful variable names
 - Add XML documentation to public methods
 - Handle exceptions appropriately
 
 ### Building
+
 ```bash
 dotnet build OracleDBAdmin.sln
 ```
 
 ### Testing
+
 - Test user creation with various usernames
 - Verify permission granting/revoking
 - Test column-level security
@@ -138,11 +148,13 @@ dotnet build OracleDBAdmin.sln
 ## Troubleshooting
 
 ### Connection Failed
+
 - Check Oracle listener is running
 - Verify TNS alias exists
 - Check connection string credentials
 
 ### Permission Errors
+
 - Ensure DBA user has proper privileges
 - Check if object exists before granting
 - Verify role exists for role-based grants
