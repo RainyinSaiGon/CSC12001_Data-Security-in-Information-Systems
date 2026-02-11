@@ -15,7 +15,7 @@ Verify that patients can view only their own data, update personal contact infor
 ## Prerequisites
 
 - TC#2 and TC#3 passed (RBAC + VPD configured)
-- PATIENT001 and PATIENT002 created with distinct medical records
+- User 20000001 and 20000002 created with distinct medical records
 - Sample data includes medical history for both patients
 
 ---
@@ -25,9 +25,9 @@ Verify that patients can view only their own data, update personal contact infor
 ### Step 1: View Own Data Only
 
 ```sql
-CONNECT PATIENT001/[password]@XE;
+CONNECT 20000001/[password]@XE;
 
--- Should return ONLY PATIENT001's record
+-- Should return ONLY 20000001's record
 SELECT MABENHNHAN, HOTEN, NGAYSINH, DIENTHOAI
 FROM BENHNHAN;
 
@@ -35,18 +35,18 @@ FROM BENHNHAN;
 SELECT COUNT(*) AS my_records FROM BENHNHAN;
 ```
 
-**Expected Result:** Exactly 1 row returned — PATIENT001's own record
+**Expected Result:** Exactly 1 row returned — 20000001's own record
 
 ### Step 2: Cross-Patient Isolation
 
 ```sql
--- PATIENT001 should NOT see PATIENT002's data
-CONNECT PATIENT001/[password]@XE;
-SELECT COUNT(*) FROM BENHNHAN WHERE MABENHNHAN = [PATIENT002_id];
+-- 20000001 should NOT see 20000002's data
+CONNECT 20000001/[password]@XE;
+SELECT COUNT(*) FROM BENHNHAN WHERE MABENHNHAN = 20000002;
 -- Should return 0
 
--- Verify by connecting as PATIENT002
-CONNECT PATIENT002/[password]@XE;
+-- Verify by connecting as 20000002
+CONNECT 20000002/[password]@XE;
 SELECT MABENHNHAN FROM BENHNHAN;
 -- Should return only PATIENT002's ID
 ```

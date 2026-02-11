@@ -15,7 +15,7 @@ Verify that user accounts can be created based on NHANVIEN (staff) records, link
 ## Prerequisites
 
 - Oracle 21c XE instance running
-- Schema tables created (`NHANVIEN`, `BENHNHAN`, `BACSI`, etc.)
+- Schema tables created (including `USERNAME` column in `NHANVIEN`/`BENHNHAN`)
 - `04_Users_Creation.sql` executed successfully
 - Sample data inserted via `03_InsertSampleData.sql`
 
@@ -30,10 +30,10 @@ Verify that user accounts can be created based on NHANVIEN (staff) records, link
 SELECT username, account_status, created
 FROM dba_users
 WHERE username IN (
-    'COORDINATOR001', 'COORDINATOR002',
-    'DOCTOR001', 'DOCTOR002',
-    'TECHNICIAN001', 'TECHNICIAN002',
-    'PATIENT001', 'PATIENT002'
+    '10000001', '10000002', -- Coordinators
+    '10000011', '10000012', -- Doctors
+    '10000051', '10000052', -- Technicians
+    '20000001', '20000002'  -- Patients
 );
 ```
 
@@ -46,10 +46,10 @@ WHERE username IN (
 SELECT grantee, granted_role
 FROM dba_role_privs
 WHERE grantee IN (
-    'COORDINATOR001', 'COORDINATOR002',
-    'DOCTOR001', 'DOCTOR002',
-    'TECHNICIAN001', 'TECHNICIAN002',
-    'PATIENT001', 'PATIENT002'
+    '10000001', '10000002',
+    '10000011', '10000012',
+    '10000051', '10000052',
+    '20000001', '20000002'
 )
 ORDER BY grantee;
 ```
@@ -60,10 +60,18 @@ ORDER BY grantee;
 
 ```sql
 -- Verify users are linked to NHANVIEN records
-SELECT u.username, nv.MANV, nv.HOTEN, nv.VAITRO
-FROM app_users u
-JOIN NHANVIEN nv ON u.staff_id = nv.MANV
-ORDER BY u.username;
+```sql
+-- Verify users are linked in NHANVIEN table (No joins needed)
+SELECT MANV, HOTEN, VAITRO, USERNAME
+FROM NHANVIEN
+WHERE USERNAME IS NOT NULL
+ORDER BY USERNAME;
+
+-- Verify users are linked in BENHNHAN table
+SELECT MABENHNHAN, HOTEN, USERNAME
+FROM BENHNHAN
+WHERE USERNAME IS NOT NULL
+ORDER BY USERNAME;
 ```
 
 **Expected Result:** Each user maps to a corresponding staff record

@@ -22,6 +22,7 @@ Configure all Subsystem 2 access control mechanisms per Vietnamese specification
 ## Deliverables
 
 Execute scripts in this order:
+
 1. **01_Users_Creation.sql** (Create users FIRST)
 2. **02_RBAC_Setup.sql** (Grant roles)
 3. **03_VPD_Setup.sql** (Configure VPD policies)
@@ -34,6 +35,7 @@ Execute scripts in this order:
 DBA creates Oracle user accounts linked to database records without separate user management table:
 
 **Staff Account Strategy:**
+
 - Create Oracle user for each NHANVIEN record with username = MANV (employee ID)
 - Example: Employee with MANV='NV001' gets Oracle account 'NV001'
 - Link: Oracle username automatically matches NHANVIEN.MANV (primary key)
@@ -43,6 +45,7 @@ DBA creates Oracle user accounts linked to database records without separate use
   - VAITRO='Kỹ thuật viên' → 'Kỹ thuật viên' role
 
 **Patient Account Strategy:**
+
 - Create Oracle user for each BENHNHAN record with username = MABN (patient ID)
 - Example: Patient with MABN='BN001' gets Oracle account 'BN001'
 - Link: Oracle username automatically matches BENHNHAN.MABN (primary key)
@@ -59,10 +62,11 @@ DBA creates Oracle user accounts linked to database records without separate use
 | NV020 | Staff | NHANVIEN | MANV='NV020' | 'Bác sĩ/Y sĩ' | Doctor staff |
 | NV050 | Staff | NHANVIEN | MANV='NV050' | 'Kỹ thuật viên' | Technician staff |
 | NV055 | Staff | NHANVIEN | MANV='NV055' | 'Kỹ thuật viên' | Technician staff |
-| BN001 | Patient | BENHNHAN | MABN='BN001' | 'Bệnh nhân' | Patient access |
-| BN002 | Patient | BENHNHAN | MABN='BN002' | 'Bệnh nhân' | Patient access |
+| 20000001 | Patient | BENHNHAN | MABN=20000001 | 'Bệnh nhân' | Patient access |
+| 20000002 | Patient | BENHNHAN | MABN=20000002 | 'Bệnh nhân' | Patient access |
 
 **Production Scale:**
+
 - Create 20 Coordinator accounts (NHANVIEN with VAITRO='Điều phối viên')
 - Create 100 Doctor accounts (NHANVIEN with VAITRO='Bác sĩ/Y sĩ')
 - Create 50 Technician accounts (NHANVIEN with VAITRO='Kỹ thuật viên')
@@ -81,7 +85,7 @@ For patient accounts, use one of these strategies:
    - Pros: Reduces upfront resource cost, lazy account provisioning
    - Cons: Slight delay on first login while account creates
    - Recommended: For large patient bases (>10,000 users) like this project
-   - Implementation: 
+   - Implementation:
      - Pre-register in BENHNHAN table with MABN
      - On login attempt: Check if MABN Oracle user exists
      - If not: Create user with password = MABN (force change at first login)
@@ -99,6 +103,7 @@ For patient accounts, use one of these strategies:
      - Log batch creation summary in AUDITLOG
 
 **Recommended Implementation (Deferred + Batch Hybrid):**
+
 - Coordinator registers patient → Insert BENHNHAN row (no user creation)
 - Patient provided temporary access code
 - On first login attempt: CreateUserIfNotExists(MABN)
@@ -109,6 +114,7 @@ For patient accounts, use one of these strategies:
 - Store account creation timestamp in BENHNHAN or dedicated PATIENT_ACCOUNTS table
 
 **Implementation:**
+
 - Use CREATE USER for each MANV/MABN value (use chosen strategy above for MABN)
 - Assign temporary password = username (change at first login)
 - GRANT CONNECT role as minimum
@@ -120,6 +126,7 @@ For patient accounts, use one of these strategies:
 ### 02_RBAC_Setup.sql
 
 **Security Mechanisms Summary:**
+
 - **RBAC (Action-based):** 'Điều phối viên', 'Kỹ thuật viên', 'Bệnh nhân' - defined role with allowed actions
 - **VPD (Transparent Filtering):** 'Bác sĩ/Y sĩ', 'Kỹ thuật viên' - database pre-filters rows per user context
 
@@ -135,6 +142,7 @@ GRANT SELECT ON HSBA_DV TO 'Điều phối viên'
 ```
 
 Special Permissions (via application logic):
+
 - Can update MAKHOA (department) in HSBA via coordinator assignment
 - Can update MABS (doctor) in HSBA via doctor assignment  
 - Can update MAKTV (technician) in HSBA_DV via technician assignment
@@ -153,6 +161,7 @@ GRANT UPDATE (TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC) ON BENHNHAN TO 'Bác sĩ/Y
 ```
 
 Special Permissions (VPD Filtered by WHERE MABS = current_user):
+
 - Can DELETE rows from HSBA_DV: remove unnecessary diagnostic services
 - Can UPDATE patient medical history fields: TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC
 - All updates to CHANDOAN, DIEUTRI, KETLUAN, TENTHUOC, LIEUUNG are audit-logged (TC#3.c)
@@ -170,6 +179,7 @@ GRANT SELECT ON HSBA TO 'Kỹ thuật viên'
 ```
 
 RBAC Action Permissions:
+
 - Allowed: ViewAssignedServices, UpdateServiceResults (KETQUA), MarkServiceComplete
 - Denied: DeleteServices, ViewOtherTechnicianServices
 - Database VPD enforces: WHERE MAKTV = current_user (show only assigned services)
@@ -188,6 +198,7 @@ GRANT SELECT ON THONGBAO TO 'Bệnh nhân'
 ```
 
 RBAC Column-Level Restrictions:
+
 - **Never Editable:** MABN, TENBN, PHAI, NGAYSINH, CCCD, TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC
 - **Always Editable:** SODT, SONHA, TENDUONG, QUANHUYEM, TINHTP (contact info only)
 - Database VPD enforces: WHERE MABN = current_user (see only own records)
@@ -272,7 +283,7 @@ Create OLS policy using DBMS_MACADM:
 2. Create level values
 3. Apply policy to THONGBAO (Notification) table
 4. Assign user labels
-5. Assign notification labels
+5. Assign notification labels 
 6. Configure label hierarchy rules
 ```
 
@@ -281,7 +292,7 @@ Create OLS policy using DBMS_MACADM:
 - Staff level: "Tim mạch:Hồ Chí Minh:Nhân viên"
 - Dept head: "Tim mạch:Hồ Chí Minh:Lãnh đạo khoa"
 - Director: "Tim mạch:*:Ban Giám đốc" (all locations)
-- Table Name: **THONGBAO** (Notifications) with fields: NỘIDUNG, NGÀYGIỜ, ĐỊAĐIỂM
+- Table Name: **THONGBAO** (Notifications) with fields: MATHONGBAO, NOIDUNG, NGAYGIO, DIADIEM
 
 **Access Rules:**
 

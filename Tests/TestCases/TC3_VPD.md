@@ -38,15 +38,15 @@ ORDER BY object_name;
 ### Step 2: Doctor Data Isolation — HSBA Table
 
 ```sql
--- Connect as DOCTOR001
-CONNECT DOCTOR001/[password]@XE;
+-- Connect as 10000011
+CONNECT 10000011/[password]@XE;
 
--- Should return ONLY patients assigned to DOCTOR001
+-- Should return ONLY patients assigned to 10000011
 SELECT MAHSBA, MABENHNHAN, MABACSI FROM HSBA;
 
--- Verify: all rows should have MABACSI matching DOCTOR001's staff ID
+-- Verify: all rows should have MABACSI matching 10000011's staff ID
 SELECT COUNT(*) AS total_rows FROM HSBA;
-SELECT COUNT(*) AS own_rows FROM HSBA WHERE MABACSI = [DOCTOR001_staff_id];
+SELECT COUNT(*) AS own_rows FROM HSBA WHERE MABACSI = 10000011;
 -- These two counts should be EQUAL
 ```
 

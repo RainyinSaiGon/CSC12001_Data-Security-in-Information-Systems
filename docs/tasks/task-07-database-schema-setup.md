@@ -20,12 +20,13 @@ Create 7 core tables with proper constraints:
 
 | Table | Purpose | Key Columns |
 |-------|---------|-------------|
-| BENHNHAN | Patients | MABN (PK), TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEM, TINHTP, TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC |
-| NHANVIEN | Staff | MANV (PK), HOTEN, PHAI, NGAYSINH, CMND, QUEQUAN, SODT, VAITRO, CHUYENKHOA |
-| HSBA | Medical Records | MAHSBA (PK), MABN (FK), NGAY, CHANDOAN, DIEUTRI, MABS (FK), MAKHOA, KETLUAN |
-| HSBA_DV | Diagnostic Services | MAHSBA (FK), LOAIDV, NGAYDV, MAKTV (FK), KETQUA — PK: (MAHSBA, LOAIDV, NGAYDV) |
-| DONTHUOC | Prescriptions | MAHSBA (FK), NGAYDT, TENTHUOC, LIEUUNG — PK: (MAHSBA, NGAYDT, TENTHUOC) |
-| THONGBAO | Notifications (OLS) | NOIDUNG (PK), NGAYGIO, KHOA, DIADIEM, CAPBAC |
+| KHOA | Departments | MAKHOA (PK), TENKHOA, SDT, TRUONGKHOA (FK) |
+| BENHNHAN | Patients | MABENHNHAN (PK), HOTEN, PHAI, NGAYSINH, CCCD, DIENTHOAI, SONHA, TENDUONG, QUANHUYEN, TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME |
+| NHANVIEN | Staff | MANV (PK), HOTEN, PHAI, NGAYSINH, CMND, QUEQUAN, SODT, VAITRO, MAKHOA (FK), USERNAME |
+| HSBA | Medical Records | MAHSBA (PK), MABENHNHAN (FK), NGAYTAO, CHANDOAN, DIEUTRI, KETLUAN, MABACSI (FK), MAKHOA (FK) |
+| HSBA_DV | Diagnostic Services | MADICHVU (PK), MAHSBA (FK), TENDICHVU, NGAY, KETQUA, HOANTHANH, MAKYTHUATVIEN (FK) |
+| DONTHUOC | Prescriptions | MADONTHUOC (PK), MAHSBA (FK), TENTHUOC, LIEUDUNG, HUONGDAN, NGAYDANGKY |
+| THONGBAO | Notifications (OLS) | MATHONGBAO (PK), NOIDUNG, NGAYGIO, DIADIEM |
 | AUDITLOG | Audit Trail | AUDITID (PK), USERID, THOIGIAN, LOAIHD, TENTABLE, MARECORD |
 
 Requirements:
@@ -36,6 +37,8 @@ Requirements:
 - NOT NULL constraints on required fields
 - Unique constraints (CCCD in BENHNHAN, CMND in NHANVIEN, etc.)
 - VAITRO constraint: Check values are one of: 'Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân'
+- Departments (KHOA): Only 3 departments: 'Khoa Tiêu Hóa', 'Khoa Thần Kinh', 'Khoa Tim Mạch'
+- Locations: 3 facilities: 'Cơ sở Hồ Chí Minh', 'Cơ sở Hải Phòng', 'Cơ sở Hà Nội'
 - Allow all INSERT/UPDATE/DELETE for initial testing
 
 ### 02_CreateIndexes.sql
@@ -121,6 +124,7 @@ Create realistic test data (scaled for production):
 ✓ THONGBAO & AUDITLOG: Created with correct structures for OLS and audit
 ✓ All constraints enforced (PK, FK, NOT NULL, UNIQUE)  
 ✓ All 10+ indexes created  
+
 - [x] 100,000 patients inserted (BENHNHAN) — production-scale per TC#5
 - [x] 170 staff (20 coordinators, 100 doctors, 50 technicians) inserted (NHANVIEN)
 ✓ Data matches Vietnamese specification exactly  
@@ -178,6 +182,7 @@ After completion:
 - ✓ All 7 tables created with zero SQL errors
 - ✓ All PK/FK constraints properly defined
 - ✓ 100,000 patients inserted with realistic Vietnamese names (production-scale per TC#5)
+- ✓ 8 test users (Staff: 10xxxxxx, Patients: 20xxxxxx) created for TC verification
 - ✓ 170 staff records in NHANVIEN table (20 Coordinators, 100 Doctors, 50 Technicians)
 - ✓ 50,000+ medical records (HSBA) with proper relationships — proportional to patient volume
 - ✓ 100,000+ prescriptions linked to valid HSBA records — avg 2+ per record

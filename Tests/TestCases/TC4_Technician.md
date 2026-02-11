@@ -15,7 +15,7 @@ Verify that technicians can only view their assigned diagnostic services, update
 ## Prerequisites
 
 - TC#2 and TC#3 passed (RBAC + VPD configured)
-- TECHNICIAN001 and TECHNICIAN002 created with distinct service assignments
+- 10000051 and 10000052 created with distinct service assignments
 - Sample diagnostic service data loaded
 
 ---
@@ -25,9 +25,9 @@ Verify that technicians can only view their assigned diagnostic services, update
 ### Step 1: View Assigned Services Only
 
 ```sql
-CONNECT TECHNICIAN001/[password]@XE;
+CONNECT 10000051/[password]@XE;
 
--- Should return ONLY services assigned to TECHNICIAN001
+-- Should return ONLY services assigned to 10000051
 SELECT MADICHVU, TENDICHVU, MAHSBA, NGAY, KETQUA
 FROM HSBA_DV
 ORDER BY NGAY DESC;
@@ -36,20 +36,20 @@ ORDER BY NGAY DESC;
 SELECT COUNT(*) AS my_services FROM HSBA_DV;
 ```
 
-**Expected Result:** Only TECHNICIAN001's assigned services returned
+**Expected Result:** Only 10000051's assigned services returned
 
 ### Step 2: Cross-Technician Isolation
 
 ```sql
--- TECHNICIAN001 should NOT see TECHNICIAN002's services
-CONNECT TECHNICIAN001/[password]@XE;
-SELECT COUNT(*) FROM HSBA_DV WHERE MAKYTHUATVIEN = [TECHNICIAN002_staff_id];
+-- 10000051 should NOT see 10000052's services
+CONNECT 10000051/[password]@XE;
+SELECT COUNT(*) FROM HSBA_DV WHERE MAKYTHUATVIEN = 10000052;
 -- Should return 0 (VPD filters them out)
 
--- Verify by connecting as TECHNICIAN002
-CONNECT TECHNICIAN002/[password]@XE;
+-- Verify by connecting as 10000052
+CONNECT 10000052/[password]@XE;
 SELECT COUNT(*) AS tech2_services FROM HSBA_DV;
--- Should return different count from TECHNICIAN001
+-- Should return different count from 10000051
 ```
 
 **Expected Result:** Each technician sees a disjoint set of services
@@ -57,7 +57,7 @@ SELECT COUNT(*) AS tech2_services FROM HSBA_DV;
 ### Step 3: Update Service Results
 
 ```sql
-CONNECT TECHNICIAN001/[password]@XE;
+CONNECT 10000051/[password]@XE;
 
 -- Should succeed: Update result of assigned service
 UPDATE HSBA_DV
