@@ -201,7 +201,7 @@ Permission logic defined and validated
 Sample data representing all scenarios prepared  
 Audit trail infrastructure established  
 Ready for SQL script implementation (Database team)  
-✅ OracleDBAdmin application ready to use database (UI development can proceed)- Security Admin: Create/manage roles and permissions
+OracleDBAdmin application ready to use database (UI development can proceed)- Security Admin: Create/manage roles and permissions
 - User Admin: Create/modify/delete users, assign roles
 - Audit Admin: Read-only audit logs
 
