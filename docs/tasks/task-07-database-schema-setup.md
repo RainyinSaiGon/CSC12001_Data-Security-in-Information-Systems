@@ -77,28 +77,30 @@ Create realistic test data (scaled for production):
   - CMND (national ID), QUEQUAN (hometown), SODT (phone number)
   - CHUYENKHOA (specialty/department)
 
-- **20 medical records** (HSBA)
+- **50,000+ medical records** (HSBA) — **Proportional to 100K patients (avg 0.5 records/patient)**
   - MAHSBA: Record ID, MABN: Patient reference, NGAY: Examination date
   - CHANDOAN: Diagnosis, DIEUTRI: Treatment provided
   - MABS: Doctor ID (prescribing physician), MAKHOA: Department ID
   - KETLUAN: Conclusion/remarks
   - Mix of completed and archived records
+  - Realistic distribution: Active patients have 1-3 records, inactive have 0-1
 
-- **50 prescriptions** (DONTHUOC)
+- **100,000+ prescriptions** (DONTHUOC) — **Proportional to HSBA (avg 2 prescriptions/record)**
   - MAHSBA: Link to medical records (FK)
   - NGAYDT: Prescription date
   - TENTHUOC: Drug/medication name
   - LIEUUNG: Dosage instructions
   - Composite key: (MAHSBA, NGAYDT, TENTHUOC) allows multiple drugs per prescription date
+  - Average 2+ drugs per prescription date
 
-- **30 diagnostic services** (HSBA_DV)
+- **75,000+ diagnostic services** (HSBA_DV) — **Proportional to HSBA (avg 1.5 services/record)**
   - MAHSBA: Link to medical records
   - LOAIDV: Service type (X-ray, Lab test, Ultrasound, CT scan, ECG, etc.)
   - NGAYDV: Service date/time
   - MAKTV: Technician ID (KTV - Kỹ Thuật Viên performing the service)
   - KETQUA: Test results (some completed, some pending)
 
-- **15 notifications** (THONGBAO)
+- **10,000+ notifications** (THONGBAO) — **Proportional to HSBA (avg 0.2 notifications/record)**
   - Varied departments and locations
   - OLS labels for testing
   - Realistic content
@@ -177,11 +179,11 @@ After completion:
 - ✓ All PK/FK constraints properly defined
 - ✓ 100,000 patients inserted with realistic Vietnamese names (production-scale per TC#5)
 - ✓ 170 staff records in NHANVIEN table (20 Coordinators, 100 Doctors, 50 Technicians)
-- ✓ 20+ medical records (HSBA) with proper relationships
-- ✓ 50+ prescriptions linked to valid HSBA records
-- ✓ 30+ diagnostic services with status tracking
-- ✓ 15+ notifications with OLS labels
-- ✓ Sample data verifiable with SELECT COUNT(*) queries
+- ✓ 50,000+ medical records (HSBA) with proper relationships — proportional to patient volume
+- ✓ 100,000+ prescriptions linked to valid HSBA records — avg 2+ per record
+- ✓ 75,000+ diagnostic services with status tracking — avg 1.5 per record
+- ✓ 10,000+ notifications with OLS labels — realistic event distribution
+- ✓ All data verifiable with SELECT COUNT(*) queries showing correct proportions
 
 **Evidence Tracking:**
 
