@@ -182,11 +182,12 @@ Four main roles with hierarchical permissions:
 - Update service results
 - Transparent filtering
 
-### TC#5: Patient Self-Service
+### TC#5: Patient Self-Service (100,000 patients)
 
-- View own data only
-- Update personal information
-- View medical history
+- Login with patient account (100,000+ patients in system per TC#5)
+- View own patient record only (row-level filtering via VPD)
+- Edit allowed fields (medical history, allergies, etc.)
+- Cannot access other patient records
 
 ## 6. Requirements Mapping
 

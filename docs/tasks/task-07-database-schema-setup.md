@@ -58,15 +58,16 @@ Create 10+ indexes for query performance:
 
 ### 03_InsertSampleData.sql
 
-Create realistic test data:
+Create realistic test data (scaled for production):
 
-- **100 patients** (BENHNHAN)
+- **100,000 patients** (BENHNHAN) — **Production-scale dataset as per TC#5**
   - Vietnamese names, realistic IDs
   - Birth dates creating age 18-80 range
   - Full addresses: SONHA (house number), TENDUONG (street), QUANHUYEM (district), TINHTP (province)
   - TIENSUABENH (patient's medical fund)
   - TIENSUABENHGD (family's medical fund)
   - DIUNGTHUOC (drug allergies/intolerances)
+  - Performance consideration: May require script optimization or batched inserts
 
 - **170 staff** (NHANVIEN)
   - 20 Coordinators (VAITRO='Điều phối viên')
@@ -118,7 +119,8 @@ Create realistic test data:
 ✓ THONGBAO & AUDITLOG: Created with correct structures for OLS and audit
 ✓ All constraints enforced (PK, FK, NOT NULL, UNIQUE)  
 ✓ All 10+ indexes created  
-✓ 100 patients, 170 staff (20 coordinators, 100 doctors, 50 technicians), 20+ medical records, 50+ prescriptions, 30+ diagnostic services, 15+ notifications inserted  
+- [x] 100,000 patients inserted (BENHNHAN) — production-scale per TC#5
+- [x] 170 staff (20 coordinators, 100 doctors, 50 technicians) inserted (NHANVIEN)
 ✓ Data matches Vietnamese specification exactly  
 ✓ No orphaned records (FK integrity)  
 ✓ Tables ready for application use
@@ -173,7 +175,7 @@ After completion:
 
 - ✓ All 7 tables created with zero SQL errors
 - ✓ All PK/FK constraints properly defined
-- ✓ 100 patients inserted with realistic Vietnamese names
+- ✓ 100,000 patients inserted with realistic Vietnamese names (production-scale per TC#5)
 - ✓ 170 staff records in NHANVIEN table (20 Coordinators, 100 Doctors, 50 Technicians)
 - ✓ 20+ medical records (HSBA) with proper relationships
 - ✓ 50+ prescriptions linked to valid HSBA records
