@@ -8,8 +8,9 @@ Complete documentation for CSC12001 - Data Security in Information Systems proje
 |----------|---------|
 | [SETUP_GUIDE.md](SETUP_GUIDE.md) | **Complete setup guide for .NET 10.0 & Oracle 21c XE** |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design and technical architecture |
-| [tasks/README.md](tasks/README.md) | Task assignments, requirements, & progress tracking |
-| [tasks/task-08](tasks/task-08-database-audit-setup.md) | Audit setup, log samples, & test scenarios |
+| [tasks/README.md](tasks/README.md) | Task assignments (10 tasks), requirements, & progress tracking |
+| [tasks/task-03](tasks/task-03-subsystem1-database-schema.md) | Subsystem 1: Database schema design (NEW) |
+| [tasks/task-07 to task-10](tasks/task-07-database-schema-setup.md) | Subsystem 2: Database, security, audit, backup |
 
 ## Overview
 
@@ -18,18 +19,22 @@ This documentation directory contains the following consolidated files:
 ### ARCHITECTURE.md
 
 - System design diagrams and structure
-- Entity relationship diagrams
+- Entity relationship diagrams (Subsystem 1 Admin DB + Subsystem 2 Medical DB)
 - Sequence diagrams for key operations
 - Class diagrams
-- Database schema design
+- Database schema design for both subsystems
 
-### tasks/ (Organized Task Files)
+### tasks/ (Organized Task Files - 10 Tasks)
 
-- 8 task files (task-01 to task-08) covering all deliverables
+- **Tasks 1-3**: Subsystem 1 - Database Admin Tool (Duyên, Triết)
+  - task-01: Admin UI Forms
+  - task-02: Business Services
+  - task-03: Database Schema Design (NEW)
+- **Tasks 4-10**: Subsystem 2 - Medical Data Management
+  - task-04 to task-06: Application (Duyên, Phôn)
+  - task-07 to task-10: Database setup (Ngọc, Vũ)
 - Requirements, implementation guides, and test criteria
-- Audit log samples, query examples, and test scenarios (task-08)
-- Progress tracking, compliance checklists, and performance targets (tasks/README.md)
-- Team member assignments and effort tracking
+- Progress tracking, compliance checklists, and performance targets
 
 ## Main Topics
 
@@ -185,33 +190,37 @@ Four main roles with hierarchical permissions:
 
 ## 6. Requirements Mapping
 
-### Requirement 1: Access Control & Interface
+### Requirement 1: Access Control & Interface (5 points)
 
-- [ ] User account setup (TC#1)
-- [ ] RBAC configuration (TC#2, TC#4, TC#5)
-- [ ] VPD implementation (TC#3)
-- [ ] Application interfaces
+| Task | Deliverable | Owner | Status |
+|------|-------------|-------|--------|
+| Task 03 | Database schema with permission tables | Duyên, Triết | In Progress |
+| Task 01 | Admin UI forms for user/role management | Duyên, Triết | In Progress |
+| Task 02 | Business logic services | Duyên, Triết | In Progress |
+| Task 04 | Medical UI forms | Duyên | Pending |
+| Task 07 | Medical database schema | Ngọc, Vũ | Blocked (DB not started) |
+| Task 08 | RBAC + VPD + OLS policies | Ngọc, Vũ | Blocked (Waiting Task 07) |
 
-### Requirement 2: Notification System
+### Requirement 2: Notification System (5 points)
 
-- [ ] OLS label hierarchy (3 levels)
-- [ ] Multi-component labels
-- [ ] User label assignment
-- [ ] Notification interface
+| Task | Deliverable | Owner | Status |
+|------|-------------|-------|--------|
+| Task 08 | OLS label hierarchy (3 levels) | Ngọc, Vũ | Blocked |
+| Task 05 | OLS service implementation | Phôn | Pending |
+| Task 04 | Notification UI form | Duyên | Pending |
 
-### Requirement 3: Audit & Monitoring
+### Requirement 3: Audit & Monitoring (5 points)
 
-- [ ] Standard audit setup
-- [ ] Fine-grained audit configuration
-- [ ] Unified audit implementation
-- [ ] 5+ audit test scenarios
+| Task | Deliverable | Owner | Status |
+|------|-------------|-------|--------|
+| Task 09 | Standard, FGA, Unified audit | Ngọc, Vũ | Blocked (Waiting Task 08) |
+| Task 06 | Audit service (read logs) | Phôn | Pending |
 
-### Requirement 4: Backup & Recovery
+### Requirement 4: Backup & Recovery (5 points)
 
-- [ ] Backup strategy documentation
-- [ ] Backup implementation (RMAN, Export)
-- [ ] Recovery procedures
-- [ ] Strategy evaluation
+| Task | Deliverable | Owner | Status |
+|------|-------------|-------|--------|
+| Task 10 | RMAN backup + recovery procedures | Ngọc, Vũ | Blocked (Waiting Task 09) |
 
 ## 7. Critical Files
 
@@ -225,50 +234,93 @@ docs/tasks/README.md                    ← Task assignments & progress tracking
 docs/tasks/task-01 to task-08           ← Per-deliverable specifications
 ```
 
-### Database Structure (To Create)
+### Database Structure (Two Separate Databases)
 
 ```
-database/
-├── schema/                (Create SQL files)
-│   ├── 01_CreateTables.sql
-│   ├── 02_CreateIndexes.sql
-│   └── 03_InsertSampleData.sql
-├── security/              (Create SQL files)
-│   ├── 01_RBAC_Setup.sql
-│   ├── 02_VPD_Setup.sql
-│   ├── 03_OLS_Setup.sql
-│   └── 04_Users_Creation.sql
-├── audit/                 (Create SQL files)
-│   ├── 01_StandardAudit_Setup.sql
-│   ├── 02_FineGrainedAudit_Setup.sql
-│   ├── 03_UnifiedAudit_Setup.sql
-│   └── ReadAuditLogs.sql
-└── backupRestore/         (Create SQL files)
-    ├── 01_BackupStrategy.sql
-    ├── 02_AutomaticBackup.sql
-    └── 03_RecoveryScripts.sql
+Database/
+├── Subsystem1-AdminDB/
+│   ├── README.md
+│   ├── schema/                (Create SQL files)
+│   │   ├── 01_CreateTables.sql
+│   │   ├── 02_CreateViews.sql
+│   │   ├── 03_CreateProcedures.sql
+│   │   ├── 04_CreateFunctions.sql
+│   │   ├── 05_CreateIndexes.sql
+│   │   ├── 06_CreateTriggers.sql
+│   │   └── 07_InsertSampleData.sql
+│   ├── security/
+│   │   └── ADMIN_RBAC_Setup.sql
+│   └── audit/
+│       └── ADMIN_Audit_Setup.sql
+│
+└── Subsystem2-MedicalDB/
+    ├── README.md
+    ├── schema/                (Create SQL files)
+    │   ├── 01_CreateTables.sql
+    │   ├── 02_CreateIndexes.sql
+    │   └── 03_InsertSampleData.sql
+    ├── security/              (Create SQL files)
+    │   ├── 01_RBAC_Setup.sql
+    │   ├── 02_VPD_Setup.sql
+    │   ├── 03_OLS_Setup.sql
+    │   └── 04_Users_Creation.sql
+    ├── audit/                 (Create SQL files)
+    │   ├── 01_StandardAudit_Setup.sql
+    │   ├── 02_FineGrainedAudit_Setup.sql
+    │   ├── 03_UnifiedAudit_Setup.sql
+    │   └── ReadAuditLogs.sql
+    └── backupRestore/         (Create SQL files)
+        ├── 01_BackupStrategy.sql
+        ├── 02_AutomaticBackup.sql
+        └── 03_RecoveryScripts.sql
 ```
 
-### Application Source Code (To Create)
+### Application Source Code (Two Separate Subsystems)
 
 ```
-subsystem1-oracleDBAdmin/
-└── source/
-    ├── oracleDBAdmin/
-    │   ├── forms/        → Create UI forms
-    │   ├── models/       → Create data models
-    │   ├── services/     → Create business logic
+Subsystem1-OracleDBAdmin/
+└── Source/
+    ├── OracleDBAdmin/
+    │   ├── Forms/                → Admin UI forms
+    │   │   ├── MainForm.cs
+    │   │   ├── UserManagementForm.cs
+    │   │   ├── RoleManagementForm.cs
+    │   │   └── PermissionForm.cs
+    │   ├── Models/               → Data models
+    │   │   ├── User.cs
+    │   │   ├── Role.cs
+    │   │   ├── Permission.cs
+    │   │   └── OracleObject.cs
+    │   ├── Services/             → Business logic for permissions
+    │   │   ├── UserService.cs
+    │   │   ├── PermissionService.cs
+    │   │   └── ValidationService.cs
     │   └── Program.cs
-    └── oracleDBAdmin.slnx
+    └── OracleDBAdmin.slnx
 
-subsystem2-medicalDataManagement/
-└── source/
-    ├── medicalDataSystem/
-    │   ├── forms/        → Create UI forms
-    │   ├── models/       → Create entity models
-    │   ├── services/     → Create business logic
+Subsystem2-MedicalDataManagement/
+└── Source/
+    ├── MedicalDataSystem/
+    │   ├── Forms/                → Medical UI forms
+    │   │   ├── LoginForm.cs
+    │   │   ├── DoctorForm.cs
+    │   │   ├── PatientForm.cs
+    │   │   ├── CoordinatorForm.cs
+    │   │   ├── TechnicianForm.cs
+    │   │   └── NotificationForm.cs
+    │   ├── Models/               → Entity models
+    │   │   ├── Patient.cs
+    │   │   ├── MedicalRecord.cs
+    │   │   ├── Prescription.cs
+    │   │   └── Notification.cs
+    │   ├── Services/             → Business logic
+    │   │   ├── AuthenticationService.cs
+    │   │   ├── RBACService.cs
+    │   │   ├── VPDService.cs
+    │   │   ├── AuditService.cs
+    │   │   └── PatientService.cs
     │   └── Program.cs
-    └── medicalDataSystem.slnx
+    └── MedicalDataSystem.slnx
 ```
 
 ## 8. Key Concepts
