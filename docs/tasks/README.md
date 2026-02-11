@@ -101,44 +101,46 @@
 
 ```
 Week 1 (Feb 10-14): Foundation Phase
-├─ Ngọc, Vũ: Database setup (CRITICAL BLOCKER)
-│  └─ Task 06: Schema, indexes, sample data
-│     Deadline: FRI 2/14 EOD (blocks all others)
-└─ Duyên, Triết, Phôn: Can begin design/framework while waiting
+├─ Duyên, Triết: Database schema design (CRITICAL FOUNDATION)
+│  └─ Task 03: Schema, tables, views, procedures, functions
+│     Deadline: WED 2/20 EOD (design review)
+├─ Ngọc, Vũ: Medical database setup (CRITICAL BLOCKER)
+│  └─ Task 07: Schema, indexes, sample data
+│     Deadline: FRI 2/14 EOD (blocks security/audit setup)
+└─ Duyên, Triết, Phôn: Can begin parallel work
 
 Week 2 (Feb 17-21): Services Implementation
-├─ Ngọc, Vũ: Security setup
-│  ├─ Task 07a: RBAC + Users (Wed 2/19)
+├─ Ngọc, Vũ: Database security setup
+│  ├─ Task 08a: RBAC + Users (Wed 2/19)
 │  │  └─ Unblocks Phôn's AuthenticationService
-│  ├─ Task 07b: VPD + OLS (Thu 2/20)
+│  ├─ Task 08b: VPD + OLS (Thu 2/20)
 │  │  └─ Unblocks Phôn's remaining services + Duyên's forms
-│  └─ Task 05: Business services (Fri 2/21)
-│     └─ Unblocks Forms testing
+│  └─ Task 09: Audit setup (Fri 2/21)
+│     └─ Completes database security layer
 │
-├─ Duyên, Triết: Business services
+├─ Duyên, Triết: Business services (Subsystem 1)
 │  ├─ Task 02: All 6 services by Fri 2/21
 │  │  └─ Unblocks Duyên, Triết form integration
 │  
-├─ Phôn: Security services
-│  ├─ AuthenticationService (Wed 2/19)
-│  ├─ RBACService (Wed 2/19)
-│  ├─ VPDService (Thu 2/20)
-│  └─ OLSService (Thu 2/20)
+├─ Phôn: Security & business services (Subsystem 2)
+│  ├─ Task 05: AuthenticationService, RBACService, VPDService, OLSService (Wed 2/19-20)
+│  │  └─ Integrates with database security layer
+│  └─ Task 06: Business services by Fri 2/21
 │
 └─ Duyên: Can start LoginForm design (Fri 2/21 ready to integrate)
 
 Week 3 (Feb 24-28): UI Implementation & Testing
-├─ Duyên, Triết: All forms implemented
-│  └─ Task 01: 5 forms complete by Fri 2/28
-├─ Duyên: All forms implemented
-│  └─ Task 03: 7 forms complete by Fri 2/28
-└─ Phôn: Services complete
-   └─ Task 04: All 6 services complete by Fri 2/28
+├─ Duyên, Triết: All Subsystem 1 forms implemented
+│  └─ Task 01: 5 admin forms complete by Fri 2/28
+├─ Duyên: All Subsystem 2 medical forms implemented
+│  └─ Task 04: 7 medical forms complete by Fri 2/28
+└─ Ngọc, Vũ: Backup & recovery setup
+   └─ Task 10: Backup & recovery procedures by Fri 3/7
 
 Week 4 (Mar 3-7): Integration and System Testing
 ├─ All: End-to-end testing
 ├─ All: Security verification (RBAC, VPD, OLS)
-├─ All: Audit and backup testing
+├─ All: Audit trail validation
 └─ All: Final fixes and documentation
 ```
 
@@ -152,13 +154,14 @@ All task files follow consistent structure:
 docs/tasks/
 ├── task-01-subsystem1-database-admin-ui.md
 ├── task-02-subsystem1-business-services.md
-├── task-03-subsystem2-medical-ui-forms.md
-├── task-04-subsystem2-security-services.md
-├── task-05-subsystem2-business-services.md
-├── task-06-database-schema-setup.md
-├── task-07-database-security-setup.md
-├── task-08-database-audit-setup.md
-└── task-09-database-backup-recovery.md
+├── task-03-subsystem1-database-schema.md              (NEW)
+├── task-04-subsystem2-medical-ui-forms.md
+├── task-05-subsystem2-security-services.md
+├── task-06-subsystem2-business-services.md
+├── task-07-database-schema-setup.md
+├── task-08-database-security-setup.md
+├── task-09-database-audit-setup.md
+└── task-10-database-backup-recovery.md
 ```
 
 Each file contains:
@@ -177,34 +180,35 @@ Each file contains:
 
 ### Task File Coverage
 
-✓ Task 01: Duyên, Triết assignments complete  
-✓ Task 02: Duyên, Triết assignments complete  
-✓ Task 03: Duyên assignments complete  
-✓ Task 04: Phôn assignments complete  
-✓ Task 05: Phôn (Business Services) complete  
-✓ Task 06: Ngọc, Vũ (Database Schema) complete  
-✓ Task 07: Ngọc, Vũ (Database Security) complete  
-✓ Task 08: Ngọc, Vũ (Database Audit) complete  
-✓ Task 09: Ngọc, Vũ (Database Backup & Recovery) complete  
+- [ ] Task 01: Duyên, Triết - Subsystem 1 Admin UI Forms complete  
+- [ ] Task 02: Duyên, Triết - Subsystem 1 Business Services complete  
+- [ ] Task 03: Duyên, Triết - Subsystem 1 Database Schema Design complete  
+- [ ] Task 04: Duyên - Subsystem 2 Medical UI Forms complete  
+- [ ] Task 05: Phôn - Subsystem 2 Security Services complete  
+- [ ] Task 06: Phôn - Subsystem 2 Business Services complete  
+- [ ] Task 07: Ngọc, Vũ - Subsystem 2 Database Schema Setup complete  
+- [ ] Task 08: Ngọc, Vũ - Subsystem 2 Database Security Setup complete  
+- [ ] Task 09: Ngọc, Vũ - Subsystem 2 Database Audit Setup complete  
+- [ ] Task 10: Ngọc, Vũ - Subsystem 2 Database Backup & Recovery complete  
 
 ### Assignment Verification
 
-✓ All 5 people have clear task assignments  
-✓ Hours estimated for each task  
-✓ Priority levels defined  
-✓ Deadlines specified  
-✓ Dependencies documented  
-✓ Success criteria provided  
-✓ Cross-references added  
+- [ ] All 5 people have clear task assignments  
+- [ ] Hours estimated for each task  
+- [ ] Priority levels defined  
+- [ ] Deadlines specified  
+- [ ] Dependencies documented  
+- [ ] Success criteria provided  
+- [ ] Cross-references added  
 
 ### Consistency Check
 
-✓ Task file assignments match TASK_ASSIGNMENT.md  
-✓ All original deliverables covered  
-✓ Task-based organization (not person-based)  
-✓ Reduced file size per task (concise, focused)  
-✓ Clear relationships between tasks  
-✓ Critical path identified and documented  
+- [ ] Task file assignments match TASK_ASSIGNMENT.md  
+- [ ] All original deliverables covered  
+- [ ] Task-based organization (not person-based)  
+- [ ] Reduced file size per task (concise, focused)  
+- [ ] Clear relationships between tasks  
+- [ ] Critical path identified and documented  
 
 ---
 
@@ -237,19 +241,6 @@ Each file contains:
 
 ---
 
-## Summary
-
-The original `TASK_ASSIGNMENT.md` (1529 lines), `TRACEABILITY_MATRIX.md`, `IMPLEMENTATION.md`, and `AUDITLOGS.md` have been reorganized into 8 focused task files:
-
-- **Cleaner structure:** Each file covers one major deliverable
-- **Easier assignment:** Team members can focus on their specific tasks
-- **Better tracking:** Concrete success criteria for each task
-- **Reduced complexity:** Concise scope without verbose repetition
-- **Cross-referenced:** Clear dependencies and relationships
-
-All assignments remain unchanged from original - just better organized for execution.
-
----
 
 ## Test Cases Summary
 
@@ -311,9 +302,9 @@ All assignments remain unchanged from original - just better organized for execu
 
 **Milestone Targets:**
 
-- Week 1: Database setup complete (Ngọc, Vũ)
-- Week 2: All services implemented (Persons 2, 4, 5)
-- Week 3: All forms completed (Persons 1, 3)
+- Week 1: Database schemas designed (Task 03 - Duyên, Triết) & database setup (Task 07 - Ngọc, Vũ)
+- Week 2: All services implemented (Task 02 - Duyên/Triết; Task 05-06 - Phôn; Task 08 - Ngọc/Vũ)
+- Week 3: All forms completed (Task 01 - Duyên/Triết; Task 04 - Duyên)
 - Week 4: Integration testing and security verification
 
 ### Requirement 2: OLS Notification System (5 points)
@@ -327,17 +318,17 @@ All assignments remain unchanged from original - just better organized for execu
 
 **Milestone Targets:**
 
-- Week 2: Standard + fine-grained audit configured (Ngọc, Vũ)
-- Week 3: Audit service implemented (Ngọc, Vũ)
-- Week 4: 5+ test scenarios executed and documented
+- Week 2: Standard + fine-grained audit configured (Task 09 - Ngọc, Vũ)
+- Week 3: Audit service implemented (Task 06 - Phôn)
+- Week 4: 5+ audit test scenarios executed and documented
 
 ### Requirement 4: Backup & Recovery (5 points)
 
 **Milestone Targets:**
 
-- Week 2: Backup strategy documented (Ngọc, Vũ)
-- Week 3: RMAN backup configured (Ngọc, Vũ)
-- Week 4: Recovery procedures tested (Ngọc, Vũ)
+- Week 2: Backup strategy documented (Task 10 - Ngọc, Vũ)
+- Week 3: RMAN backup configured (Task 10 - Ngọc, Vũ)
+- Week 4: Recovery procedures tested + RTO verification (Task 10 - Ngọc, Vũ)
 
 ---
 
