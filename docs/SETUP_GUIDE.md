@@ -100,9 +100,9 @@ EXIT;
 
 ```powershell
 # Navigate to project directory
-cd Subsystem1-OracleDBAdmin
-mkdir Source
-cd Source
+cd subsystem1-oracleDBAdmin
+mkdir source
+cd source
 
 # Create WinForm project for .NET 10.0
 & "C:\Program Files\dotnet\dotnet.exe" new winforms -n OracleDBAdmin -f net10.0
@@ -136,9 +136,9 @@ cd OracleDBAdmin
 
 ```powershell
 # Navigate to project directory
-cd Subsystem2-MedicalDataManagement
-mkdir Source
-cd Source
+cd subsystem2-medicalDataManagement
+mkdir source
+cd source
 
 # Create WinForm project for .NET 10.0
 & "C:\Program Files\dotnet\dotnet.exe" new winforms -n MedicalDataSystem -f net10.0

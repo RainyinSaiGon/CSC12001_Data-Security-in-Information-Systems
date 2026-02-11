@@ -228,22 +228,22 @@ docs/tasks/task-01 to task-08           ← Per-deliverable specifications
 ### Database Structure (To Create)
 
 ```
-Database/
-├── Schema/                (Create SQL files)
+database/
+├── schema/                (Create SQL files)
 │   ├── 01_CreateTables.sql
 │   ├── 02_CreateIndexes.sql
 │   └── 03_InsertSampleData.sql
-├── Security/              (Create SQL files)
+├── security/              (Create SQL files)
 │   ├── 01_RBAC_Setup.sql
 │   ├── 02_VPD_Setup.sql
 │   ├── 03_OLS_Setup.sql
 │   └── 04_Users_Creation.sql
-├── Audit/                 (Create SQL files)
+├── audit/                 (Create SQL files)
 │   ├── 01_StandardAudit_Setup.sql
 │   ├── 02_FineGrainedAudit_Setup.sql
 │   ├── 03_UnifiedAudit_Setup.sql
 │   └── ReadAuditLogs.sql
-└── BackupRestore/         (Create SQL files)
+└── backupRestore/         (Create SQL files)
     ├── 01_BackupStrategy.sql
     ├── 02_AutomaticBackup.sql
     └── 03_RecoveryScripts.sql
@@ -252,23 +252,23 @@ Database/
 ### Application Source Code (To Create)
 
 ```
-Subsystem1-OracleDBAdmin/
-└── Source/
-    ├── OracleDBAdmin/
-    │   ├── Forms/        → Create UI forms
-    │   ├── Models/       → Create data models
-    │   ├── Services/     → Create business logic
+subsystem1-oracleDBAdmin/
+└── source/
+    ├── oracleDBAdmin/
+    │   ├── forms/        → Create UI forms
+    │   ├── models/       → Create data models
+    │   ├── services/     → Create business logic
     │   └── Program.cs
-    └── OracleDBAdmin.slnx
+    └── oracleDBAdmin.slnx
 
-Subsystem2-MedicalDataManagement/
-└── Source/
-    ├── MedicalDataSystem/
-    │   ├── Forms/        → Create UI forms
-    │   ├── Models/       → Create entity models
-    │   ├── Services/     → Create business logic
+subsystem2-medicalDataManagement/
+└── source/
+    ├── medicalDataSystem/
+    │   ├── forms/        → Create UI forms
+    │   ├── models/       → Create entity models
+    │   ├── services/     → Create business logic
     │   └── Program.cs
-    └── MedicalDataSystem.slnx
+    └── medicalDataSystem.slnx
 ```
 
 ## 8. Key Concepts
@@ -302,9 +302,9 @@ Subsystem2-MedicalDataManagement/
 
 For detailed guidance on specific topics:
 
-- Database setup: See [Database/README.md](../Database/README.md)
-- Subsystem 1: See [Subsystem1-OracleDBAdmin/README.md](../Subsystem1-OracleDBAdmin/README.md)
-- Subsystem 2: See [Subsystem2-MedicalDataManagement/README.md](../Subsystem2-MedicalDataManagement/README.md)
+- Database setup: See [database/README.md](../database/README.md)
+- Subsystem 1: See [subsystem1-oracleDBAdmin/README.md](../subsystem1-oracleDBAdmin/README.md)
+- Subsystem 2: See [subsystem2-medicalDataManagement/README.md](../subsystem2-medicalDataManagement/README.md)
 - Development: See [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ## 10. References

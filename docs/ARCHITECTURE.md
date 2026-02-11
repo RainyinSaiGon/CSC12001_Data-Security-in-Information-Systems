@@ -5,24 +5,38 @@ Complete system architecture and technical design documentation for the Data Sec
 ## System Overview Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Medical Hospital System                     │
-│                    (Data Security Project)                      │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                     Medical Hospital System                          │
+│                    (Data Security Project)                           │
+└──────────────────────────────────────────────────────────────────────┘
                               │
-                ┌─────────────┼────────────┐
-                │             │            │
-         ┌──────▼──────┐  ┌──▼─────────┐  ┌┴──────────────┐
-         │ Subsystem 1 │  │ Subsystem 2│  │  Oracle 21c   │
-         │ DB Admin    │  │ Medical    │  │  XE Database  │
-         │ WinForm     │  │ WinForm    │  │  + Security   │
-         └──────┬──────┘  └──┬─────────┘  └┬──────────────┘
-                │            │             │
-                ├────────────┼─────────────┤
-                │            │             │
-          .NET 10.0    .NET 10.0      RBAC, VPD
-          ODP.NET      ODP.NET        OLS, Audit
+           ┌──────────────────┼───────────────────┐
+           │                  │                   │
+    ┌──────▼────────┐  ┌──────▼─────────┐  ┌─────▼──────────────────┐
+    │ Subsystem 1   │  │ Subsystem 2    │  │  Oracle 21c XE         │
+    │ DB Admin      │  │ Medical System │  │  Separate Databases    │
+    │ WinForm       │  │ WinForm        │  │  + Security Features   │
+    └──────┬────────┘  └──────┬─────────┘  └─────┬──────────────────┘
+           │                  │                   │
+       .NET 10        .NET 10                 RBAC,VPD
+       ODP.NET        ODP.NET                 OLS,Audit
+           │                  │                   │
+    ┌──────▼────────┐  ┌──────▼─────────┐       │
+    │  Admin DB     │  │  Medical DB    │ ◄─────┘
+    │               │  │                │
+    │ Users/Roles   │  │ Patients       │
+    │ Permissions   │  │ Staff          │
+    │ Audit Logs    │  │ Medical Rec.   │
+    │ (Independent) │  │ Prescriptions  │
+    └───────────────┘  └────────────────┘
 ```
+
+## Database Separation
+
+**Key Change:** Subsystem 1 and Subsystem 2 use **separate Oracle databases** for clear architectural separation:
+
+1. **Subsystem 1 Admin Database:** Stores administrative metadata (users, roles, permissions, admin audit logs)
+2. **Subsystem 2 Medical Database:** Stores patient and medical data (with RBAC, VPD, OLS, data audit)
 
 ## Architecture Layers
 
@@ -88,9 +102,65 @@ LoginForm (Authentication)
 
 ### 4. Database Layer (Oracle 21c XE)
 
-Connection: `localhost:1521/XE`
+**Two separate Oracle 21c XE databases with independent schemas:**
+
+#### Database 1: Subsystem 1 Admin Database
+- **Connection:** `localhost:1521/XE` (Admin DB credentials)
+- **Purpose:** Administrative metadata and operations
+- **Tables:** ADMIN_USERS, ADMIN_ROLES, ADMIN_PERMISSIONS, ADMIN_ROLE_PERMISSIONS, ADMIN_USER_ROLES, ADMIN_OPERATION_AUDIT
+- **Security:** RBAC for admin operations
+- **Audit:** Complete audit trail of all admin actions
+
+#### Database 2: Subsystem 2 Medical Database
+- **Connection:** `localhost:1521/XE` (Medical DB credentials)
+- **Purpose:** Patient and medical data
+- **Tables:** BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO, AUDITLOG
+- **Security:** RBAC + VPD (row-level) + OLS (label-based)
+- **Audit:** Comprehensive data access and modification audit trail
 
 ## Entity Relationship Diagram (ERD)
+
+### Subsystem 1 Admin Database (OracleDBAdmin)
+
+```
+ADMIN_USERS (Administrative Users)
+├── ADMIN_USER_ID (PK)
+├── TENTAIKHOAN (Username)
+├── HOTEN (Full Name)
+├── EMAIL
+├── QUYHAN (Permission Level)
+├── ACTIVE (Y/N)
+└─── Has Multiple ──► ADMIN_USER_ROLES
+                     ├── ADMIN_USER_ID (FK)
+                     └── ADMIN_ROLE_ID (FK)
+                     
+                     ◄─── References ADMIN_ROLES
+                          ├── ADMIN_ROLE_ID (PK)
+                          ├── TENROLEVAITRO (Role Name)
+                          └── MOTA (Description)
+                          
+                          Related To ──► ADMIN_ROLE_PERMISSIONS
+                                        ├── ADMIN_ROLE_ID (FK)
+                                        ├── PERMISSION_ID (FK)
+                                        └── WITH_GRANT_OPTION
+
+                                        ◄─── References ADMIN_PERMISSIONS
+                                             ├── PERMISSION_ID (PK)
+                                             ├── TENQUYEN (Permission Name)
+                                             └── LOAIQUYEN (Type)
+
+ADMIN_OPERATION_AUDIT (Audit Trail)
+├── AUDIT_ID (PK)
+├── ADMIN_USER_ID (FK)
+├── OPERATION_TYPE
+├── OBJECT_TYPE
+├── OBJECT_NAME
+├── TIMESTAMP
+├── SUCCESS (Y/N)
+└── DETAILS (JSON)
+```
+
+### Subsystem 2 Medical Database (MedicalDataSystem)
 
 ```
 BENHNHAN (Patient)
@@ -127,7 +197,7 @@ BENHNHAN (Patient)
 NHANVIEN (Staff)
 ├── MANV (PK)
 ├── HOTEN
-├── VAITRO [Coordinator|Doctor|Technician]
+├── VAITRO ['Điều phối viên'|'Bác sĩ/Y sĩ'|'Kỹ thuật viên'|'Bệnh nhân']
 ├── CHUYENKHOA
 └── Email
     │
@@ -148,7 +218,61 @@ THONGBAO (Notification) - OLS Label Security
 
 ## Security Architecture
 
-### Access Control Layers
+### Subsystem 1: Admin Database Security
+
+```
+┌──────────────────────────────────────────────────────┐
+│  OracleDBAdmin Application (WinForm)        [S1]    │
+│  ├─ User Login (Admin Authentication)                │
+│  ├─ Role-Based Feature Access                        │
+│  └─ Operation Permission Checking                    │
+├──────────────────────────────────────────────────────┤
+│  Business Logic Layer (Admin Services)      [S1]    │
+│  ├─ User Management Service                          │
+│  ├─ Role Management Service                          │
+│  ├─ Permission Grant/Revoke Service                  │
+│  └─ Audit Service (Log all operations)               │
+├──────────────────────────────────────────────────────┤
+│  Admin Database Security Layer              [S1]    │
+│  ├─ RBAC (Admin roles for DBA, SecAdmin, etc.)       │
+│  └─ Audit Trails (Admin operation history)           │
+├──────────────────────────────────────────────────────┤
+│  Oracle Database 21c XE (Admin)                      │
+│  ├─ ADMIN_USERS table                                │
+│  ├─ ADMIN_ROLES, ADMIN_PERMISSIONS tables            │
+│  └─ ADMIN_OPERATION_AUDIT table                      │
+└──────────────────────────────────────────────────────┘
+```
+
+### Subsystem 2: Medical Database Security
+
+```
+┌──────────────────────────────────────────────────────┐
+│  MedicalDataSystem Application (WinForm)    [S2]    │
+│  ├─ Authentication Check (LoginForm)                 │
+│  ├─ Role-Based Menu Display                          │
+│  └─ Patient Data Access Control                      │
+├──────────────────────────────────────────────────────┤
+│  Business Logic Layer (Medical Services)    [S2]    │
+│  ├─ RBAC Service (Role verification)                 │
+│  └─ VPD Service (Row filtering)                      │
+├──────────────────────────────────────────────────────┤
+│  Database Security Layer (Oracle)            [S2]    │
+│  ├─ VPD Policies (Transparent filtering)             │
+│  ├─ OLS Labels (Multi-component hierarchy)           │
+│  └─ Audit Trails (Immutable logging)                 │
+├──────────────────────────────────────────────────────┤
+│  Oracle Database 21c XE (Medical)                    │
+│  ├─ RBAC Roles & Privileges                          │
+│  ├─ Row-Level Security (VPD)                         │
+│  ├─ Column-Level Security                            │
+│  └─ Comprehensive Audit Trail (AUDITLOG)             │
+└──────────────────────────────────────────────────────┘
+
+Legend: [S1] = Subsystem 1  [S2] = Subsystem 2
+```
+
+### Access Control Layers (Subsystem 2)
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -171,8 +295,6 @@ THONGBAO (Notification) - OLS Label Security
 │  ├─ Column-Level Security                            │
 │  └─ Comprehensive Audit Trail                        │
 └──────────────────────────────────────────────────────┘
-
-Legend: [S1] = Subsystem 1  [S2] = Subsystem 2
 ```
 
 ### Role-Based Isolation

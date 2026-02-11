@@ -8,7 +8,7 @@
 
 ## Description
 
-Verify that Role-Based Access Control is correctly configured with 4 roles (COORDINATOR, DOCTOR, TECHNICIAN, PATIENT), each having specific permissions. Users should only be able to perform authorized actions.
+Verify that Role-Based Access Control is correctly configured with 4 roles ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân'), each having specific permissions. Users should only be able to perform authorized actions.
 
 ---
 
@@ -27,7 +27,7 @@ Verify that Role-Based Access Control is correctly configured with 4 roles (COOR
 ```sql
 -- Check all 4 roles exist
 SELECT role FROM dba_roles
-WHERE role IN ('COORDINATOR', 'DOCTOR', 'TECHNICIAN', 'PATIENT');
+WHERE role IN ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân');
 ```
 
 **Expected Result:** 4 roles returned
@@ -130,7 +130,7 @@ UPDATE HSBA_DV SET KETQUA = 'Fake' WHERE MADICHVU = 1;  -- Should FAIL
 
 ## Pass Criteria
 
-- [ ] 4 database roles created (COORDINATOR, DOCTOR, TECHNICIAN, PATIENT)
+- [ ] 4 database roles created ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân')
 - [ ] 8 test users created with correct role assignments
 - [ ] COORDINATOR has full access to patient management tables
 - [ ] DOCTOR has limited access (own patients only via VPD in TC#3)

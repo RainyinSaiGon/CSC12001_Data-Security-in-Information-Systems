@@ -8,9 +8,9 @@ A comprehensive data security project implementing two subsystems: Oracle Databa
 |---------|-------------|
 | [Getting Started](#getting-started) | Complete setup guide |
 | [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) | Detailed setup guide for .NET 10.0 & Oracle 21c XE |
-| [Subsystem1-OracleDBAdmin/README.md](Subsystem1-OracleDBAdmin/README.md) | Database admin application setup |
-| [Subsystem2-MedicalDataManagement/README.md](Subsystem2-MedicalDataManagement/README.md) | Medical system setup |
-| [Database/README.md](Database/README.md) | Database schema & scripts |
+| [subsystem1-oracleDBAdmin/README.md](subsystem1-oracleDBAdmin/README.md) | Database admin application setup |
+| [subsystem2-medicalDataManagement/README.md](subsystem2-medicalDataManagement/README.md) | Medical system setup |
+| [database/README.md](database/README.md) | Database schema & scripts |
 | [docs/README.md](docs/README.md) | Documentation index |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development guidelines |
 
@@ -44,45 +44,65 @@ To be created: Database SQL scripts, application source code, test files, utilit
 ```
 CSC12001_Data-Security-in-Information-Systems/
 │
-├── Subsystem1-OracleDBAdmin/              # Database Administration Application
-│   ├── Source/                            # (To be created)
-│   │   ├── OracleDBAdmin.slnx
-│   │   └── OracleDBAdmin/
-│   │       ├── Forms/                    # UI Forms
-│   │       ├── Models/                   # Data models
-│   │       ├── Services/                 # Business logic
+├── subsystem1-oracleDBAdmin/              # Database Administration Application
+│   ├── source/                            # (To be created)
+│   │   ├── oracleDBAdmin.slnx
+│   │   └── oracleDBAdmin/
+│   │       ├── forms/                    # UI Forms
+│   │       ├── models/                   # Data models
+│   │       ├── services/                 # Business logic
 │   │       └── Program.cs
 │   └── README.md
 │
-├── Subsystem2-MedicalDataManagement/      # Medical Data Management System
-│   ├── Source/                            # (To be created)
-│   │   ├── MedicalDataSystem.slnx
-│   │   └── MedicalDataSystem/
-│   │       ├── Forms/                    # UI Forms (RBAC, VPD, OLS)
-│   │       ├── Models/                   # Entity models
-│   │       ├── Services/                 # Business logic
+├── subsystem2-medicalDataManagement/      # Medical Data Management System
+│   ├── source/                            # (To be created)
+│   │   ├── medicalDataSystem.slnx
+│   │   └── medicalDataSystem/
+│   │       ├── forms/                    # UI Forms (RBAC, VPD, OLS)
+│   │       ├── models/                   # Entity models
+│   │       ├── services/                 # Business logic
 │   │       └── Program.cs
 │   └── README.md
 │
-├── Database/                              # Database setup scripts (To be created)
-│   ├── Schema/                            # Data modeling
-│   │   ├── 01_CreateTables.sql
-│   │   ├── 02_CreateIndexes.sql
-│   │   └── 03_InsertSampleData.sql
-│   ├── Security/                          # Security configuration
-│   │   ├── 01_RBAC_Setup.sql
-│   │   ├── 02_VPD_Setup.sql
-│   │   ├── 03_OLS_Setup.sql
-│   │   └── 04_Users_Creation.sql
-│   ├── Audit/                             # Audit configuration
-│   │   ├── 01_StandardAudit_Setup.sql
-│   │   ├── 02_FineGrainedAudit_Setup.sql
-│   │   ├── 03_UnifiedAudit_Setup.sql
+├── database/                              # Database setup scripts (separated by subsystem)
+│   │
+│   ├── Subsystem1-AdminDB/                # Admin Database for OracleDBAdmin tool
+│   │   ├── schema/                        # Admin tables, views, procedures
+│   │   │   ├── 01_CreateAdminTables.sql
+│   │   │   ├── 02_CreateDatabaseObjectTables.sql
+│   │   │   ├── 03_CreateAdminViews.sql
+│   │   │   ├── 04_CreateAdminStoredProcedures.sql
+│   │   │   ├── 05_CreateAdminFunctions.sql
+│   │   │   ├── 06_CreateAdminIndexes.sql
+│   │   │   └── 07_InsertSampleData.sql
+│   │   ├── security/                      # Admin database security
+│   │   │   ├── 01_AdminUsers_Creation.sql
+│   │   │   ├── 02_AdminRBAC_Setup.sql
+│   │   │   └── 03_AdminAudit_Setup.sql
+│   │   ├── audit/                         # Admin audit setup
+│   │   │   └── 01_AdminOperationAudit.sql
+│   │   └── README.md
+│   │
+│   ├── Subsystem2-MedicalDB/              # Medical Database for Medical System
+│   │   ├── schema/                        # Medical data tables
+│   │   │   ├── 01_CreateTables.sql
+│   │   │   ├── 02_CreateIndexes.sql
+│   │   │   └── 03_InsertSampleData.sql
+│   │   ├── security/                      # Medical database security
+│   │   │   ├── 01_Users_Creation.sql
+│   │   │   ├── 02_RBAC_Setup.sql
+│   │   │   ├── 03_VPD_Setup.sql
+│   │   │   └── 04_OLS_Setup.sql
+│   │   ├── audit/                         # Medical audit configuration
+│   │   │   ├── 01_StandardAudit_Setup.sql
+│   │   │   ├── 02_FineGrainedAudit_Setup.sql
+│   │   │   ├── 03_UnifiedAudit_Setup.sql
+│   │   │   └── ReadAuditLogs.sql
+│   │   └── README.md
+│   │
+│   ├── Audit/                             # Legacy audit scripts
 │   │   └── ReadAuditLogs.sql
-│   ├── BackupRestore/                     # Backup & recovery scripts
-│   │   ├── 01_BackupStrategy.sql
-│   │   ├── 02_AutomaticBackup.sql
-│   │   └── 03_RecoveryScripts.sql
+│   │
 │   └── README.md
 │
 ├── docs/                                  # Documentation (consolidated)
@@ -94,20 +114,20 @@ CSC12001_Data-Security-in-Information-Systems/
 │       ├── README.md                      # Task assignment summary
 │       └── task-01 to task-08             # Per-deliverable task specs
 │
-├── Tests/                                 # Testing (To be created)
-│   ├── TestCases/                         # Test case documentation
+├── tests/                                 # Testing (To be created)
+│   ├── testCases/                         # Test case documentation
 │   │   ├── TC1_UserSetup.md              # Test Case #1
 │   │   ├── TC2_RBAC.md                   # Test Case #2
 │   │   ├── TC3_VPD.md                    # Test Case #3
 │   │   ├── TC4_Technician.md             # Test Case #4
 │   │   └── TC5_PatientAccess.md          # Test Case #5
-│   └── AuditTestScenarios/               # Audit test scripts
+│   └── auditTestScenarios/               # Audit test scripts
 │       ├── AuditTest_01_UnauthorizedAccess.sql
 │       ├── AuditTest_02_PrivilegeEscalation.sql
 │       └── ...
 │
-├── Utils/                                 # Utility scripts (To be created)
-│   ├── Scripts/                           # SQL utility scripts
+├── utils/                                 # Utility scripts (To be created)
+│   ├── scripts/                           # SQL utility scripts
 │   │   ├── CreateAllUsers.sql
 │   │   └── GrantAllPermissions.sql
 │   └── Config/
@@ -184,36 +204,57 @@ SELECT username, account_status FROM dba_users WHERE username = 'PROJECT_ADMIN';
 3. Never commit the plaintext password to the repository
 4. Use different passwords for different environments (dev, staging, production)
 
-**2.2 Run Database Schema Scripts** (To be created)
+**2.2 Setup Subsystem 1 Admin Database** (Task 3 - Schema Design by Duyên, Triết; SQL Implementation by Ngọc, Vũ)
 
-Create and execute SQL scripts in this order:
+This database manages user/role administration and permissions:
 
 ```bash
 # For Oracle 21c XE, connect using:
 sqlplus project_admin/your_password@localhost:1521/XE
 
--- Execute in order:
-@Database/Schema/01_CreateTables.sql
-@Database/Schema/02_CreateIndexes.sql
-@Database/Schema/03_InsertSampleData.sql
+-- Schema creation (Subsystem 1 Admin DB)
+@database/Subsystem1-AdminDB/schema/01_CreateAdminTables.sql
+@database/Subsystem1-AdminDB/schema/02_CreateDatabaseObjectTables.sql
+@database/Subsystem1-AdminDB/schema/03_CreateAdminViews.sql
+@database/Subsystem1-AdminDB/schema/04_CreateAdminStoredProcedures.sql
+@database/Subsystem1-AdminDB/schema/05_CreateAdminFunctions.sql
+@database/Subsystem1-AdminDB/schema/06_CreateAdminIndexes.sql
+@database/Subsystem1-AdminDB/schema/07_InsertSampleData.sql
+
+-- Security setup
+@database/Subsystem1-AdminDB/security/01_AdminUsers_Creation.sql
+@database/Subsystem1-AdminDB/security/02_AdminRBAC_Setup.sql
+@database/Subsystem1-AdminDB/security/03_AdminAudit_Setup.sql
 ```
 
-See [Database/README.md](Database/README.md) for schema definitions and SQL script templates.
+**2.3 Setup Subsystem 2 Medical Database** (Tasks 7-10 - Ngọc, Vũ)
 
-**2.3 Setup Security (RBAC, VPD, OLS)** (To be created)
-
-Create and execute security configuration scripts:
+This database contains patient records with RBAC, VPD, and OLS security:
 
 ```bash
+# Schema creation (Subsystem 2 Medical DB)
 sqlplus project_admin/your_password@localhost:1521/XE
 
-@Database/Security/01_RBAC_Setup.sql
-@Database/Security/02_VPD_Setup.sql
-@Database/Security/03_OLS_Setup.sql
-@Database/Security/04_Users_Creation.sql
+-- Execute in order:
+@database/Subsystem2-MedicalDB/schema/01_CreateTables.sql
+@database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
+@database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
+
+-- Security setup (RBAC, VPD, OLS)
+@database/Subsystem2-MedicalDB/security/01_Users_Creation.sql
+@database/Subsystem2-MedicalDB/security/02_RBAC_Setup.sql
+@database/Subsystem2-MedicalDB/security/03_VPD_Setup.sql
+@database/Subsystem2-MedicalDB/security/04_OLS_Setup.sql
+
+-- Audit configuration
+@database/Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql
+@database/Subsystem2-MedicalDB/audit/02_FineGrainedAudit_Setup.sql
+@database/Subsystem2-MedicalDB/audit/03_UnifiedAudit_Setup.sql
 ```
 
-See [Database/README.md](Database/README.md) for security mechanism details.
+See [database/README.md](database/README.md) for complete database documentation and detailed task specifications in [docs/tasks/](docs/tasks/).
+
+See [database/README.md](database/README.md) for security mechanism details.
 
 **2.4 Setup Audit** (To be created)
 
@@ -222,12 +263,12 @@ Create and execute audit configuration scripts:
 ```bash
 sqlplus project_admin/your_password@localhost:1521/XE
 
-@Database/Audit/01_StandardAudit_Setup.sql
-@Database/Audit/02_FineGrainedAudit_Setup.sql
-@Database/Audit/03_UnifiedAudit_Setup.sql
+@database/audit/01_StandardAudit_Setup.sql
+@database/audit/02_FineGrainedAudit_Setup.sql
+@database/audit/03_UnifiedAudit_Setup.sql
 ```
 
-See [Database/README.md](Database/README.md) and [docs/tasks/task-08-database-audit-setup.md](docs/tasks/task-08-database-audit-setup.md) for audit setup guidance.
+See [database/README.md](database/README.md) and [docs/tasks/task-08-database-audit-setup.md](docs/tasks/task-08-database-audit-setup.md) for audit setup guidance.
 
 ### Step 3: Configure Connection Strings
 
@@ -348,8 +389,8 @@ string connectionString = $"Data Source={dataSource};User Id={userId};Password={
 **Subsystem 1 - Database Administration**
 
 ```bash
-cd Subsystem1-OracleDBAdmin/Source
-dotnet build OracleDBAdmin.slnx
+cd subsystem1-oracleDBAdmin/source
+dotnet build oracleDBAdmin.slnx
 # Or open in Visual Studio and Build > Build Solution
 # Run the application
 ```
@@ -357,8 +398,8 @@ dotnet build OracleDBAdmin.slnx
 **Subsystem 2 - Medical Data Management**
 
 ```bash
-cd Subsystem2-MedicalDataManagement/Source
-dotnet build MedicalDataSystem.slnx
+cd subsystem2-medicalDataManagement/source
+dotnet build medicalDataSystem.slnx
 # Or open in Visual Studio and Build > Build Solution
 # Run the application
 ```
@@ -405,16 +446,16 @@ dotnet build MedicalDataSystem.slnx
 ```bash
 # For Oracle 21c XE:
 # Schema setup
-sqlplus project_admin/password@localhost:1521/XE @Database/Schema/01_CreateTables.sql
+sqlplus project_admin/password@localhost:1521/XE @database/schema/01_CreateTables.sql
 
 # Security setup
-sqlplus project_admin/password@localhost:1521/XE @Database/Security/01_RBAC_Setup.sql
+sqlplus project_admin/password@localhost:1521/XE @database/security/01_RBAC_Setup.sql
 
 # Audit setup
-sqlplus project_admin/password@localhost:1521/XE @Database/Audit/01_StandardAudit_Setup.sql
+sqlplus project_admin/password@localhost:1521/XE @database/audit/01_StandardAudit_Setup.sql
 
 # Read audit logs
-sqlplus project_admin/password@localhost:1521/XE @Database/Audit/ReadAuditLogs.sql
+sqlplus project_admin/password@localhost:1521/XE @database/audit/ReadAuditLogs.sql
 ```
 
 ### Visual Studio
@@ -454,11 +495,11 @@ Build > Clean Solution           # Remove build artifacts
 ## Documentation
 
 - [docs/README.md](docs/README.md) - System architecture and technical design
-- [Subsystem1-OracleDBAdmin/README.md](Subsystem1-OracleDBAdmin/README.md) - DB admin app documentation
-- [Subsystem2-MedicalDataManagement/README.md](Subsystem2-MedicalDataManagement/README.md) - Medical system documentation
-- [Database/README.md](Database/README.md) - Database schema and security setup
+- [subsystem1-oracleDBAdmin/README.md](subsystem1-oracleDBAdmin/README.md) - DB admin app documentation
+- [subsystem2-medicalDataManagement/README.md](subsystem2-medicalDataManagement/README.md) - Medical system documentation
+- [database/README.md](database/README.md) - Database schema and security setup
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Development guidelines and standards
-- [Tests/](Tests/) - Test cases and scenarios
+- [tests/](tests/) - Test cases and scenarios
 
 ## Requirements Implementation
 
@@ -561,14 +602,14 @@ Three automated pipelines validate code and documentation:
 
 **Subsystem 1 CI/CD** (`subsystem1-ci.yml`)
 
-- Triggers on PR to main/develop with changes to `Subsystem1-OracleDBAdmin/`
+- Triggers on PR to main/develop with changes to `subsystem1-oracleDBAdmin/`
 - Builds .NET project and runs tests (Windows, .NET 8.0.x & 10.0.x)
 - Code quality analysis using CodeQL
 - **Status**: Currently disabled (`if: false`) — activate when source code ready
 
 **Subsystem 2 CI/CD** (`subsystem2-ci.yml`)
 
-- Triggers on PR to main/develop with changes to `Subsystem2-MedicalDataManagement/`
+- Triggers on PR to main/develop with changes to `subsystem2-medicalDataManagement/`
 - Builds .NET project and runs tests (Windows, .NET 8.0.x & 10.0.x)
 - Code quality analysis using CodeQL
 - **Status**: Currently disabled (`if: false`) — activate when source code ready

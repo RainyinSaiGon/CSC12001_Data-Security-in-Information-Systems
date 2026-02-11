@@ -21,8 +21,8 @@ A comprehensive HIPAA-compliant medical management system with:
 The following architecture outlines the planned directory structure for this application. Create these files and folders as you implement features:
 
 ```
-Subsystem2-MedicalDataManagement/Source/MedicalDataSystem/
-├── Forms/                                # [CREATE] UI Forms & Windows
+subsystem2-medicalDataManagement/source/medicalDataSystem/
+├── forms/                                # [CREATE] UI Forms & Windows
 │   ├── LoginForm.cs                     # User authentication
 │   ├── LoginForm.Designer.cs
 │   ├── MainForm.cs                      # Main application window
@@ -37,7 +37,7 @@ Subsystem2-MedicalDataManagement/Source/MedicalDataSystem/
 │   ├── PatientForm.Designer.cs
 │   └── NotificationForm.cs              # OLS notification viewer
 │
-├── Models/                               # [CREATE] Entity Models
+├── models/                               # [CREATE] Entity Models
 │   ├── Patient.cs
 │   ├── Staff.cs
 │   ├── MedicalRecord.cs
@@ -45,7 +45,7 @@ Subsystem2-MedicalDataManagement/Source/MedicalDataSystem/
 │   ├── Prescription.cs
 │   └── Notification.cs
 │
-├── Services/                             # [CREATE] Business Logic & Database Access
+├── services/                             # [CREATE] Business Logic & Database Access
 │   ├── AuthenticationService.cs         # Login & session management
 │   ├── OracleConnectionService.cs       # Database connection management
 │   ├── RBACService.cs                   # Role-based access control
@@ -88,7 +88,7 @@ See [Development](#development) section below for implementation details.
 
 - MANV: Staff ID
 - HOTEN: Full Name
-- VAITRO: Role (COORDINATOR, DOCTOR, TECHNICIAN)
+- VAITRO: Role ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên')
 - CHUYENKHOA: Specialty
 
 ### HSBA (Medical Record)
@@ -202,12 +202,12 @@ Roles: Coordinator, Doctor/Nurse, Technician, Patient
 
 ```bash
 # For Oracle 21c XE:
-cd Database/Schema
+cd database/schema
 sqlplus project_admin/your_password@localhost:1521/XE @01_CreateTables.sql
 sqlplus project_admin/your_password@localhost:1521/XE @02_CreateIndexes.sql
 sqlplus project_admin/your_password@localhost:1521/XE @03_InsertSampleData.sql
 
-cd ../Security
+cd ../security
 sqlplus project_admin/your_password@localhost:1521/XE @01_RBAC_Setup.sql
 sqlplus project_admin/your_password@localhost:1521/XE @02_VPD_Setup.sql
 sqlplus project_admin/your_password@localhost:1521/XE @03_OLS_Setup.sql
@@ -278,7 +278,7 @@ For detailed setup instructions on configuring connection strings (User Secrets,
 
 ```bash
 # Build the solution
-cd Subsystem2-MedicalDataManagement/Source
+cd subsystem2-medicalDataManagement/source
 dotnet build MedicalDataSystem.slnx
 
 # Run the application
@@ -366,7 +366,7 @@ dotnet run --project MedicalDataSystem/MedicalDataSystem.csproj --configuration 
 
 **Problem:** Slow data loading or timeouts
 
-- **Solution**: Check if indexes created (Database/Schema/02_CreateIndexes.sql)
+- **Solution**: Check if indexes created (database/schema/02_CreateIndexes.sql)
 - **Solution**: Verify VPD policy efficiency (may need index on MANV in VPD policies)
 - **Solution**: Monitor database query plans
 - **Solution**: Consider table statistics updates

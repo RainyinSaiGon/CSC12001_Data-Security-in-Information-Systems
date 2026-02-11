@@ -21,7 +21,7 @@ jobs:
           find Database -name "*.sql" -exec grep -l "^\s*--" {} \; || true
           
           # Verify script structure
-          for script in Database/Schema/*.sql Database/Security/*.sql Database/Audit/*.sql Database/BackupRestore/*.sql
+          for script in database/schema/*.sql database/security/*.sql database/audit/*.sql database/backupRestore/*.sql
           do
             if [ -f "$script" ]; then
               echo "Checking $script"

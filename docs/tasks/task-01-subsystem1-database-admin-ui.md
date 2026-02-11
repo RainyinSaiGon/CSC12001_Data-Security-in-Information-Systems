@@ -79,11 +79,24 @@ Implement 5 Windows Forms for Oracle database administration:
 
 ### PermissionForm.cs
 
-- ComboBox: User/Role selection, Object selection
+- ComboBox: User/Role selection, Object selection, **Object Type selection** (Table, View, Procedure, Function)
 - CheckBox: SELECT, INSERT, UPDATE, DELETE, WITH GRANT OPTION
+  - **IMPORTANT:** Column-level permissions (below) only available for SELECT and UPDATE
+  - Column list DISABLED for INSERT and DELETE (Oracle limitation)
 - Buttons: Grant, Revoke, Clear, Refresh
 - DataGrid: Existing permissions (grantee, object, type, columns, grant option)
 - TextBox: Column list for column-level security
+  - **Restrictions:** Only enabled when SELECT or UPDATE is checked
+  - Must be empty/disabled for INSERT, DELETE, or Procedure/Function objects
+
+**Permission Matrix by Object Type:**
+
+| Object Type | SELECT | INSERT | UPDATE | DELETE | Grantable to Cols? |
+|-------------|--------|--------|--------|--------|--------------------|
+| Table | ✓ | ✓ | ✓ | ✓ | SELECT/UPDATE only |
+| View | ✓ | ✗ | ✗ | ✗ | SELECT only |
+| Procedure | EXECUTE | - | - | - | No |
+| Function | EXECUTE | - | - | - | No |
 
 ### PrivilegeViewerForm.cs
 
@@ -115,7 +128,7 @@ Implement 5 Windows Forms for Oracle database administration:
 
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
-| `Forms/UserManagementForm.cs` | Required | Week 3 |
+| `forms/UserManagementForm.cs` | Required | Week 3 |
 
 **Pass Criteria (Duyên, Triết):**
 
@@ -138,7 +151,7 @@ Implement 5 Windows Forms for Oracle database administration:
 
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
-| `Forms/MainForm.cs` (menu/button enablement based on role) | Required | Week 3 |
+| `forms/MainForm.cs` (menu/button enablement based on role) | Required | Week 3 |
 
 **Pass Criteria (Duyên, Triết):**
 

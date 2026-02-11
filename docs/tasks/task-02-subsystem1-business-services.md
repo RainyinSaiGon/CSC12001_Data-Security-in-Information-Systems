@@ -98,9 +98,21 @@ Must implement FIRST - all other services depend on it:
 ### PermissionService.cs
 
 - GrantPermission(Permission): bool — GRANT ON TO [WITH GRANT OPTION]
+  - Validates that object exists and user/role exists
+  - Rejects column-level grants for INSERT/DELETE
 - RevokePermission(Permission): bool — REVOKE
 - GrantColumnPermission(string, string, List\<string\>, string): bool — Column-level GRANT
+  - **CRITICAL VALIDATION:** Only SELECT and UPDATE support column-level permissions
+  - Rejects INSERT and DELETE with column restrictions (Oracle SQL error)
+  - Validates column names exist in specified table
 - GetObjectPermissions(string): List\<Permission\> — Query TABLE_PRIVS
+- **NEW:** SupportsColumnGrant(string permission): bool — Check if permission type allows column-level
+  - Returns TRUE for SELECT and UPDATE only
+  - Returns FALSE for INSERT, DELETE, EXECUTE
+- **NEW:** ValidateColumnPermission(string object, string permissionType, List\<string\> columns): bool
+  - Ensures permission type is SELECT or UPDATE
+  - Ensures all specified columns exist on destination object
+  - Ensures object is a TABLE or VIEW (not PROCEDURE/FUNCTION)
 
 ### PrivilegeService.cs
 
@@ -130,8 +142,9 @@ Must implement FIRST - all other services depend on it:
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
 | `OracleConnectionService.cs` | Critical | Week 1 - Mid Week |
-| `ValidationService.cs` — ValidateUsername, ValidatePassword | Required | Week 2 - Early |
+| `ValidationService.cs` — ValidateUsername, ValidatePassword, ValidateObjectType | Required | Week 2 - Early |
 | `UserService.cs` — CreateUser(), ListUsers(), DeleteUser(), ModifyUser() | Required | Week 2 - Early |
+| `PermissionService.cs` — SupportsColumnGrant(), ValidateColumnPermission() | Required | Week 2 - Early |
 
 **Pass Criteria (Duyên, Triết):**
 
@@ -143,6 +156,10 @@ Must implement FIRST - all other services depend on it:
 - ✓ UserService.ModifyUser() updates user properties
 - ✓ UserService.DeleteUser() removes user from database
 - ✓ No security vulnerabilities (no hardcoded credentials)
+- ✓ PermissionService.SupportsColumnGrant() correctly returns TRUE only for SELECT/UPDATE
+- ✓ PermissionService.ValidateColumnPermission() rejects INSERT/DELETE column grants
+- ✓ PermissionService rejects column permissions on procedures/functions
+- ✓ All permission validations working before granting access
 
 ---
 
@@ -150,7 +167,7 @@ Must implement FIRST - all other services depend on it:
 
 | Deliverable | Status | Completion Date |
 |------------|--------|-----------------|
-| `Services/OracleConnectionService.cs` | Prerequisite | Week 1 |
+| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
 
 ---
 

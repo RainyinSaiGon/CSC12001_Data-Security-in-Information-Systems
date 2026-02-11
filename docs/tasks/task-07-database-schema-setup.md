@@ -1,0 +1,209 @@
+# Task 07: Subsystem 2 Database Schema Setup - Tables, Indexes, Sample Data
+
+**Assigned to:** Ngọc, Vũ (Part B)  
+**Type:** Database Administration  
+**Duration:** 8 hours  
+**Priority:** Critical (blocks all other work)  
+**Timeline:** Feb 10 - Feb 14, 2026 (MUST COMPLETE BY FRI 2/14)
+
+---
+
+## Overview
+
+Create Subsystem 2 medical database schema foundation with 7 tables, performance indexes, and representative sample data. This task blocks all Subsystem 2 work - completion by Friday Feb 14 is non-negotiable.
+
+## Deliverables
+
+### 01_CreateTables.sql
+
+Create 7 core tables with proper constraints:
+
+| Table | Purpose | Key Columns |
+|-------|---------|-------------|
+| BENHNHAN | Patients | MABN (PK), TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEM, TINHTP, TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC |
+| NHANVIEN | Staff | MANV (PK), HOTEN, PHAI, NGAYSINH, CMND, QUEQUAN, SODT, VAITRO, CHUYENKHOA |
+| HSBA | Medical Records | MAHSBA (PK), MABN (FK), NGAY, CHANDOAN, DIEUTRI, MABS (FK), MAKHOA, KETLUAN |
+| HSBA_DV | Diagnostic Services | MAHSBA (FK), LOAIDV, NGAYDV, MAKTV (FK), KETQUA — PK: (MAHSBA, LOAIDV, NGAYDV) |
+| DONTHUOC | Prescriptions | MAHSBA (FK), NGAYDT, TENTHUOC, LIEUUNG — PK: (MAHSBA, NGAYDT, TENTHUOC) |
+| THONGBAO | Notifications (OLS) | NOIDUNG (PK), NGAYGIO, KHOA, DIADIEM, CAPBAC |
+| AUDITLOG | Audit Trail | AUDITID (PK), USERID, THOIGIAN, LOAIHD, TENTABLE, MARECORD |
+
+Requirements:
+
+- Use VARCHAR2, DATE, TIMESTAMP data types
+- Primary keys on all tables (including composite keys where appropriate)
+- Foreign key constraints with proper relationships
+- NOT NULL constraints on required fields
+- Unique constraints (CCCD in BENHNHAN, CMND in NHANVIEN, etc.)
+- VAITRO constraint: Check values are one of: 'Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân'
+- Allow all INSERT/UPDATE/DELETE for initial testing
+
+### 02_CreateIndexes.sql
+
+Create 10+ indexes for query performance:
+
+| Table | Columns | Purpose |
+|-------|---------|---------|
+| BENHNHAN | MABN | Patient lookup |
+| BENHNHAN | CCCD | ID-based search |
+| NHANVIEN | MANV | Staff lookup |
+| HSBA | MABN | Patient records query |
+| HSBA | MAHSBA | Record lookup |
+| HSBA_DV | MAHSBA | Service lookup |
+| DONTHUOC | MAHSBA | Prescription query |
+| AUDITLOG | USERID | Audit by user |
+| AUDITLOG | THOIGIAN | Audit by date |
+| AUDITLOG | USERID, THOIGIAN | Combined query |
+| THONGBAO | (KHOA, DIADIEM, CAPBAC) | OLS filtering |
+
+### 03_InsertSampleData.sql
+
+Create realistic test data:
+
+- **100 patients** (BENHNHAN)
+  - Vietnamese names, realistic IDs
+  - Birth dates creating age 18-80 range
+  - Full addresses: SONHA (house number), TENDUONG (street), QUANHUYEM (district), TINHTP (province)
+  - TIENSUABENH (patient's medical fund)
+  - TIENSUABENHGD (family's medical fund)
+  - DIUNGTHUOC (drug allergies/intolerances)
+
+- **170 staff** (NHANVIEN)
+  - 20 Coordinators (VAITRO='Điều phối viên')
+  - 100 Doctors/Nurses (VAITRO='Bác sĩ/Y sĩ')
+  - 50 Technicians (VAITRO='Kỹ thuật viên')
+  - Full personal info: HOTEN (full name), PHAI (gender), NGAYSINH (birth date)
+  - CMND (national ID), QUEQUAN (hometown), SODT (phone number)
+  - CHUYENKHOA (specialty/department)
+
+- **20 medical records** (HSBA)
+  - MAHSBA: Record ID, MABN: Patient reference, NGAY: Examination date
+  - CHANDOAN: Diagnosis, DIEUTRI: Treatment provided
+  - MABS: Doctor ID (prescribing physician), MAKHOA: Department ID
+  - KETLUAN: Conclusion/remarks
+  - Mix of completed and archived records
+
+- **50 prescriptions** (DONTHUOC)
+  - MAHSBA: Link to medical records (FK)
+  - NGAYDT: Prescription date
+  - TENTHUOC: Drug/medication name
+  - LIEUUNG: Dosage instructions
+  - Composite key: (MAHSBA, NGAYDT, TENTHUOC) allows multiple drugs per prescription date
+
+- **30 diagnostic services** (HSBA_DV)
+  - MAHSBA: Link to medical records
+  - LOAIDV: Service type (X-ray, Lab test, Ultrasound, CT scan, ECG, etc.)
+  - NGAYDV: Service date/time
+  - MAKTV: Technician ID (KTV - Kỹ Thuật Viên performing the service)
+  - KETQUA: Test results (some completed, some pending)
+
+- **15 notifications** (THONGBAO)
+  - Varied departments and locations
+  - OLS labels for testing
+  - Realistic content
+
+## Dependencies
+
+- **Requires:** Oracle 21c (or compatible) installation
+- **Unblocks:** All other Subsystem 2 tasks (Task 04-06, Task 08-10)
+
+## Success Criteria
+
+✓ All 7 tables created with correct Vietnamese column names  
+✓ BENHNHAN: PK=MABN, includes all address fields (SONHA, TENDUONG, QUANHUYEM, TINHTP)
+✓ NHANVIEN: PK=MANV, VAITRO constraint enforces 4 valid roles
+✓ HSBA: PK=MAHSBA, FK constraints on MABN, MABS, MAKHOA
+✓ HSBA_DV: Composite PK=(MAHSBA, LOAIDV, NGAYDV), FK on MAHSBA, MAKTV  
+✓ DONTHUOC: Composite PK=(MAHSBA, NGAYDT, TENTHUOC), FK on MAHSBA
+✓ THONGBAO & AUDITLOG: Created with correct structures for OLS and audit
+✓ All constraints enforced (PK, FK, NOT NULL, UNIQUE)  
+✓ All 10+ indexes created  
+✓ 100 patients, 170 staff (20 coordinators, 100 doctors, 50 technicians), 20+ medical records, 50+ prescriptions, 30+ diagnostic services, 15+ notifications inserted  
+✓ Data matches Vietnamese specification exactly  
+✓ No orphaned records (FK integrity)  
+✓ Tables ready for application use
+
+## Critical Dates
+
+- **Mon Feb 10:** Start database work
+- **Fri Feb 14 EOD:** MUST BE COMPLETE (blocks everyone)
+- Any delays impact entire team schedule
+
+## Script Standards
+
+Each SQL script must:
+
+- Include detailed comments
+- Handle pre-existing objects gracefully
+- Use proper Oracle syntax
+- Never hardcode credentials
+- Include transaction control (COMMIT)
+- Be idempotent (can run multiple times safely)
+- Include error checking
+
+## Testing
+
+After completion:
+
+- Verify all tables exist and contain data
+- Test foreign key constraints
+- Verify indexes are being used
+- Check sample data representativeness
+- Document any issues immediately
+
+## Traceability Matrix
+
+### TC#1: User Account Setup (Database Foundation)
+
+| Aspect | Details |
+|--------|---------|
+| **Related Requirement** | Req 1: Access Control & Interface |
+| **Primary Owner** | **Ngọc, Vũ (Database)**, Duyên, Triết (Service), Duyên, Triết (Form) |
+| **Test Timeline** | End of Week 1 (Fri Feb 14) |
+
+**Ngọc, Vũ Database Deliverables:**
+
+| Deliverable | Status | Completion Date |
+|-------------|--------|-----------------|
+| `01_CreateTables.sql` — 7 core tables | Critical | Mon-Wed, Feb 10-12 |
+| `02_CreateIndexes.sql` — Performance indexes | Required | Thu, Feb 13 |
+| `03_InsertSampleData.sql` — Realistic test data | Required | Fri, Feb 14 |
+
+**Pass Criteria:**
+
+- ✓ All 7 tables created with zero SQL errors
+- ✓ All PK/FK constraints properly defined
+- ✓ 100 patients inserted with realistic Vietnamese names
+- ✓ 170 staff records in NHANVIEN table (20 Coordinators, 100 Doctors, 50 Technicians)
+- ✓ 20+ medical records (HSBA) with proper relationships
+- ✓ 50+ prescriptions linked to valid HSBA records
+- ✓ 30+ diagnostic services with status tracking
+- ✓ 15+ notifications with OLS labels
+- ✓ Sample data verifiable with SELECT COUNT(*) queries
+
+**Evidence Tracking:**
+
+- Database script execution log (sqlplus output)
+- SELECT COUNT(*) query results for each table
+- DESCRIBE output for each table showing constraints
+
+---
+
+### Phase 1 Gate: Foundation Complete
+
+> [!IMPORTANT]
+> All Phase 2 work (Tasks 02-05, 07-08) is **BLOCKED** until this task is complete.
+> Deadline: **Friday, February 14 EOD** (non-negotiable).
+
+---
+
+## Related Tasks
+
+- Task 08: Database security setup (needs these tables)
+- Task 09: Audit setup (needs AuditLog table)
+- Task 10: Backup/recovery (needs full schema)
+- All other tasks: Depend on this schema
+
+---
+
+**CRITICAL: Failure to complete by Friday 2/14 delays entire project**

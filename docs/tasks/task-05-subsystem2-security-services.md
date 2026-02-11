@@ -1,9 +1,9 @@
-# Task 04: Subsystem 2 - Security Services Implementation
+# Task 05: Subsystem 2 - Security Services Implementation
 
 **Assigned to:** Phôn  
 **Type:** Backend Security Services  
 **Duration:** 30-35 hours  
-**Priority:** Critical (blocks Task 03)  
+**Priority:** Critical (blocks Task 04)  
 **Timeline:** Feb 19 - Feb 28, 2026
 
 ---
@@ -44,7 +44,7 @@ Implement 6 critical security services implementing all access control mechanism
 ## Dependencies
 
 - **Requires:** Ngọc, Vũ's database users and security setup (Wed Feb 19 for RBAC, Thu Feb 20 for VPD/OLS)
-- **Blocks:** Task 03 (forms need these services)
+- **Blocks:** Task 04 (forms need these services)
 - **Uses:** OracleConnectionService from this or Duyên, Triết
 
 ## Success Criteria
@@ -94,10 +94,11 @@ Policies must be configured at database level by Ngọc, Vũ:
 
 ## OLS 3-Level Hierarchy
 
-Label examples:
+Label examples (Vietnamese names):
 
-- "Cardiology:HoChiMinh:Staff" - Staff level
-- "Cardiology:HoChiMinh:DepartmentHead" - Department head level
+- "Tim mạch:Hồ Chí Minh:Nhân viên" - Staff level (Cardiology:Ho Chi Minh:Staff)
+- "Tim mạch:Hồ Chí Minh:Lãnh đạo khoa" - Department head level (Cardiology:Ho Chi Minh:DepartmentHead)
+- "Tiêu hóa:Hà Nội:Ban Giám đốc" - Director level (Gastroenterology:Ha Noi:Director)
 - "Cardiology:*:Director" - Director (all locations)
 
 Users compare labels hierarchically - must meet all 3 dimensions.
@@ -115,9 +116,9 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `Services/OracleConnectionService.cs` | Prerequisite | Week 1 |
-| `Services/AuthenticationService.cs` — Login(), ValidateUserRole() | Critical | Week 2 - Early |
-| `Services/RBACService.cs` — CheckUserRole(), CheckPermission(), GetAvailableActions() | Required | Week 2 |
+| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
+| `services/AuthenticationService.cs` — Login(), ValidateUserRole() | Critical | Week 2 - Early |
+| `services/RBACService.cs` — CheckUserRole(), CheckPermission(), GetAvailableActions() | Required | Week 2 |
 
 **Pass Criteria:**
 
@@ -145,10 +146,10 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `Services/OracleConnectionService.cs` | Prerequisite | Week 1 |
-| `Services/AuthenticationService.cs` | Prerequisite | Week 2 |
-| `Services/VPDService.cs` — GetVisiblePatients(), GetVisibleRecords(), GetVisibleServices() | Required | Week 2 |
-| `Services/RBACService.cs` | Prerequisite | Week 2 |
+| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
+| `services/AuthenticationService.cs` | Prerequisite | Week 2 |
+| `services/VPDService.cs` — GetVisiblePatients(), GetVisibleRecords(), GetVisibleServices() | Required | Week 2 |
+| `services/RBACService.cs` | Prerequisite | Week 2 |
 
 **Pass Criteria:**
 
@@ -172,9 +173,9 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `Services/OracleConnectionService.cs` | Prerequisite | Week 1 |
-| `Services/AuthenticationService.cs` | Prerequisite | Week 2 |
-| `Services/OLSService.cs` — GetUserLabels(), CanAccessNotification(), GetAccessibleNotifications() | Required | Week 2 |
+| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
+| `services/AuthenticationService.cs` | Prerequisite | Week 2 |
+| `services/OLSService.cs` — GetUserLabels(), CanAccessNotification(), GetAccessibleNotifications() | Required | Week 2 |
 
 **Pass Criteria:**
 
@@ -189,8 +190,8 @@ Users compare labels hierarchically - must meet all 3 dimensions.
 
 ## Related Tasks
 
-- Task 03: Depends on these services
-- Task 05: Complements business services
-- Task 06-08: Database must provide VPD/OLS infrastructure
+- Task 04: Depends on these services
+- Task 06: Complements business services
+- Task 07-09: Database must provide VPD/OLS infrastructure
 
 ---

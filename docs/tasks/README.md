@@ -10,16 +10,21 @@
 
 | Task File | Deliverable | Assigned To | Hours | Priority | Due Date |
 |---|---|---|---|---|---|
+| **SUBSYSTEM 1: Database Admin Tool** | | | | | |
 | task-01 | Subsystem 1 Database Admin UI Forms | Duyên, Triết | 20-25 | High | Mar 21 |
 | task-02 | Subsystem 1 Business Logic Services | Duyên, Triết | 25-30 | Critical | Mar 21 |
-| task-03 | Subsystem 2 Medical UI Forms | Duyên | 25-30 | High | Mar 28 |
-| task-04 | Subsystem 2 Security Services | Phôn | 30-35 | Critical | Mar 28 |
-| task-05 | Subsystem 2 Medical Business Services | Phôn | 20 | High | Mar 28 |
-| task-06 | Database Schema Setup (Tables/Indexes/Data) | Ngọc, Vũ | 8 | **CRITICAL** | **Mar 28** |
-| task-07 | Database Security Setup (RBAC/VPD/OLS) | Ngọc, Vũ | 10 | Critical | Mar 28 |
-| task-08 | Database Audit Setup (Logging/Backup Docs) | Ngọc, Vũ | 7 | Medium-High | Mar 28 |
+| task-03 | **Subsystem 1 Database Schema Design** | **Duyên, Triết** | **10** | **High** | **Feb 20** |
+| **SUBSYSTEM 2: Medical Data Management** | | | | | |
+| task-04 | Subsystem 2 Medical UI Forms | Duyên | 25-30 | High | Mar 28 |
+| task-05 | Subsystem 2 Security Services | Phôn | 30-35 | Critical | Mar 28 |
+| task-06 | Subsystem 2 Medical Business Services | Phôn | 20 | High | Mar 28 |
+| task-07 | Subsystem 2 Database Schema Setup | Ngọc, Vũ | 8 | **CRITICAL** | **Feb 14** |
+| task-08 | Subsystem 2 Database Security Setup | Ngọc, Vũ | 10 | Critical | Feb 21 |
+| task-09 | Subsystem 2 Database Audit Setup | Ngọc, Vũ | 7 | Medium-High | Feb 28 |
+| task-10 | Subsystem 2 Database Backup & Recovery | Ngọc, Vũ | 8 | Medium-High | Mar 7 |
 
-**Total Project Hours:** 155-175 hours across 5 team members over 4 weeks
+**Total Project Hours:** 194-213 hours across 5 team members over 4 weeks
+**Key Difference:** Subsystem 1 now has its own separate database (Task 3) distinct from Subsystem 2 (Tasks 7-10)
 
 ---
 
@@ -37,13 +42,20 @@
   - Services: OracleConnectionService, ValidationService, UserService, RoleService, PermissionService, PrivilegeService
   - **Due: Mar 21**
 
+- **Task 03:** [task-03-subsystem1-database-schema.md](task-03-subsystem1-database-schema.md)
+  - Database Schema Design: Tables, Views, Stored Procedures, Functions
+  - Support permissions on TABLE, VIEW, STORED PROCEDURE, FUNCTION
+  - Column-level grants (SELECT, UPDATE) + Object-level grants (INSERT, DELETE)
+  - WITH GRANT OPTION delegation support
+  - **Due: Feb 20**
+
 ---
 
 ### Duyên: Subsystem 2 - Medical Data Management UI Forms
 
 **Assignment:**
 
-- **Task 03:** [task-03-subsystem2-medical-ui-forms.md](task-03-subsystem2-medical-ui-forms.md)
+- **Task 04:** [task-04-subsystem2-medical-ui-forms.md](task-04-subsystem2-medical-ui-forms.md)
   - Forms: LoginForm, CoordinatorForm, DoctorForm, TechnicianForm, PatientForm, NotificationForm
   - **Due: Mar 28**
 
@@ -53,31 +65,35 @@
 
 **Assignments:**
 
-- **Task 04:** [task-04-subsystem2-security-services.md](task-04-subsystem2-security-services.md)
+- **Task 05:** [task-05-subsystem2-security-services.md](task-05-subsystem2-security-services.md)
   - Security Services: AuthenticationService, RBACService, VPDService, OLSService
   - **Due: Mar 28**
 
-- **Task 05:** [task-05-subsystem2-business-services.md](task-05-subsystem2-business-services.md)
+- **Task 06:** [task-06-subsystem2-business-services.md](task-06-subsystem2-business-services.md)
   - Business Services: PatientService, DoctorService, CoordinatorService, TechnicianService, AuditService
   - **Due: Mar 28**
 
 ---
 
-### Ngọc, Vũ: Database Setup & Security
+### Ngọc, Vũ: Subsystem 2 - Medical Database Setup & Security
 
 **Assignments:**
 
-- **Task 06:** [task-06-database-schema-setup.md](task-06-database-schema-setup.md)
+- **Task 07:** [task-07-database-schema-setup.md](task-07-database-schema-setup.md)
   - Schema, Indexes, Sample Data
-  - **Due: Mar 28**
+  - **Due: Feb 14**
 
-- **Task 07:** [task-07-database-security-setup.md](task-07-database-security-setup.md)
+- **Task 08:** [task-08-database-security-setup.md](task-08-database-security-setup.md)
   - RBAC, VPD, OLS Setup
-  - **Due: Mar 28**
+  - **Due: Feb 21**
 
-- **Task 08:** [task-08-database-audit-setup.md](task-08-database-audit-setup.md)
+- **Task 09:** [task-09-database-audit-setup.md](task-09-database-audit-setup.md)
   - Standard, FGA, Unified Audit
-  - **Due: Mar 28**
+  - **Due: Feb 28**
+
+- **Task 10:** [task-10-database-backup-recovery.md](task-10-database-backup-recovery.md)
+  - Backup & Recovery Procedures
+  - **Due: Mar 7**
 
 ---
 
@@ -141,7 +157,8 @@ docs/tasks/
 ├── task-05-subsystem2-business-services.md
 ├── task-06-database-schema-setup.md
 ├── task-07-database-security-setup.md
-└── task-08-database-audit-setup.md
+├── task-08-database-audit-setup.md
+└── task-09-database-backup-recovery.md
 ```
 
 Each file contains:
@@ -168,6 +185,7 @@ Each file contains:
 ✓ Task 06: Ngọc, Vũ (Database Schema) complete  
 ✓ Task 07: Ngọc, Vũ (Database Security) complete  
 ✓ Task 08: Ngọc, Vũ (Database Audit) complete  
+✓ Task 09: Ngọc, Vũ (Database Backup & Recovery) complete  
 
 ### Assignment Verification
 

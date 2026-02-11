@@ -15,7 +15,7 @@ public class RBACService
     public string? CheckUserRole(string username)
     {
         // TODO: Query Oracle to get user's role
-        // Possible values: Coordinator, Doctor, Technician, Patient
+        // Possible values: 'Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân'
         return null;
     }
 

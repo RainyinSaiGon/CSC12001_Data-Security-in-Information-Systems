@@ -1,4 +1,4 @@
-# Task 05: Subsystem 2 - Medical Business Logic Services
+# Task 06: Subsystem 2 - Medical Business Logic Services
 
 **Assigned to:** Phôn (Part A)  
 **Type:** Backend Services  
@@ -35,14 +35,40 @@ Implement 5 business logic services for medical operations:
 - Parameterized queries (prevent SQL injection)
 - Proper exception handling
 - Audit logging for sensitive operations
-- Support row-level security in PatientService
-- VPD filtering transparent through queries
+- Support row-level security in PatientService and DoctorService (via VPD)
+- **Column-level restrictions:** Patient can only edit contact fields, reject all other field edits
+- VPD filtering transparent through VPD policy application
+
+## Column-Level Edit Restrictions (TC#5)
+
+**Patient CANNOT Edit (Read-Only - Reject Attempts):**
+- MABN (patient ID)
+- TENBN (name)
+- PHAI (gender)
+- NGAYSINH (birth date)
+- CCCD (national ID)
+- TIENSUABENH (personal medical history)
+- TIENSUABENHGD (family medical history)
+- DIUNGTHUOC (drug allergies)
+
+**Patient CAN ONLY Edit:**
+- SODT (phone number)
+- SONHA (house number)
+- TENDUONG (street name)
+- QUANHUYEM (district)
+- TINHTP (province/city)
+
+**Implementation:**
+- PatientService.UpdatePatientInfo() must validate submitted fields
+- Reject any attempt to modify read-only fields with ValidationException
+- Log all edit attempts (successful and rejected) for audit trail
+- Application blocks UI updates to read-only fields as well
 
 ## Dependencies
 
 - **Requires:** Ngọc, Vũ's database tables (Fri Feb 14)
-- **Requires:** Task 04's security services for validation
-- **Unblocks:** Task 03 (forms need these services)
+- **Requires:** Task 05's security services for validation
+- **Unblocks:** Task 04 (forms need these services)
 
 ## Success Criteria
 
@@ -50,7 +76,7 @@ Implement 5 business logic services for medical operations:
 ✓ Data queries return correct results  
 ✓ Row-level security enforced in PatientService  
 ✓ Audit logging captures all sensitive operations  
-✓ Services work with Task 04 security services  
+✓ Services work with Task 05 security services  
 ✓ No hardcoded data or connection strings  
 ✓ Comprehensive error handling
 
@@ -58,32 +84,39 @@ Implement 5 business logic services for medical operations:
 
 ### PatientService
 
-- GetPatient(patientId): Patient
-- UpdatePatientInfo(patient): bool
-- GetMyMedicalRecords(patientId): List<MedicalRecord>
-- GetMyPrescriptions(patientId): List<Prescription>
+- **GetPatient(patientId): Patient** — **VPD filters to own record only** (WHERE MABN = patientId)
+- **UpdatePatientInfo(patient): bool** — validates and rejects read-only field edits
+  - Allowed fields: SODT, SONHA, TENDUONG, QUANHUYEM, TINHTP
+  - Throws ValidationException if read-only fields modified (MABN, TENBN, PHAI, NGAYSINH, CCCD, TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC)
+  - Logs all attempts (accepted/rejected) for audit
+- GetMyMedicalRecords(patientId): List<MedicalRecord> — **VPD pre-filters to own records** (transparent filtering)
+- GetMyPrescriptions(patientId): List<Prescription> — linked to own medical records via MAHSBA FK
+- **ValidateEditableFields(fieldDict): bool** — enforces column-level restrictions
 
 ### DoctorService
 
-- GetAssignedPatients(doctorId): List<Patient>
-- CreateDiagnosis(record): bool
-- UpdatePrescription(prescription): bool
-- OrderDiagnosticService(service): bool
+- **GetAssignedPatients(doctorId): List<Patient>** — **VPD transparent filter:** WHERE MABS = doctorId
+- **CreateDiagnosis(record): bool** — INSERT/UPDATE CHANDOAN, DIEUTRI, KETLUAN (audit-logged per TC#3.c)
+- **UpdatePrescription(prescription): bool** — UPDATE TENTHUOC, LIEUUNG (audit-logged post-creation per TC#3.e)
+- OrderDiagnosticService(service): bool — INSERT HSBA_DV (diagnostic test/service)
+- **DeleteDiagnosticService(serviceId): bool** — DELETE HSBA_DV (remove unnecessary services per TC#3.b)
+- **UpdatePatientHistory(patientId, history): bool** — UPDATE TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC on **assigned patients only** (subject to VPD)
 
 ### CoordinatorService
 
-- GetAllPatients(): List<Patient>
-- AddPatient(patient): bool
-- EditPatient(patient): bool
-- AssignDoctorToPatient(doctorId, patientId): bool
-- AssignTechnicianToService(technicianId, serviceId): bool
-- GetRecordStatus(recordId): string
+- **GetAllPatients(): List<Patient>** — SELECT * FROM BENHNHAN (**unrestricted, no VPD for Coordinator per TC#2**)
+- AddPatient(patient): bool — INSERT BENHNHAN
+- EditPatient(patient): bool — UPDATE BENHNHAN
+- **AssignDoctorToPatient(doctorId, patientId): bool** — UPDATE HSBA.MABS (assign treating physician)
+- **AssignTechnicianToService(technicianId, serviceId): bool** — UPDATE HSBA_DV.MAKTV (assign service performer)
+- GetRecordStatus(recordId): string — SELECT from HSBA
 
 ### TechnicianService
 
-- GetAssignedServices(technicianId): List<DiagnosticService>
-- UpdateServiceResult(serviceId, result): bool
-- CompleteService(serviceId): bool
+- **GetAssignedServices(technicianId): List<DiagnosticService>** — **VPD transparent filter:** WHERE MAKTV = technicianId
+- **UpdateServiceResult(serviceId, result): bool** — UPDATE HSBA_DV.KETQUA (audit-logged per TC#4)
+- CompleteService(serviceId): bool — mark service complete
+- **ValidateAssignment(serviceId, technicianId): bool** — ensure technician only accesses own assigned services
 
 ### AuditService
 
@@ -104,7 +137,7 @@ Implement 5 business logic services for medical operations:
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `Services/TechnicianService.cs` — GetAssignedServices(), UpdateServiceResult(), CompleteService() | Required | Week 2 |
+| `services/TechnicianService.cs` — GetAssignedServices(), UpdateServiceResult(), CompleteService() | Required | Week 2 |
 
 **Pass Criteria:**
 
@@ -127,7 +160,7 @@ Implement 5 business logic services for medical operations:
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `Services/PatientService.cs` — GetPatient(), GetMyMedicalRecords(), GetMyPrescriptions(), UpdatePatientInfo() | Required | Week 2 |
+| `services/PatientService.cs` — GetPatient(), GetMyMedicalRecords(), GetMyPrescriptions(), UpdatePatientInfo() | Required | Week 2 |
 
 **Pass Criteria:**
 
@@ -151,7 +184,7 @@ Implement 5 business logic services for medical operations:
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `Services/AuditService.cs` — LogUserAction(), GetAuditLogs(), LogSensitiveAccess() | Required | Week 2 |
+| `services/AuditService.cs` — LogUserAction(), GetAuditLogs(), LogSensitiveAccess() | Required | Week 2 |
 
 **Pass Criteria:**
 
@@ -165,8 +198,8 @@ Implement 5 business logic services for medical operations:
 
 ## Related Tasks
 
-- Task 03: Forms use these services
-- Task 04: Security services validate operations
-- Task 06-08: Database provides underlying tables
+- Task 04: Forms use these services
+- Task 05: Security services validate operations
+- Task 07-09: Database provides underlying tables
 
 ---

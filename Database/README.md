@@ -1,94 +1,149 @@
 # Database Administration & Scripts
 
-Complete Oracle database setup including schema definition, security configuration, audit setup, and backup/recovery procedures.
+Two separate Oracle database systems organized by subsystem functionality. Each subsystem has its own independent database schema.
 
 ## Overview
 
-This directory will contain all SQL scripts organized by functionality. Currently, only this README exists—SQL scripts must be created following the structure below:
+This directory contains SQL scripts for two separate database systems:
 
-- **Schema/**: Table creation and sample data scripts (to create)
-- **Security/**: RBAC, VPD, OLS configuration scripts (to create)
-- **Audit/**: Audit trail setup scripts (to create)
-- **BackupRestore/**: Backup and recovery scripts (to create)
+1. **Subsystem 1 (OracleDBAdmin):** Administrative database for managing users, roles, and permissions
+2. **Subsystem 2 (MedicalDataManagement):** Medical data database with patient records, staff, prescriptions, etc.
 
-## Planned Directory Structure
-
-The following structure shows where SQL scripts should be created:
+## Directory Structure
 
 ```
 Database/
-├── Schema/                            (Create these files)
-│   ├── 01_CreateTables.sql           # Create all tables
-│   ├── 02_CreateIndexes.sql          # Create indexes for performance
-│   └── 03_InsertSampleData.sql       # Sample data for testing
-├── Security/                          (Create these files)
-│   ├── 01_RBAC_Setup.sql             # Role-Based Access Control
-│   ├── 02_VPD_Setup.sql              # Virtual Private Database
-│   ├── 03_OLS_Setup.sql              # Oracle Label Security
-│   └── 04_Users_Creation.sql         # Create database users
-├── Audit/                             (Create these files)
-│   ├── 01_StandardAudit_Setup.sql
-│   ├── 02_FineGrainedAudit_Setup.sql
-│   ├── 03_UnifiedAudit_Setup.sql
+├── Subsystem1-AdminDB/                            # Admin Tool Database
+│   ├── schema/                                    (Create these files)
+│   │   ├── 01_CreateTables.sql                   # Admin users, roles, permissions
+│   │   ├── 02_CreateIndexes.sql                  # Performance indexes
+│   │   └── 03_InsertSampleData.sql               # Sample admin users
+│   ├── security/                                  (Create these files)
+│   │   ├── 01_AdminUsers_Creation.sql            # Create admin database users
+│   │   ├── 02_AdminRBAC_Setup.sql                # Admin role-based access control
+│   │   └── 03_AdminAudit_Setup.sql               # Audit admin operations
+│   ├── audit/                                     (Create these files)
+│   │   └── 01_AdminOperationAudit.sql            # Audit trail for admin actions
+│   └── README.md                                  # Subsystem 1 documentation
+│
+├── Subsystem2-MedicalDB/                         # Medical Data Database
+│   ├── schema/                                    (Create these files)
+│   │   ├── 01_CreateTables.sql                   # 7 medical data tables
+│   │   ├── 02_CreateIndexes.sql                  # Performance indexes
+│   │   └── 03_InsertSampleData.sql               # Sample data (100 patients, 170 staff)
+│   ├── security/                                  (Create these files)
+│   │   ├── 01_Users_Creation.sql                 # Create 4 role users
+│   │   ├── 02_RBAC_Setup.sql                     # Role-Based Access Control
+│   │   ├── 03_VPD_Setup.sql                      # Virtual Private Database (row-level)
+│   │   └── 04_OLS_Setup.sql                      # Oracle Label Security
+│   ├── audit/                                     (Create these files)
+│   │   ├── 01_StandardAudit_Setup.sql
+│   │   ├── 02_FineGrainedAudit_Setup.sql
+│   │   ├── 03_UnifiedAudit_Setup.sql
+│   │   └── ReadAuditLogs.sql
+│   └── README.md                                  # Subsystem 2 documentation
+│
+├── Audit/                                         # Legacy audit scripts
 │   └── ReadAuditLogs.sql
-├── BackupRestore/                     (Create these files)
-│   ├── 01_BackupStrategy.sql
-│   ├── 02_AutomaticBackup.sql
-│   └── 03_RecoveryScripts.sql
-└── README.md                          (This file)
+│
+└── README.md                                      # This file
 ```
 
-## Execution Order (When Scripts are Created)
+## Execution Order for Both Subsystems
 
 **Warning:** Replace `<SYS_PASSWORD>` with your actual SYS account password. Never commit or share real credentials in documentation.
 
-### 1. Initial Setup (Run First)
+### Phase 1: Subsystem 1 Admin Database Setup
 
-Create and execute schema scripts:
+#### 1.1 Create Admin Schema (Run First)
 
 ```sql
 -- For Oracle 21c XE:
 sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 -- Or: sqlplus / as sysdba
 
-@Schema/01_CreateTables.sql
-@Schema/02_CreateIndexes.sql
-@Schema/03_InsertSampleData.sql
+@Subsystem1-AdminDB/schema/01_CreateTables.sql
+@Subsystem1-AdminDB/schema/02_CreateIndexes.sql
+@Subsystem1-AdminDB/schema/03_InsertSampleData.sql
 ```
 
-### 2. Security Configuration (Run Second)
+#### 1.2 Configure Admin Security (Run Second - CRITICAL ORDER)
 
-Create and execute security scripts:
+**IMPORTANT: Execute security scripts in this EXACT order!**
+- Admin users MUST be created FIRST before roles can be assigned
 
 ```sql
 sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
-@Security/01_RBAC_Setup.sql
-@Security/02_VPD_Setup.sql
-@Security/03_OLS_Setup.sql
-@Security/04_Users_Creation.sql
+-- Step 1: CREATE ADMIN USERS FIRST
+@Subsystem1-AdminDB/security/01_AdminUsers_Creation.sql
+
+-- Step 2: Create and assign admin roles with permissions
+@Subsystem1-AdminDB/security/02_AdminRBAC_Setup.sql
+
+-- Step 3: Enable audit for admin operations
+@Subsystem1-AdminDB/security/03_AdminAudit_Setup.sql
 ```
 
-### 3. Audit Configuration (Run Third)
+#### 1.3 Setup Admin Audit (Run Third)
+
+```sql
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
+
+@Subsystem1-AdminDB/audit/01_AdminOperationAudit.sql
+```
+
+### Phase 2: Subsystem 2 Medical Database Setup
+
+#### 2.1 Create Medical Schema (Run First)
+
+```sql
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
+
+@Subsystem2-MedicalDB/schema/01_CreateTables.sql
+@Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
+@Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
+```
+
+#### 2.2 Security Configuration (Run Second - CRITICAL ORDER)
+
+**IMPORTANT: Execute security scripts in this EXACT order!**
+- Users MUST be created FIRST before roles can be assigned
+- Then RBAC roles can be created and assigned to existing users
+
+```sql
+sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
+
+-- Step 1: CREATE USERS FIRST
+@Subsystem2-MedicalDB/security/01_Users_Creation.sql
+
+-- Step 2: Create and assign roles
+@Subsystem2-MedicalDB/security/02_RBAC_Setup.sql
+
+-- Step 3: Configure row-level security policies
+@Subsystem2-MedicalDB/security/03_VPD_Setup.sql
+
+-- Step 4: Configure label-based security
+@Subsystem2-MedicalDB/security/04_OLS_Setup.sql
+```
+
+#### 2.3 Audit Configuration (Run Third)
 
 Create and execute audit scripts:
 
 ```sql
 sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
-@Audit/01_StandardAudit_Setup.sql
-@Audit/02_FineGrainedAudit_Setup.sql
-@Audit/03_UnifiedAudit_Setup.sql
+@Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql
+@Subsystem2-MedicalDB/audit/02_FineGrainedAudit_Setup.sql
+@Subsystem2-MedicalDB/audit/03_UnifiedAudit_Setup.sql
 ```
 
-### 4. Backup/Recovery Setup (Optional)
+## Additional Information
 
-Create and execute backup scripts:
-
-```sql
-@BackupRestore/01_BackupStrategy.sql
-@BackupRestore/02_AutomaticBackup.sql
-```
+- **Subsystem 1 Admin Database:** See [Subsystem1-AdminDB/README.md](Subsystem1-AdminDB/README.md)
+- **Subsystem 2 Medical Database:** See [Subsystem2-MedicalDB/README.md](Subsystem2-MedicalDB/README.md)
+- **Test Cases:** See [../Tests/](../Tests/) directory
 
 ## Schema Details
 
@@ -115,7 +170,7 @@ CREATE TABLE BENHNHAN (
 CREATE TABLE NHANVIEN (
     MANV NUMBER PRIMARY KEY,
     HOTEN VARCHAR2(100) NOT NULL,
-    VAITRO VARCHAR2(50), -- COORDINATOR, DOCTOR, TECHNICIAN
+    VAITRO VARCHAR2(50), -- 'Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân'
     CHUYENKHOA VARCHAR2(50)
 );
 ```
@@ -287,7 +342,7 @@ SELECT * FROM user_tables;
 SELECT username FROM dba_users WHERE username LIKE 'DOCTOR%' OR username LIKE 'PATIENT%';
 
 -- Check roles
-SELECT role FROM dba_roles WHERE role IN ('COORDINATOR', 'DOCTOR', 'TECHNICIAN', 'PATIENT');
+SELECT role FROM dba_roles WHERE role IN ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân');
 
 -- Check VPD policies
 SELECT object_owner, object_name, policy_name FROM dba_policies;

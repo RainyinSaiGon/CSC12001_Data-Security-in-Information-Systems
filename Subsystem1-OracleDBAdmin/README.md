@@ -18,8 +18,8 @@ This application provides a comprehensive interface for DBA operations including
 The following architecture outlines the planned directory structure for this application. Create these files and folders as you implement features:
 
 ```
-Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/
-├── Forms/                              # [CREATE] UI Forms & Windows
+subsystem1-oracleDBAdmin/source/oracleDBAdmin/
+├── forms/                              # [CREATE] UI Forms & Windows
 │   ├── MainForm.cs                    # Main application window
 │   ├── MainForm.Designer.cs
 │   ├── UserManagementForm.cs          # User CRUD operations
@@ -30,14 +30,14 @@ Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/
 │   ├── PermissionForm.Designer.cs
 │   └── PrivilegeViewerForm.cs         # View user/role privileges
 │
-├── Models/                             # [CREATE] Data models & entities
+├── models/                             # [CREATE] Data models & entities
 │   ├── User.cs
 │   ├── Role.cs
 │   ├── Permission.cs
 │   ├── OracleObject.cs
 │   └── PrivilegeInfo.cs
 │
-├── Services/                           # [CREATE] Business logic & database access
+├── services/                           # [CREATE] Business logic & database access
 │   ├── OracleConnectionService.cs     # Database connection management
 │   ├── UserService.cs                 # User operations (CRUD)
 │   ├── RoleService.cs                 # Role operations (CRUD)

@@ -91,7 +91,7 @@ private void InitializeComponent() { }
 
 // Constants
 private const string DATABASE_OWNER = "project_admin";
-public static readonly string DEFAULT_ROLE = "COORDINATOR";
+public static readonly string DEFAULT_ROLE = "Điều phối viên";
 
 // Local variables
 string userName = GetUserName();
@@ -176,20 +176,20 @@ public bool GrantPermission(string userName, string objectName, string permissio
 -- Script: 01_RBAC_Setup.sql
 -- Date: February 2026
 
--- COORDINATOR: Can manage patient records and assign doctors
+-- 'Điều phối viên': Can manage patient records and assign doctors
 BEGIN
     BEGIN
-        EXECUTE IMMEDIATE 'DROP ROLE COORDINATOR';
+        EXECUTE IMMEDIATE 'DROP ROLE "Điều phối viên"';
     EXCEPTION
         WHEN OTHERS THEN
             IF SQLCODE != -01921 THEN RAISE; END IF;
     END;
     
-    EXECUTE IMMEDIATE 'CREATE ROLE COORDINATOR';
+    EXECUTE IMMEDIATE 'CREATE ROLE "Điều phối viên"';
     
     -- Grant permissions
-    EXECUTE IMMEDIATE 'GRANT SELECT ON BENHNHAN TO COORDINATOR';
-    EXECUTE IMMEDIATE 'GRANT INSERT, UPDATE ON BENHNHAN TO COORDINATOR';
+    EXECUTE IMMEDIATE 'GRANT SELECT ON BENHNHAN TO "Điều phối viên"';
+    EXECUTE IMMEDIATE 'GRANT INSERT, UPDATE ON BENHNHAN TO "Điều phối viên"';
     
     COMMIT;
 EXCEPTION

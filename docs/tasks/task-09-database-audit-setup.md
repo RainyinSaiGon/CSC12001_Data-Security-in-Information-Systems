@@ -1,4 +1,4 @@
-# Task 08: Database Audit Setup - Standard, Fine-Grained, Unified Audit
+# Task 09: Subsystem 2 Database Audit Setup - Standard, Fine-Grained, Unified Audit
 
 **Assigned to:** Ngọc, Vũ (Part B)  
 **Type:** Database Administration  
@@ -10,12 +10,69 @@
 
 ## Overview
 
-Implement comprehensive audit logging to track all database operations for compliance, security monitoring, and troubleshooting:
+Implement comprehensive audit logging to track all Subsystem 2 database operations for compliance, security monitoring, and troubleshooting per test case requirements:
 
 - Standard Oracle auditing for basic operations
-- Fine-grained auditing (FGA) for sensitive data
+- Fine-grained auditing (FGA) for sensitive data access and column-specific updates
 - Unified auditing for comprehensive tracking
 - Audit log query utilities for reports
+
+## Audit Logging Requirements by Test Case
+
+**TC#1 - DBA Account Creation:**
+- AUDIT: User account creation actions (metadata)
+
+**TC#2 - Coordinator Operations:**
+- AUDIT: BENHNHAN INSERT, UPDATE (patient creation/modification)
+- AUDIT: HSBA INSERT (new medical record creation)
+- AUDIT: Role assignments (MABS, MAKHOA updates)
+
+**TC#3 - Doctor Operations (Column-Specific):**
+- AUDIT COLUMNS CRITICAL: HSBA CHANDOAN, DIEUTRI, KETLUAN (diagnosis/treatment/conclusion updates - must record old/new values)
+- AUDIT COLUMNS CRITICAL: BENHNHAN TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC (medical history updates - must record old/new values)
+- AUDIT COLUMNS CRITICAL: DONTHUOC TENTHUOC, LIEUUNG (prescription changes AFTER creation - must record old/new values)
+- AUDIT: HSBA_DV INSERT, DELETE (service ordering)
+- AUDIT: SELECT on patient-related tables for compliance trail
+
+**TC#4 - Technician Operations (Column-Specific):**
+- AUDIT COLUMN CRITICAL: HSBA_DV KETQUA (service results - must record old/new values)
+- AUDIT: SELECT on assigned services
+
+**TC#5 - Patient Operations (Column-Specific + Rejection):**
+- AUDIT UPDATE: BENHNHAN contact fields (SODT, SONHA, TENDUONG, QUANHUYEM, TINHTP)
+- AUDIT REJECTION: Attempts to modify read-only fields (MABN, TENBN, PHAI, NGAYSINH, CCCD, etc.)
+- AUDIT: SELECT on own records for compliance trail
+
+**All Roles:**
+- AUDIT: Failed authentication attempts
+- AUDIT: Privilege escalation attempts
+- AUDIT: VPD/OLS policy violations (if detectable)
+
+### Implementation Guidance: Security Event Auditing
+
+**Failed Authentication Auditing:**
+- Application layer: Log all login attempts with username, timestamp, result (success/failure), IP address
+- Database level: Enable `AUDIT CONNECT` to track connection attempts
+- Log to dedicated AUDIT_LOGIN table (application-side custom logging)
+- Capture: UserID, AttemptTime, Result (Success/Failure), AttemptSource, ErrorReason
+- Alert threshold: 5+ failed attempts in 15 minutes triggers security alert
+- Audit log: Never delete failed authentication attempts
+
+**Privilege Escalation Detection:**
+- Monitor role/privilege changes: Compare user's current roles with baseline roles
+- Application check: Before any elevated operation, validate user role hasn't changed
+- Database audit: `AUDIT GRANT ON SYSTEM` (all privilege grants)
+- Log to AUDIT_PRIVILEGE table: GrantorID, GranteeID, PrivilegeGranted, Timestamp
+- Cross-check: User requesting operation vs. recorded privileges in NHANVIEN.VAITRO
+- Flag: Any operation where user's session role doesn't match NHANVIEN.VAITRO value
+- Implementation: ValidateUserPrivileges() in Task 05 Services validates against NHANVIEN
+
+**VPD/OLS Policy Violation Detection:**
+- VPD violations: If query returns rows where row predicate should exclude them (application-level check)
+- OLS violations: If user accesses THONGBAO row with classification level above their clearance
+- Log: All attempted access violations with user, table, record ID, violation reason
+- Database-side: FGA policy on THONGBAO SELECT operations to capture classification-level mismatches
+- Application-side: AuditService.LogVPDViolation(userId, tableId, rowId, expectedLabel, userLabel)
 
 ## Deliverables
 
@@ -274,9 +331,9 @@ Maintenance
 
 ## Dependencies
 
-- **Requires:** Task 06 tables completed
-- **Requires:** Task 07 security setup
-- **Complements:** Task 05 AuditService (uses audit tables)
+- **Requires:** Task 07 tables completed
+- **Requires:** Task 08 security setup
+- **Complements:** Task 06 AuditService (uses audit tables)
 - **Optional for:** Week 4 compliance testing
 
 ## Success Criteria
@@ -582,8 +639,8 @@ Last 7 Days:
 
 ## Related Tasks
 
-- Task 06: Provides audit table
-- Task 05: AuditService reads these logs
+- Task 07: Provides audit table
+- Task 06: AuditService reads these logs
 - All other tasks: Audited by these mechanisms
 
 ---
