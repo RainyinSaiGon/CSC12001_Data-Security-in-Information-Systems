@@ -14,8 +14,9 @@ Implement comprehensive backup and recovery mechanisms for Subsystem 2 Oracle da
 
 - Research Oracle backup methodologies (RMAN, export/import, hot backup)
 - Configure both automatic and manual backup strategies
-- Implement recovery procedures based on audit logs
-- Test recovery scenarios to ensure data restoration capability
+- Implement recovery procedures based on audit logs (Task 09)
+- Test recovery scenarios to ensure data restoration capability for 7 tables (KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO)
+- Production-scale data: 100K patients, 170 staff, ~140K-210K medical records, ~280K-420K prescriptions, ~140K-210K diagnostic services, 12K notifications
 
 ## Requirement Mapping
 
@@ -167,17 +168,21 @@ FLASHBACK TABLE HSBA TO TIMESTAMP
 
 **Scenario 3: Recover Entire Database**
 
-In case of major corruption:
+In case of major corruption (all 7 tables: KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO):
 
 ```sql
 -- Restore from last known good backup
 RMAN> RESTORE DATABASE;
 RMAN> RECOVER DATABASE UNTIL TIME;
 
--- Verify recovery
-SQL> SELECT COUNT(*) FROM BENHNHAN;
-SQL> SELECT COUNT(*) FROM HSBA;
-SQL> SELECT COUNT(*) FROM DONTHUOC;
+-- Verify recovery of all tables
+SQL> SELECT COUNT(*) AS khoa_count FROM KHOA;         -- Expected: 3
+SQL> SELECT COUNT(*) AS benhnhan_count FROM BENHNHAN; -- Expected: 100,000
+SQL> SELECT COUNT(*) AS nhanvien_count FROM NHANVIEN; -- Expected: 170
+SQL> SELECT COUNT(*) AS hsba_count FROM HSBA;         -- Expected: ~140K-210K
+SQL> SELECT COUNT(*) AS hsbadv_count FROM HSBA_DV;    -- Expected: ~140K-210K
+SQL> SELECT COUNT(*) AS donthuoc_count FROM DONTHUOC; -- Expected: ~280K-420K
+SQL> SELECT COUNT(*) AS thongbao_count FROM THONGBAO; -- Expected: 12,000
 ```
 
 **Scenario 4: Selective Data Recovery**
@@ -196,23 +201,27 @@ Data Pump import with REMAP_TABLE option
 
 ## Dependencies
 
-- **Requires:** Task 07 tables completed (Fri Feb 14)
-- **Requires:** Task 09 audit logs (Fri Feb 28)
+- **Requires:** Task 07 tables completed (Fri Feb 14 - COMPLETED)
+- **Requires:** Task 08 security setup (users/roles must exist to test authentication-based recovery)
+- **Requires:** Task 09 audit logs completed (Fri Feb 28 - for audit-driven recovery point identification)
 - **Supports:** Disaster recovery planning for entire project
-- **No blocks:** Complements other work
+- **Timeline:** Runs Feb 28 - Mar 7 (after Tasks 07-09 complete)
 
 ## Success Criteria
 
-✓ All 4 backup methods documented with pros/cons  
-✓ RMAN configured with retention policy  
-✓ Automatic daily backup job created  
-✓ Weekly full backup scheduled  
-✓ Archive log management configured  
-✓ Recovery scenarios tested successfully  
-✓ Audit logs used to identify recovery points  
-✓ Database successfully recovered from backup  
-✓ Performance impact of backup < 15%  
-✓ Recovery time objectives (RTO) met: < 2 hours
+✓ All 4 backup methods documented with pros/cons and use cases
+✓ RMAN configured with 30-day retention policy
+✓ Automatic daily incremental backup job created and tested
+✓ Weekly full backup scheduled and verified
+✓ Archive log management configured with automatic deletion after backup
+✓ Recovery scenarios tested successfully for all 7 tables (KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO)
+✓ Audit logs (Task 09) used to identify and verify recovery points
+✓ Database successfully recovered from backup with data integrity verified
+✓ Point-in-time recovery tested (within 1-hour recovery window from audit logs)
+✓ Flashback recovery tested for recent changes (< 6 hours)
+✓ Performance impact of backup < 15%
+✓ Recovery time objectives (RTO) met: < 2 hours for full database recovery
+✓ Row count verification: BENHNHAN (100K), NHANVIEN (170), HSBA (~140K-210K), HSBA_DV (~140K-210K), DONTHUOC (~280K-420K), THONGBAO (12K)
 
 ## Evaluation Framework
 
@@ -288,47 +297,81 @@ After implementation:
 
 **Pass Criteria:**
 
-- ✓ All 4 backup methods evaluated (RMAN, Hot, Cold, Data Pump)
-- ✓ RMAN configured with 30-day retention policy
-- ✓ Automatic daily incremental backups running
-- ✓ Weekly full backups completing successfully
-- ✓ Archive log management working (automatic deletion after backup)
-- ✓ Database recovery from backup tested and working
-- ✓ Point-in-time recovery using audit logs verified
-- ✓ Flashback table recovery tested for recent changes
+- ✓ All 4 backup methods evaluated (RMAN, Hot, Cold, Data Pump) with written advantages/disadvantages
+- ✓ RMAN configured with 30-day retention policy and automatic job scheduling
+- ✓ Automatic daily incremental backups running successfully
+- ✓ Weekly full backups completing successfully with verification
+- ✓ Archive log management working (automatic deletion after backed up 2 times)
+- ✓ Database recovery from backup tested - all 7 tables restored with correct row counts:
+  - KHOA: 3
+  - BENHNHAN: 100,000
+  - NHANVIEN: 170
+  - HSBA: ~140,000-210,000
+  - HSBA_DV: ~140,000-210,000
+  - DONTHUOC: ~280,000-420,000
+  - THONGBAO: 12,000
+- ✓ Point-in-time recovery using audit logs (Task 09) verified and working
+- ✓ Flashback table recovery tested for recent changes (< 6 hours)
 - ✓ Recovery Time Objective (RTO) < 2 hours achieved
-- ✓ Document advantages/disadvantages of each method
 - ✓ Recovery procedures documented for operations team
+- ✓ Audit integrity verified post-recovery (audit logs persistent)
 
 **Evidence Tracking:**
 
-- RMAN configuration output
-- Backup job logs showing daily success
+- RMAN configuration output (retention policy verified)
+- Backup job logs showing daily successful runs
 - V$BACKUP_SET query results showing backup history
-- Successful restore test results
-- Archive log count and deletion proof
-- Recovery completion time metrics
-- Database integrity check results post-recovery
+- Successful restore test results with before/after row count comparison
+- Audit logs (AUDITLOG from Task 09) showing recovery point identification
+- Archive log deletion proof (count decrease after backup)
+- Recovery completion time metrics (RTO demonstration < 2 hours)
+- Database integrity check results post-recovery (DBMS_REPAIR or equivalent)
+- SELECT COUNT(*) verification for all 7 tables matching expected volumes
 
 ---
 
 ## Related Tasks
 
-- Task 07: Provides database foundation
-- Task 08: Security setup supports audit-based recovery
-- Task 09: Audit logs guide recovery point identification
-- All tasks: Depend on reliable backup strategy
+- **Task 07:** Provides database foundation (7 tables: KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO) - COMPLETED
+- **Task 08:** Security setup provides user authentication context for recovery testing
+- **Task 09:** Audit logs (AUDITLOG table) guide recovery point identification - MUST COMPLETE FIRST
+- All other tasks: Depend on reliable backup and recovery strategy for data protection
 
 ---
 
 ## Conclusion Guidance
 
-Summarize findings:
-1. Best backup method for hospital system requirements
-2. Recovery capabilities meeting business continuity needs
-3. Integration with audit logging for compliance
-4. Operational cost-benefit analysis
-5. Recommendations for production deployment
+Summarize findings and recommendations in written report:
 
-**Critical: RTO < 2 hours is non-negotiable for hospital operations**
+1. **Best Backup Method for Hospital System:**
+   - Primary recommendation: RMAN (most reliable, flexible recovery options)
+   - Justification: supports 7-table medical database (BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, KHOA, THONGBAO)
+   - Handles 100K+ patient records and 300K+ transaction records
+
+2. **Recovery Capabilities:**
+   - Full database recovery: < 2 hours (meets hospital RTO)
+   - Point-in-time recovery: within 1-hour window using audit logs
+   - Flashback recovery: < 6 hours for recent changes
+   - Row-level recovery: supported via audit trail
+
+3. **Integration with Audit Logging (Task 09):**
+   - AUDITLOG table enables transaction-level recovery point identification
+   - Audit timestamps guide point-in-time recovery precision
+   - Compliance: audit logs persist across recovery cycles
+
+4. **Operational Cost-Benefit Analysis:**
+   - Resource cost: disk storage for 30-day backup window (~50-100 GB)
+   - Personnel time: automated backups minimize manual intervention
+   - Recovery benefit: avoid medical data loss (critical for patient safety)
+   - Regulatory benefit: supports GDPR/HIPAA compliance requirements
+
+5. **Recommendations for Production Deployment:**
+   - Implement RMAN with 30-day rolling retention window
+   - Automatic daily incremental backups (11 PM)
+   - Weekly full backup to offline storage (Sunday midnight)
+   - Test recovery procedures monthly
+   - Maintain audit logs for compliance (1-year retention)
+   - Document RTO/RPO for operational team
+
+**Critical: Medical data loss is unacceptable - RTO < 2 hours is non-negotiable for hospital operations. Patient safety depends on reliable backup and recovery.**
 
