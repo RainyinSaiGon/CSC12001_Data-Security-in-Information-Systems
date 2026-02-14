@@ -109,21 +109,10 @@ END;
 /
 -- =====
 
-
-/* ==========================================================================
-   SCRIPT 2: DATA GENERATOR - HIGH VOLUME (RE-RUN)
-   Fix: Đã xử lý vấn đề độ rộng cột LOAIDV.
-   ========================================================================== */
-/* ==========================================================================
-   SCRIPT 2: DATA GENERATOR - HIGH VOLUME (AUTO-FIX TABLE)
-   Fix lỗi ORA-12899: Tự động mở rộng cột LOAIDV lên 100 ký tự.
-   ========================================================================== */
-
--- 1. CẤU HÌNH MÔI TRƯỜNG
 SET DEFINE OFF;
 SET SERVEROUTPUT ON;
 
--- 2. TỰ ĐỘNG SỬA LỖI ĐỘ RỘNG CỘT (QUAN TRỌNG)
+-- 2. TỰ ĐỘNG SỬA LỖI ĐỘ RỘNG CỘT
 -- Chạy lệnh này để đảm bảo cột chứa đủ tên dịch vụ dài
 BEGIN
     EXECUTE IMMEDIATE 'ALTER TABLE HSBA_DV MODIFY LOAIDV NVARCHAR2(100)';
