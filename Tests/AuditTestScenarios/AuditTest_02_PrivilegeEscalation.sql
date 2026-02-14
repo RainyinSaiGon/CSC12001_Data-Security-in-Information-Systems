@@ -13,7 +13,7 @@
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Attempt to INSERT into HSBA (unauthorized for Technician role)
-INSERT INTO HSBA (MAHSBA, MABENHNHAN, MABACSI, NGAY, CHANDOAN)
+INSERT INTO HSBA (MAHSBA, MABN, MABS, NGAY, CHANDOAN)
 VALUES ('FAKE_HSBA', 'BN001', 'BS001', SYSDATE, 'Unauthorized Entry');
 -- Expected: ORA-01031 insufficient privileges or ORA-00942
 

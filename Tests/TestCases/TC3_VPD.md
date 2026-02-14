@@ -42,15 +42,15 @@ ORDER BY object_name;
 CONNECT 10000011/[password]@XE;
 
 -- Should return ONLY patients assigned to 10000011
-SELECT MAHSBA, MABENHNHAN, MABACSI FROM HSBA;
+SELECT MAHSBA, MABN, MABS FROM HSBA;
 
--- Verify: all rows should have MABACSI matching 10000011's staff ID
+-- Verify: all rows should have MABS matching 10000011's staff ID
 SELECT COUNT(*) AS total_rows FROM HSBA;
-SELECT COUNT(*) AS own_rows FROM HSBA WHERE MABACSI = 10000011;
+SELECT COUNT(*) AS own_rows FROM HSBA WHERE MABS = 10000011;
 -- These two counts should be EQUAL
 ```
 
-**Expected Result:** DOCTOR001 sees only records where MABACSI matches their staff ID
+**Expected Result:** DOCTOR001 sees only records where MABS matches their staff ID
 
 ### Step 3: Doctor Data Isolation — Cross-Doctor Check
 
@@ -59,10 +59,10 @@ SELECT COUNT(*) AS own_rows FROM HSBA WHERE MABACSI = 10000011;
 CONNECT DOCTOR002/[password]@XE;
 
 -- Should return DIFFERENT set of patients
-SELECT MAHSBA, MABENHNHAN, MABACSI FROM HSBA;
+SELECT MAHSBA, MABN, MABS FROM HSBA;
 
 -- DOCTOR002 should NOT see DOCTOR001's patients
-SELECT COUNT(*) FROM HSBA WHERE MABACSI = [DOCTOR001_staff_id];
+SELECT COUNT(*) FROM HSBA WHERE MABS = [DOCTOR001_staff_id];
 -- Should return 0
 ```
 
@@ -78,7 +78,7 @@ CONNECT COORDINATOR001/[password]@XE;
 SELECT COUNT(*) FROM BENHNHAN;
 
 -- Verify data scope based on coordinator's assignment
-SELECT MABENHNHAN, HOTEN FROM BENHNHAN ORDER BY MABENHNHAN;
+SELECT MABN, TENBN FROM BENHNHAN ORDER BY MABN;
 ```
 
 **Expected Result:** Coordinator sees patients in their assigned scope
@@ -90,11 +90,11 @@ SELECT MABENHNHAN, HOTEN FROM BENHNHAN ORDER BY MABENHNHAN;
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should see only assigned diagnostic services
-SELECT MADICHVU, TENDICHVU, KETQUA FROM HSBA_DV;
+SELECT MAHSBA_DV, LOAIDV, KETQUA FROM HSBA_DV;
 
 -- Verify: all returned services are assigned to TECHNICIAN001
-SELECT MADICHVU FROM HSBA_DV
-WHERE MAKYTHUATVIEN != [TECHNICIAN001_staff_id];
+SELECT MAHSBA_DV FROM HSBA_DV
+WHERE MAKTV != [TECHNICIAN001_staff_id];
 -- Should return 0 rows (VPD filters them out)
 ```
 
@@ -136,7 +136,7 @@ SELECT COUNT(*) FROM HSBA;
 ## Pass Criteria
 
 - [ ] VPD policies active on BENHNHAN, HSBA, HSBA_DV
-- [ ] Doctor sees only assigned patients (HSBA filtered by MABACSI)
+- [ ] Doctor sees only assigned patients (HSBA filtered by MABS)
 - [ ] Two doctors see completely disjoint patient sets
 - [ ] Coordinator sees records in assigned scope
 - [ ] Technician sees only assigned services

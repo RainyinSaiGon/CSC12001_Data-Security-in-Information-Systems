@@ -12,7 +12,7 @@
 CONNECT PATIENT001/[password]@XE;
 
 -- Query own patient details
-SELECT MABENHNHAN, HOTEN, NGAYSINH, DIENTHOAI
+SELECT MABN, TENBN, NGAYSINH, SONHA, TENDUONG, QUANHUYEN, TINHTP
 FROM BENHNHAN;
 
 -- Query own medical history
@@ -27,19 +27,18 @@ ORDER BY h.NGAY DESC;
 -- Query own prescriptions
 SELECT
     dt.MAHSBA,
-    dt.MATHUOC,
-    dt.LIEUDUNG,
-    dt.SOLUONG
+    dt.TENTHUOC,
+    dt.LIEUDUNG
 FROM DONTHUOC dt
 JOIN HSBA h ON dt.MAHSBA = h.MAHSBA;
 
 -- Query own diagnostic services
 SELECT
-    dv.MADV,
-    dv.MALOAIDV,
-    dv.NGAY,
+    dv.MAHSBA_DV,
+    dv.LOAIDV,
+    dv.NGAYDV,
     dv.KETQUA
-FROM DICHVU dv
+FROM HSBA_DV dv
 JOIN HSBA h ON dv.MAHSBA = h.MAHSBA;
 
 -- =====================

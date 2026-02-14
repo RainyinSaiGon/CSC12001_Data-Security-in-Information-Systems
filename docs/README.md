@@ -50,24 +50,29 @@ This documentation directory contains the following consolidated files:
 
 ### Core Entities
 
-- BENHNHAN (Patient)
-- NHANVIEN (Staff)
-- HSBA (Medical Record)
-- HSBA_DV (Diagnostic Service)
-- DONTHUOC (Prescription)
-- THONGBAO (Notification)
+- KHOA (Department)
+- BENHNHAN (Patient - 100,000 records per TC#5)
+- NHANVIEN (Staff - 170 records)
+- HSBA (Medical Record - 50,000+ records)
+- HSBA_DV (Diagnostic Service - 75,000+ records)
+- DONTHUOC (Prescription - 100,000+ records)
+- THONGBAO (Notification - 10,000+ records)
 
 ### Key Relationships
 
 ```
-BENHNHAN
-  ├── HSBA (1:M - patient has multiple records)
-  │   ├── HSBA_DV (1:M - record has multiple services)
-  │   └── DONTHUOC (1:M - record has multiple prescriptions)
-  │
-NHANVIEN
-  ├── HSBA (doctor treating records)
-  ├── HSBA_DV (technician performing services)
+KHOA (Departments)
+  └─ BENHNHAN (1:M - dept has patients)
+  └─ NHANVIEN (1:M - dept has staff)
+
+NHANVIEN (Staff)
+  ├─ HSBA (doctor treating records)
+  └─ HSBA_DV (technician performing services)
+
+HSBA (Medical Records)
+  ├─ BENHNHAN (1:M - patient has multiple records)
+  ├─ HSBA_DV (1:M - record has multiple services)
+  └─ DONTHUOC (1:M - record has multiple prescriptions)
 ```
 
 ## 2. Security Architecture
@@ -77,7 +82,7 @@ NHANVIEN
 Four main roles with hierarchical permissions:
 
 1. **Coordinator** (20 users): Patient and record management
-2. **Doctor/Nurse** (100 users): Clinical decision making
+2. **Doctor/Nurse** (100 users): Clinical decision making  
 3. **Technician** (50 users): Service execution
 4. **Patient** (100,000 users): Self-service portal
 

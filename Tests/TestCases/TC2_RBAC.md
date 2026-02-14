@@ -40,9 +40,9 @@ CONNECT COORDINATOR001/[password]@XE;
 
 -- Should succeed: Full access to patient management
 SELECT COUNT(*) FROM BENHNHAN;
-INSERT INTO BENHNHAN (MABENHNHAN, HOTEN) VALUES (99999, 'Test Patient');
-UPDATE BENHNHAN SET HOTEN = 'Updated' WHERE MABENHNHAN = 99999;
-DELETE FROM BENHNHAN WHERE MABENHNHAN = 99999;
+INSERT INTO BENHNHAN (MABN, TENBN) VALUES (99999, 'Test Patient');
+UPDATE BENHNHAN SET TENBN = 'Updated' WHERE MABN = 99999;
+DELETE FROM BENHNHAN WHERE MABN = 99999;
 
 -- Should succeed: Access to medical records
 SELECT COUNT(*) FROM HSBA;
@@ -76,16 +76,16 @@ INSERT INTO NHANVIEN (MANV, HOTEN) VALUES (99999, 'Test');
 CONNECT TECHNICIAN001/[password]@XE;
 
 -- Should succeed: View assigned diagnostic services
-SELECT * FROM HSBA_DV WHERE MAKYTHUATVIEN = [TECHNICIAN001_staff_id];
+SELECT * FROM HSBA_DV WHERE MAKTV = [TECHNICIAN001_staff_id];
 
 -- Should succeed: Update service results
-UPDATE HSBA_DV SET KETQUA = 'Normal' WHERE MADICHVU = [assigned_service_id];
+UPDATE HSBA_DV SET KETQUA = 'Normal' WHERE MAHSBA_DV = [assigned_service_id];
 
 -- Should FAIL: Cannot access patient records
 SELECT * FROM HSBA;
 
 -- Should FAIL: Cannot modify patient data
-UPDATE BENHNHAN SET HOTEN = 'Hacked' WHERE MABENHNHAN = 1;
+UPDATE BENHNHAN SET TENBN = 'Hacked' WHERE MABN = 1;
 ```
 
 **Expected Result:** Service operations succeed; patient data access denied
@@ -97,13 +97,13 @@ UPDATE BENHNHAN SET HOTEN = 'Hacked' WHERE MABENHNHAN = 1;
 CONNECT PATIENT001/[password]@XE;
 
 -- Should succeed: Read own records
-SELECT * FROM BENHNHAN WHERE MABENHNHAN = [own_id];
+SELECT * FROM BENHNHAN WHERE MABN = [own_id];
 
 -- Should FAIL: Cannot modify medical records
 UPDATE HSBA SET CHANDOAN = 'Self-diagnosis' WHERE MAHSBA = [any_record];
 
 -- Should FAIL: Cannot view other patients
-SELECT * FROM BENHNHAN WHERE MABENHNHAN != [own_id];
+SELECT * FROM BENHNHAN WHERE MABN != [own_id];
 ```
 
 **Expected Result:** Own record read succeeds; all modifications and other patient access denied
@@ -113,7 +113,7 @@ SELECT * FROM BENHNHAN WHERE MABENHNHAN != [own_id];
 ```sql
 -- DOCTOR should NOT be able to do COORDINATOR actions
 CONNECT DOCTOR001/[password]@XE;
-DELETE FROM BENHNHAN WHERE MABENHNHAN = 1;  -- Should FAIL
+DELETE FROM BENHNHAN WHERE MABN = 1;  -- Should FAIL
 
 -- TECHNICIAN should NOT be able to do DOCTOR actions
 CONNECT TECHNICIAN001/[password]@XE;
@@ -121,7 +121,7 @@ UPDATE HSBA SET CHANDOAN = 'Fake' WHERE MAHSBA = 1;  -- Should FAIL
 
 -- PATIENT should NOT be able to do TECHNICIAN actions
 CONNECT PATIENT001/[password]@XE;
-UPDATE HSBA_DV SET KETQUA = 'Fake' WHERE MADICHVU = 1;  -- Should FAIL
+UPDATE HSBA_DV SET KETQUA = 'Fake' WHERE MAHSBA_DV = 1;  -- Should FAIL
 ```
 
 **Expected Result:** All cross-role actions denied with `ORA-01031` or `ORA-00942`

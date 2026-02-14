@@ -28,7 +28,7 @@ Verify that patients can view only their own data, update personal contact infor
 CONNECT 20000001/[password]@XE;
 
 -- Should return ONLY 20000001's record
-SELECT MABENHNHAN, HOTEN, NGAYSINH, DIENTHOAI
+SELECT MABN, TENBN, NGAYSINH, SONHA, TENDUONG, QUANHUYEN, TINHTP
 FROM BENHNHAN;
 
 -- Count should be exactly 1
@@ -42,12 +42,12 @@ SELECT COUNT(*) AS my_records FROM BENHNHAN;
 ```sql
 -- 20000001 should NOT see 20000002's data
 CONNECT 20000001/[password]@XE;
-SELECT COUNT(*) FROM BENHNHAN WHERE MABENHNHAN = 20000002;
+SELECT COUNT(*) FROM BENHNHAN WHERE MABN = 20000002;
 -- Should return 0
 
 -- Verify by connecting as 20000002
 CONNECT 20000002/[password]@XE;
-SELECT MABENHNHAN FROM BENHNHAN;
+SELECT MABN FROM BENHNHAN;
 -- Should return only PATIENT002's ID
 ```
 
@@ -60,11 +60,11 @@ CONNECT PATIENT001/[password]@XE;
 
 -- Should succeed: Update own contact information
 UPDATE BENHNHAN
-SET DIENTHOAI = '0901234567'
-WHERE MABENHNHAN = [own_id];
+SET TENDUONG = 'Duong moi 123'
+WHERE MABN = [own_id];
 
 -- Verify the update
-SELECT DIENTHOAI FROM BENHNHAN;
+SELECT SONHA, TENDUONG, QUANHUYEN, TINHTP FROM BENHNHAN;
 ```
 
 **Expected Result:** Contact info update succeeds
@@ -75,7 +75,7 @@ SELECT DIENTHOAI FROM BENHNHAN;
 CONNECT PATIENT001/[password]@XE;
 
 -- Should succeed: Read own medical records
-SELECT MAHSBA, NGAYTAO, CHANDOAN FROM HSBA;
+SELECT MAHSBA, NGAY, CHANDOAN FROM HSBA;
 
 -- Should succeed: Read own prescriptions
 SELECT * FROM DONTHUOC dt
@@ -102,11 +102,11 @@ UPDATE DONTHUOC SET LIEUDUNG = '999mg'
 WHERE MAHSBA = [own_record_id];
 
 -- Should FAIL: Cannot insert medical records
-INSERT INTO HSBA (MAHSBA, MABENHNHAN, CHANDOAN)
+INSERT INTO HSBA (MAHSBA, MABN, CHANDOAN)
 VALUES (99999, [own_id], 'Fake Record');
 
 -- Should FAIL: Cannot delete records
-DELETE FROM BENHNHAN WHERE MABENHNHAN = [own_id];
+DELETE FROM BENHNHAN WHERE MABN = [own_id];
 ```
 
 **Expected Result:** All modifications denied with `ORA-01031` insufficient privileges
@@ -117,11 +117,11 @@ DELETE FROM BENHNHAN WHERE MABENHNHAN = [own_id];
 CONNECT PATIENT001/[password]@XE;
 
 -- Direct ID lookup — VPD should block
-SELECT * FROM BENHNHAN WHERE MABENHNHAN = [PATIENT002_id];
+SELECT * FROM BENHNHAN WHERE MABN = [PATIENT002_id];
 -- Should return 0 rows
 
 -- Wildcard search — VPD should still filter
-SELECT * FROM BENHNHAN WHERE HOTEN LIKE '%Nguyen%';
+SELECT * FROM BENHNHAN WHERE TENBN LIKE '%Nguyen%';
 -- Should return only PATIENT001 if name matches
 ```
 
@@ -133,7 +133,7 @@ SELECT * FROM BENHNHAN WHERE HOTEN LIKE '%Nguyen%';
 
 - [ ] Patient sees exactly 1 record (own data only)
 - [ ] Cannot see other patients' records
-- [ ] Can update own contact information (phone, address)
+- [ ] Can update own contact information (address: SONHA, TENDUONG, QUANHUYEN, TINHTP)
 - [ ] Can read own medical history (HSBA, prescriptions, services)
 - [ ] Cannot modify medical records (diagnosis, prescriptions)
 - [ ] Cannot INSERT or DELETE any records

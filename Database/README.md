@@ -30,7 +30,7 @@ Database/
 │   ├── schema/                                    (Create these files)
 │   │   ├── 01_CreateTables.sql                   # 7 medical data tables
 │   │   ├── 02_CreateIndexes.sql                  # Performance indexes
-│   │   └── 03_InsertSampleData.sql               # Sample data (100 patients, 170 staff)
+│   │   └── 03_InsertSampleData.sql               # Sample data (100,000 patients, 170 staff)
 │   ├── security/                                  (Create these files)
 │   │   ├── 01_Users_Creation.sql                 # Create 4 role users
 │   │   ├── 02_RBAC_Setup.sql                     # Role-Based Access Control
@@ -155,114 +155,111 @@ sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
 
 ```sql
 CREATE TABLE KHOA (
-    MAKHOA VARCHAR2(10) PRIMARY KEY,
-    TENKHOA VARCHAR2(100), -- 'Khoa Tiêu Hóa', 'Khoa Thần Kinh', 'Khoa Tim Mạch'
-    SDT VARCHAR2(20),
+    MAKHOA CHAR(6) PRIMARY KEY,
+    TENKHOA NVARCHAR2(30) NOT NULL,
+    SDT CHAR(10) NOT NULL,
     TRUONGKHOA VARCHAR2(10) REFERENCES NHANVIEN(MANV)
 );
 ```
 
-**BENHNHAN** (Patient)
+**BENHNHAN** (Patient - 100,000 records per TC#5)
 
 ```sql
 CREATE TABLE BENHNHAN (
-    MABENHNHAN VARCHAR2(10) PRIMARY KEY,
-    HOTEN VARCHAR2(100) NOT NULL,
-    PHAI CHAR(1),
+    MABN INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    TENBN NVARCHAR2(100) NOT NULL,
+    PHAI NVARCHAR2(3) CHECK (PHAI IN ('Nam', 'Nữ')),
     NGAYSINH DATE,
-    CCCD VARCHAR2(20) UNIQUE,
-    DIENTHOAI VARCHAR2(15),
-    SONHA VARCHAR2(50),
-    TENDUONG VARCHAR2(50),
-    QUANHUYEN VARCHAR2(50),
-    TINHTP VARCHAR2(50),
-    TIENSUBENH CLOB, -- Previously TIENSUABENH
-    TIENSUBENHGD CLOB,
-    DIUNGTHUOC CLOB,
+    CCCD CHAR(12) UNIQUE NOT NULL,
+    SONHA NVARCHAR2(5),
+    TENDUONG NVARCHAR2(30),
+    QUANHUYEN NVARCHAR2(30),
+    TINHTP NVARCHAR2(50),
+    TIENSUBENH NVARCHAR2(2000),
+    TIENSUBENHGD NVARCHAR2(2000),
+    DIUNGTHUOC NVARCHAR2(2000),
     USERNAME VARCHAR2(50) -- Map to Oracle User
 );
 ```
 
-**NHANVIEN** (Staff)
+**NHANVIEN** (Staff - 170 records)
 
 ```sql
 CREATE TABLE NHANVIEN (
-    MANV VARCHAR2(10) PRIMARY KEY,
-    HOTEN VARCHAR2(100) NOT NULL,
-    PHAI CHAR(1),
+    MANV INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    HOTEN NVARCHAR2(100) NOT NULL,
+    PHAI NVARCHAR2(3) CHECK (PHAI IN ('Nam', 'Nữ')),
     NGAYSINH DATE,
-    CMND VARCHAR2(20) UNIQUE,
-    QUEQUAN VARCHAR2(100),
+    CMND CHAR(12) UNIQUE NOT NULL,
+    QUEQUAN NVARCHAR2(100),
     SODT VARCHAR2(15),
-    VAITRO VARCHAR2(50) CHECK (VAITRO IN ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân')),
-    MAKHOA VARCHAR2(10) REFERENCES KHOA(MAKHOA),
+    VAITRO NVARCHAR2(50) CHECK (VAITRO IN ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên')),
+    MAKHOA CHAR(6) REFERENCES KHOA(MAKHOA),
     USERNAME VARCHAR2(50) -- Map to Oracle User
 );
 ```
 
-**HSBA** (Medical Record)
+**KHOA** (Department)
+
+```sql
+CREATE TABLE KHOA (
+    MAKHOA CHAR(6) PRIMARY KEY,
+    TENKHOA NVARCHAR2(30) NOT NULL,
+    SDT CHAR(10) NOT NULL,
+    TRUONGKHOA VARCHAR2(10) REFERENCES NHANVIEN(MANV)
+);
+```
+
+**HSBA** (Medical Record - 50,000+ records)
 
 ```sql
 CREATE TABLE HSBA (
-    MAHSBA VARCHAR2(10) PRIMARY KEY,
-    MABENHNHAN VARCHAR2(10) REFERENCES BENHNHAN(MABENHNHAN),
-    NGAYTAO DATE,
-    CHANDOAN CLOB,
-    DIEUTRI CLOB,
-    KETLUAN CLOB,
-    MABACSI VARCHAR2(10) REFERENCES NHANVIEN(MANV), -- Doctor assigned
-    MAKHOA VARCHAR2(10) REFERENCES KHOA(MAKHOA)
+    MAHSBA INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    MABN INT REFERENCES BENHNHAN(MABN),
+    NGAY DATE NOT NULL,
+    CHANDOAN NVARCHAR2(2000),
+    DIEUTRI NVARCHAR2(2000),
+    KETLUAN NVARCHAR2(2000),
+    MABS INT REFERENCES NHANVIEN(MANV),
+    MAKHOA CHAR(6) REFERENCES KHOA(MAKHOA)
 );
 ```
 
-**HSBA_DV** (Diagnostic Service)
+**HSBA_DV** (Diagnostic Service - 75,000+ records)
 
 ```sql
 CREATE TABLE HSBA_DV (
-    MADICHVU VARCHAR2(10) PRIMARY KEY, -- Changed to VARCHAR2 based on feedback
-    MAHSBA VARCHAR2(10) REFERENCES HSBA(MAHSBA),
-    TENDICHVU VARCHAR2(100),
-    NGAY DATE,
-    KETQUA CLOB,
-    HOANTHANH NUMBER(1) DEFAULT 0,
-    MAKYTHUATVIEN VARCHAR2(10) REFERENCES NHANVIEN(MANV) -- Technician performing
+    MAHSBA_DV INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    LOAIDV NVARCHAR2(20),
+    MAHSBA INT REFERENCES HSBA(MAHSBA),
+    NGAYDV DATE NOT NULL,
+    KETQUA NVARCHAR2(2000),
+    MAKTV INT REFERENCES NHANVIEN(MANV)
 );
 ```
 
-**DONTHUOC** (Prescription)
+**DONTHUOC** (Prescription - 100,000+ records)
 
 ```sql
 CREATE TABLE DONTHUOC (
-    MADONTHUOC VARCHAR2(10) PRIMARY KEY,
-    MAHSBA VARCHAR2(10) REFERENCES HSBA(MAHSBA),
-    TENTHUOC VARCHAR2(100),
-    LIEUDUNG VARCHAR2(200), -- Previously LIEUUNG
-    HUONGDAN VARCHAR2(200),
-    NGAYDANGKY DATE
+    MADONTHUOC INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    MAHSBA INT REFERENCES HSBA(MAHSBA),
+    TENTHUOC NVARCHAR2(100) NOT NULL,
+    LIEUDUNG NVARCHAR2(200),
+    NGAYDT DATE NOT NULL
 );
 ```
 
-**THONGBAO** (Notification - required for OLS)
+**THONGBAO** (Notification - 10,000+ records)
 
 ```sql
 CREATE TABLE THONGBAO (
-    MATHONGBAO NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    NOIDUNG CLOB,
+    MATHONGBAO INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    NOIDUNG NVARCHAR2(2000) NOT NULL,
     NGAYGIO TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    DIADIEM VARCHAR2(100)
-);
-```
-
-**AUDITLOG** (Custom Audit Trail)
-
-```sql
-CREATE TABLE AUDITLOG (
-    AUDITID NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    USERID VARCHAR2(50),
-    THOIGIAN TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    LOAIHD VARCHAR2(50),
-    TENTABLE VARCHAR2(50),
-    MARECORD VARCHAR2(50)
+    DIADIEM NVARCHAR2(100),
+    KHOA CHAR(6) REFERENCES KHOA(MAKHOA),
+    CAPBAC VARCHAR2(20)
 );
 ```
 
@@ -271,9 +268,9 @@ CREATE TABLE AUDITLOG (
 ### RBAC (Role-Based Access Control)
 
 - **COORDINATOR**: Access to patient data, record assignment
-- **DOCTOR**: Access to assigned patient records, diagnoses
+- **DOCTOR**: Access to assigned patient records, diagnoses  
 - **TECHNICIAN**: Access to diagnostic services
-- **PATIENT**: Access to own medical records
+- **PATIENT**: Read-only access to own medical records
 
 ### VPD (Virtual Private Database)
 
@@ -374,23 +371,32 @@ Ensure commands run as SYSDBA or user with proper grants
 After setup, verify everything is configured:
 
 ```sql
--- Check tables
-SELECT * FROM user_tables;
+-- Check tables created (should be 7)
+SELECT table_name FROM user_tables 
+WHERE table_name IN ('KHOA', 'BENHNHAN', 'NHANVIEN', 'HSBA', 'HSBA_DV', 'DONTHUOC', 'THONGBAO');
 
--- Check users
-SELECT username FROM dba_users WHERE username LIKE 'DOCTOR%' OR username LIKE 'PATIENT%';
+-- Check data volumes
+SELECT 'BENHNHAN' AS tbl, COUNT(*) AS cnt FROM BENHNHAN
+UNION ALL SELECT 'NHANVIEN', COUNT(*) FROM NHANVIEN
+UNION ALL SELECT 'HSBA', COUNT(*) FROM HSBA
+UNION ALL SELECT 'HSBA_DV', COUNT(*) FROM HSBA_DV
+UNION ALL SELECT 'DONTHUOC', COUNT(*) FROM DONTHUOC
+UNION ALL SELECT 'THONGBAO', COUNT(*) FROM THONGBAO;
 
--- Check roles
-SELECT role FROM dba_roles WHERE role IN ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân');
+-- Check users (should have test users)
+SELECT username FROM dba_users WHERE username LIKE '1000%' OR username LIKE '2000%';
 
--- Check VPD policies
-SELECT object_owner, object_name, policy_name FROM dba_policies;
+-- Check roles (should have 3 clinical roles)
+SELECT role FROM dba_roles WHERE role IN ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên');
+
+-- Check VPD policies (should have active policies)
+SELECT object_owner, object_name, policy_name FROM dba_policies WHERE object_owner = 'HOSPITAL_ADMIN';
 
 -- Check OLS configuration
-SELECT * FROM lbacsys.lbacsys_labeling WHERE owner='PROJECT_ADMIN';
+SELECT * FROM lbacsys.lbacsys_labeling WHERE owner = 'HOSPITAL_ADMIN';
 
--- Check audit trail
-SELECT * FROM aud$ ORDER BY ntimestamp# DESC;
+-- Check audit trail (recent activity)
+SELECT * FROM aud$ ORDER BY ntimestamp# DESC FETCH FIRST 20 ROWS ONLY;
 ```
 
 ## References

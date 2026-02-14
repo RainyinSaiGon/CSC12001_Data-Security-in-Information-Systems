@@ -44,8 +44,6 @@ Closes #
 - [ ] Manual testing
 - [ ] Security testing
 
-## Screenshots (if applicable)
-<!-- Add screenshots for UI changes -->
 
 ## Response to Code Review
 <!-- Address any previous review comments -->
