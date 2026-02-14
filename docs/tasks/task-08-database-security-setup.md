@@ -12,10 +12,10 @@
 
 Configure all Subsystem 2 access control mechanisms per Vietnamese specification requirements:
 
-- **TC#1:** Create user accounts, link to NHANVIEN/BENHNHAN rows via primary key matching
-- **TC#2 (Coordinator) & TC#5 (Patient):** Use **RBAC** role-based access control
-- **TC#3 (Doctor) & TC#4 (Technician):** Use **VPD** (Virtual Private Database) for transparent row-level filtering
-- Create 4 database roles with specific permission mappings (Điều phối viên, Bác sĩ/Y sĩ, Kỹ thuật viên, Bệnh nhân)
+- **TC#1:** Create user accounts, link to NHANVIEN/BENHNHAN rows via USERNAME column matching
+- **Câu 2 (TC#4 Technician & TC#5 Patient):** Use **RBAC** role-based access control with application-level filtering
+- **Câu 3 (TC#2 Coordinator & TC#3 Doctor):** Use **VPD** (Virtual Private Database) for transparent row-level filtering
+- Create 2 database roles with specific permission mappings 
 - Implement Oracle Label Security (OLS) with 3-level hierarchy for THONGBAO notifications
 - Create test users and production-scale accounts with proper role assignments
 - Tables secured: BENHNHAN (100K patients), NHANVIEN (170 staff), HSBA (~140K-210K records), HSBA_DV (~140K-210K services), DONTHUOC (~280K-420K prescriptions), THONGBAO (12K notifications)
@@ -37,9 +37,10 @@ DBA creates Oracle user accounts linked to database records without separate use
 
 **Staff Account Strategy:**
 
-- Create Oracle user for each NHANVIEN record with username = MANV (employee ID)
-- Example: Employee with MANV='NV001' gets Oracle account 'NV001'
-- Link: Oracle username automatically matches NHANVIEN.MANV (primary key)
+- Create Oracle user for each NHANVIEN record with username from USERNAME column
+- Example: Employee with MANV=1, USERNAME='NV000001' gets Oracle account 'NV000001'
+- Link: Oracle username ('NV000001') matches NHANVIEN.USERNAME column value
+- VPD filtering uses: WHERE MANV = TO_NUMBER(SYS_CONTEXT('USERENV','SESSION_USER')) to link Oracle user to staff record
 - Role assignment: Determined by NHANVIEN.VAITRO value
   - VAITRO='Điều phối viên' → 'Điều phối viên' role
   - VAITRO='Bác sĩ/Y sĩ' → 'Bác sĩ/Y sĩ' role
@@ -47,26 +48,27 @@ DBA creates Oracle user accounts linked to database records without separate use
 
 **Patient Account Strategy:**
 
-- Create Oracle user for each BENHNHAN record with username = MABN (patient ID)
-- Example: Patient with MABN='BN001' gets Oracle account 'BN001'
-- Link: Oracle username automatically matches BENHNHAN.MABN (primary key)
+- Create Oracle user for each BENHNHAN record with username from USERNAME column
+- Example: Patient with MABN=1234, USERNAME='BN000001234' gets Oracle account 'BN000001234'
+- Link: Oracle username ('BN000001234') matches BENHNHAN.USERNAME column value
+- RBAC filtering in application layer: Application enforces WHERE MABN = TO_NUMBER(SYS_CONTEXT('USERENV','SESSION_USER'))
 - All patients assigned 'Bệnh nhân' role automatically
-- VPD/RLS automatically filters to patient's own records via WHERE MABN = SYS_CONTEXT('USERENV','SESSION_USER')
+- Patient can only view/edit their own records via application-layer validation
 
 **Test User Sample (8-12 representative accounts):**
 
-Note: NHANVIEN.MANV uses GENERATED ALWAYS AS IDENTITY (auto-increment from 1), so actual staff IDs are 1-170.
+Note: NHANVIEN.MANV uses GENERATED ALWAYS AS IDENTITY (auto-increment from 1), so actual staff IDs are 1-170. Usernames follow format: 'NV' + LPAD(MANV, 6, '0') for staff, 'BN' + LPAD(MABN, 9, '0') for patients.
 
-| Account | Type | Data Row | Link Method | Assigned Role | Purpose |
-|---------|------|----------|---------|---------------|----------|
-| 1 | Coordinator | NHANVIEN.MANV=1 | Oracle user '1', query NHANVIEN WHERE MANV=1 | Điều phối viên | Coordinator #1 |
-| 5 | Coordinator | NHANVIEN.MANV=5 | Oracle user '5', query NHANVIEN WHERE MANV=5 | Điều phối viên | Coordinator #5 |
-| 25 | Doctor | NHANVIEN.MANV=25 | Oracle user '25', query NHANVIEN WHERE MANV=25 | Bác sĩ/Y sĩ | Doctor (KHOA01) |
-| 75 | Doctor | NHANVIEN.MANV=75 | Oracle user '75', query NHANVIEN WHERE MANV=75 | Bác sĩ/Y sĩ | Doctor (KHOA02) |
-| 130 | Technician | NHANVIEN.MANV=130 | Oracle user '130', query NHANVIEN WHERE MANV=130 | Kỹ thuật viên | Technician #1 |
-| 160 | Technician | NHANVIEN.MANV=160 | Oracle user '160', query NHANVIEN WHERE MANV=160 | Kỹ thuật viên | Technician #2 |
-| 1234 | Patient | BENHNHAN.MABN=1234 | Oracle user '1234', query BENHNHAN WHERE MABN=1234 | Bệnh nhân | Patient #1234 |
-| 50000 | Patient | BENHNHAN.MABN=50000 | Oracle user '50000', query BENHNHAN WHERE MABN=50000 | Bệnh nhân | Patient #50000
+| MANV/MABN | Type | Data Row | Username Generated | Link Method | Assigned Role | Purpose |
+|---------|------|----------|---------|---------|---------------|----------|
+| 1 | Coordinator | NHANVIEN.MANV=1 | NV000001 | Oracle user 'NV000001', query NHANVIEN WHERE USERNAME='NV000001' | Điều phối viên | Coordinator #1 |
+| 5 | Coordinator | NHANVIEN.MANV=5 | NV000005 | Oracle user 'NV000005', query NHANVIEN WHERE USERNAME='NV000005' | Điều phối viên | Coordinator #5 |
+| 25 | Doctor | NHANVIEN.MANV=25 | NV000025 | Oracle user 'NV000025', query NHANVIEN WHERE USERNAME='NV000025' | Bác sĩ/Y sĩ | Doctor (KHOA01) |
+| 75 | Doctor | NHANVIEN.MANV=75 | NV000075 | Oracle user 'NV000075', query NHANVIEN WHERE USERNAME='NV000075' | Bác sĩ/Y sĩ | Doctor (KHOA02) |
+| 130 | Technician | NHANVIEN.MANV=130 | NV000130 | Oracle user 'NV000130', query NHANVIEN WHERE USERNAME='NV000130' | Kỹ thuật viên | Technician #1 |
+| 160 | Technician | NHANVIEN.MANV=160 | NV000160 | Oracle user 'NV000160', query NHANVIEN WHERE USERNAME='NV000160' | Kỹ thuật viên | Technician #2 |
+| 1234 | Patient | BENHNHAN.MABN=1234 | BN000001234 | Oracle user 'BN000001234', query BENHNHAN WHERE USERNAME='BN000001234' | Bệnh nhân | Patient #1234 |
+| 50000 | Patient | BENHNHAN.MABN=50000 | BN000050000 | Oracle user 'BN000050000', query BENHNHAN WHERE USERNAME='BN000050000' | Bệnh nhân | Patient #50000
 
 **Production Scale:**
 
@@ -118,20 +120,22 @@ For patient accounts, use one of these strategies:
 
 **Implementation:**
 
-- Use CREATE USER for each MANV/MABN value (use chosen strategy above for MABN)
-- Assign temporary password = username (change at first login)
-- GRANT CONNECT role as minimum
-- Grant specific role based on VAITRO/type
-- VPD policies use: SYS_CONTEXT('USERENV','SESSION_USER') in WHERE clauses to match primary keys
-- No additional user table required (Oracle manages authentication)
+- Use CREATE USER for each USERNAME value from NHANVIEN and BENHNHAN tables (01_Users_Creation.sql does this automatically)
+- Username format: 'NV' + LPAD(MANV, 6, '0') for staff (NV000001..NV000170), 'BN' + LPAD(MABN, 9, '0') for patients (BN000000001..BN000100000)
+- Assign temporary password = '123' (insecure for production - MUST change on first login)
+- GRANT CREATE SESSION role as minimum
+- Grant specific role based on VAITRO (staff) or automatically assign 'Bệnh nhân' (patients)
+- VPD policies use: WHERE MANV = TO_NUMBER(SYS_CONTEXT('USERENV','SESSION_USER')) for staff lookup
+- RBAC filtering uses: WHERE MABN = TO_NUMBER(SYS_CONTEXT('USERENV','SESSION_USER')) for patient lookup (application-layer enforcement)
+- No additional user table required (Oracle manages authentication, USERNAME column in NHANVIEN/BENHNHAN provides linking)
 - For high-volume patient registration: Consider connection pooling to handle 100,000+ concurrent potential users
 
 ### 02_RBAC_Setup.sql
 
-**Security Mechanisms Summary:**
+**Security Mechanisms Summary (Per Original Requirements):**
 
-- **RBAC (Action-based):** 'Điều phối viên', 'Kỹ thuật viên', 'Bệnh nhân' - defined role with allowed actions
-- **VPD (Transparent Filtering):** 'Bác sĩ/Y sĩ', 'Kỹ thuật viên' - database pre-filters rows per user context
+- **Câu 2 - RBAC (Role-Based Access Control):** 'Kỹ thuật viên', 'Bệnh nhân' - defined roles with allowed actions, filtering in application layer
+- **Câu 3 - VPD (Virtual Private Database):** 'Điều phối viên', 'Bác sĩ/Y sĩ' - database transparently pre-filters rows per user context
 
 Create 4 roles with specific permissions:
 
@@ -141,16 +145,18 @@ Create 4 roles with specific permissions:
 GRANT SELECT, INSERT, UPDATE ON BENHNHAN TO 'Điều phối viên'
 GRANT SELECT, INSERT, UPDATE ON HSBA TO 'Điều phối viên'
 GRANT SELECT ON NHANVIEN TO 'Điều phối viên'
-GRANT SELECT ON HSBA_DV TO 'Điều phối viên'
+GRANT SELECT, UPDATE (MAKTV) ON HSBA_DV TO 'Điều phối viên'
 ```
 
-Special Permissions (via application logic):
+VPD Filtering (Câu 3 Requirement):
 
+- VPD policy may filter by department/location assignment (implementation-specific)
+- Or allow full access (1=1) if coordinators manage all patients
 - Can update MAKHOA (department) in HSBA via coordinator assignment
 - Can update MABS (doctor) in HSBA via doctor assignment  
 - Can update MAKTV (technician) in HSBA_DV via technician assignment
 
-Purpose: Manage patients, records, assign doctors/technicians
+Purpose: Manage patients, records, assign doctors/technicians (VPD-filtered access)
 
 **'Bác sĩ/Y sĩ' Role (TC#3 - VPD Filtered):**
 
@@ -172,87 +178,90 @@ Special Permissions (VPD Filtered by WHERE MABS = current_user):
 
 Purpose: Manage patient care, see and update only assigned patients
 
-**'Kỹ thuật viên' Role (TC#4 - RBAC Action Control + VPD Filtering):**
+**'Kỹ thuật viên' Role (TC#4 - RBAC per Câu 2, NO VPD):**
 
 ```
 GRANT SELECT ON HSBA_DV TO 'Kỹ thuật viên'
-GRANT UPDATE ON HSBA_DV TO 'Kỹ thuật viên'
+GRANT UPDATE (KETQUA) ON HSBA_DV TO 'Kỹ thuật viên'
 GRANT SELECT ON BENHNHAN TO 'Kỹ thuật viên' (context only)
 GRANT SELECT ON HSBA TO 'Kỹ thuật viên'
 ```
 
-RBAC Action Permissions:
+RBAC Implementation (Câu 2 Requirement):
 
-- Allowed: ViewAssignedServices, UpdateServiceResults (KETQUA), MarkServiceComplete
-- Denied: DeleteServices, ViewOtherTechnicianServices
-- Database VPD enforces: WHERE MAKTV = current_user (show only assigned services)
+- **NO VPD!** Filtering done in application layer (TechnicianService.cs)
+- Application enforces: WHERE MAKTV = current_user (show only assigned services)
+- Allowed: ViewAssignedServices, UpdateServiceResults (KETQUA)
+- Denied: DeleteServices, ViewOtherTechnicianServices, UpdateOtherFields
 - All KETQUA updates are audit-logged (TC#4)
 
-Purpose: Update diagnostic service results, see only own assigned/conducted services
+Purpose: Update diagnostic service results, application filters to show only own assigned services
 
-**'Bệnh nhân' Role (TC#5 - RBAC Column-Level Restrictions):**
+**'Bệnh nhân' Role (TC#5 - RBAC per Câu 2, NO VPD):**
 
 ```
 GRANT SELECT ON BENHNHAN TO 'Bệnh nhân'
-GRANT UPDATE (SODT, SONHA, TENDUONG, QUANHUYEM, TINHTP) ON BENHNHAN TO 'Bệnh nhân'
+GRANT UPDATE (SONHA, TENDUONG, QUANHUYEN, TINHTP) ON BENHNHAN TO 'Bệnh nhân'
 GRANT SELECT ON HSBA TO 'Bệnh nhân'
 GRANT SELECT ON DONTHUOC TO 'Bệnh nhân'
 GRANT SELECT ON THONGBAO TO 'Bệnh nhân'
 ```
 
-RBAC Column-Level Restrictions:
+RBAC Implementation (Câu 2 Requirement):
 
-- **Never Editable:** MABN, TENBN, PHAI, NGAYSINH, CCCD, TIENSUABENH, TIENSUABENHGD, DIUNGTHUOC
-- **Always Editable:** SODT, SONHA, TENDUONG, QUANHUYEM, TINHTP (contact info only)
-- Database VPD enforces: WHERE MABN = current_user (see only own records)
+- **NO VPD!** Filtering done in application layer (PatientService.cs)
+- Application enforces: WHERE MABN = current_user (see only own records)
+- **Never Editable:** MABN, TENBN, PHAI, NGAYSINH, CCCD, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC
+- **Always Editable:** SONHA, TENDUONG, QUANHUYEN, TINHTP (contact info only)
 - Application must validate and reject read-only field update attempts
 - All edit attempts (successful or rejected) are audit-logged (TC#5)
 
-Purpose: View own medical information, update only contact information
+Purpose: View own medical information, update only contact information (application-filtered)
 
 ### 03_VPD_Setup.sql
 
-Implement Virtual Private Database policies:
+Implement Virtual Private Database policies (Câu 3: Coordinator & Doctor ONLY):
 
-**HSBA Table Policy (Medical Records Filtering):**
+**HSBA Table Policy (Medical Records Filtering for Doctors & Coordinators):**
 
 ```
 Policy Function Logic:
-- Doctors: WHERE MANV = current_user
-- Coordinators: WHERE assigned_to_coordinator = current_user
-- Others: No direct HSBA access
+- Doctors (TC#3): WHERE MABS = current_user_MANV
+- Coordinators (TC#2): WHERE 1=1 (or department-based filtering)
+- Others: No VPD (Technician/Patient use application filtering)
 ```
 
 Implementation:
 
 - Use DBMS_RLS package
-- Create policy function returning WHERE clause
-- Policy name: HSBA_VPD_Policy
-- Apply to HSBA table
-- Enable on all users
+- Create policy function returning WHERE clause based on role
+- Policy name: HSBA_DOCTOR_COORDINATOR_VPD
+- Apply to HSBA table for Doctors and Coordinators only
+- Enable context-aware filtering
 
-**HSBA_DV Table Policy (Service Filtering):**
+**BENHNHAN Table Policy (Patient Filtering for Doctors & Coordinators):**
 
 ```
 Policy Function Logic:
-- Technicians (TC#4): WHERE MAKTV = current_user  (MAKTV = technician ID)
-- Others: No direct HSBA_DV access
+- Doctors (TC#3): WHERE MABN IN (SELECT MABN FROM HSBA WHERE MABS = current_user_MANV)
+- Coordinators (TC#2): WHERE 1=1 (full access or department-filtered)
+- Others: No VPD (Patient uses application filtering)
 ```
 
-Implementation:
+**IMPORTANT - NO VPD for Technician or Patient:**
 
-- Create policy function
-- Policy name: HSBA_DV_VPD_Policy
-- Apply to HSBA_DV table
-- Enable on all users
+- Technician (TC#4): Uses RBAC + application filtering in TechnicianService.cs
+- Patient (TC#5): Uses RBAC + application filtering in PatientService.cs
+- Per Câu 2 requirement: These roles use RBAC, NOT VPD
 
 Requirements:
 
+- VPD policies apply ONLY to Coordinator and Doctor roles (Câu 3)
 - Policies must be transparent to application
-- VPD filtering occurs automatically for all queries
-- No changes needed to service layer
+- VPD filtering occurs automatically for Coordinator/Doctor queries
+- No changes needed to service layer for VPD-enabled roles
 - Performance impact should be minimal
-- Test that unauthorized rows are hidden
+- Test that unauthorized rows are hidden for Doctors/Coordinators
 
 ### 04_OLS_Setup.sql
 

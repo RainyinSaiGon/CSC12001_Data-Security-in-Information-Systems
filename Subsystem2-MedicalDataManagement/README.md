@@ -77,48 +77,59 @@ See [Development](#development) section below for implementation details.
 
 ### BENHNHAN (Patient)
 
-- MABENHNHAN: Patient ID
-- HOTEN: Patient Name
-- PHAI: Gender
+- MABN: Patient ID (auto-increment)
+- TENBN: Patient Name
+- PHAI: Gender (Nam/Nữ)
 - NGAYSINH: Birth Date
-- CCCD: ID Number
-- Address fields (DIACHI), Medical history (TIENSUBENH), Drug allergies (DIUNG)
+- CCCD: National ID Number (12 digits, unique)
+- SONHA, TENDUONG, QUANHUYEN, TINHTP: Address fields
+- TIENSUBENH: Medical history
+- TIENSUBENHGD: Family medical history
+- DIUNGTHUOC: Drug allergies
+- USERNAME: Linked Oracle user account
 
 ### NHANVIEN (Staff)
 
-- MANV: Staff ID
+- MANV: Staff ID (auto-increment)
 - HOTEN: Full Name
-- VAITRO: Role ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên')
-- CHUYENKHOA: Specialty
+- PHAI: Gender (Nam/Nữ)
+- NGAYSINH: Birth Date
+- CMND: ID Number (12 digits, unique)
+- QUEQUAN: Hometown
+- SODT: Phone Number
+- VAITRO: Role ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân')
+- CHUYENKHOA: Department (FK to KHOA)
+- USERNAME: Linked Oracle user account
 
 ### HSBA (Medical Record)
 
-- MAHSBA: Record ID
-- MABENHNHAN: Patient Reference
+- MAHSBA: Record ID (auto-increment)
+- MABN: Patient Reference (FK to BENHNHAN)
+- NGAY: Record Date
 - CHANDOAN: Diagnosis
 - DIEUTRI: Treatment
 - KETLUAN: Conclusion
-- NGAYTAO: Creation Date
-- MABACSI: Doctor Assigned
+- MABS: Doctor Assigned (FK to NHANVIEN)
+- MAKHOA: Department (FK to KHOA)
 
 ### HSBA_DV (Diagnostic Service)
 
-- MADICHVU: Service ID
-- MAHSBA: Record Reference
-- TENDICHVU: Service Name
-- NGAY: Date
-- KETQUA: Result
-- HOANTHANH: Status
-- MAKYTHUATVIEN: Technician Performing
+- MAHSBA: Medical Record Reference (FK, part of composite PK)
+- LOAIDV: Service Type (part of composite PK)
+- NGAYDV: Service Date (part of composite PK)
+- KETQUA: Test Result
+- MAKTV: Technician Performing (FK to NHANVIEN)
+
+Note: Uses composite primary key (MAHSBA, LOAIDV, NGAYDV)
 
 ### DONTHUOC (Prescription)
 
-- MADONTHUOC: Prescription ID
-- MAHSBA: Record Reference
-- TENTHUOC: Drug Name
-- LIEUDUNG: Dosage
-- HUONGDAN: Instructions
-- NGAYDANGKY: Date
+- MAHSBA: Medical Record Reference (FK, part of composite PK)
+- TENTHUOC: Drug Name (part of composite PK)
+- NGAYDT: Prescription Date (part of composite PK)
+- LIEUDUNG: Dosage and Instructions
+
+Note: Uses composite primary key (MAHSBA, TENTHUOC, NGAYDT)
 
 ## Security Implementation
 
@@ -202,16 +213,16 @@ Roles: Coordinator, Doctor/Nurse, Technician, Patient
 
 ```bash
 # For Oracle 21c XE:
-cd database/schema
+cd database/Subsystem2-MedicalDB/schema
 sqlplus project_admin/your_password@localhost:1521/XE @01_CreateTables.sql
 sqlplus project_admin/your_password@localhost:1521/XE @02_CreateIndexes.sql
 sqlplus project_admin/your_password@localhost:1521/XE @03_InsertSampleData.sql
 
 cd ../security
-sqlplus project_admin/your_password@localhost:1521/XE @01_RBAC_Setup.sql
-sqlplus project_admin/your_password@localhost:1521/XE @02_VPD_Setup.sql
-sqlplus project_admin/your_password@localhost:1521/XE @03_OLS_Setup.sql
-sqlplus project_admin/your_password@localhost:1521/XE @04_Users_Creation.sql
+sqlplus project_admin/your_password@localhost:1521/XE @01_Users_Creation.sql
+sqlplus project_admin/your_password@localhost:1521/XE @02_RBAC_Setup.sql
+sqlplus project_admin/your_password@localhost:1521/XE @03_VPD_Setup.sql
+sqlplus project_admin/your_password@localhost:1521/XE @04_OLS_Setup.sql
 ```
 
 ### Configure Connection Strings

@@ -1,5 +1,6 @@
---gen data
---KHOA
+
+
+-- INSERT SAMPLE DATA
 
 INSERT INTO KHOA VALUES ('KHOA01', N'Khoa tiêu hóa', '0900000001', NULL);
 INSERT INTO KHOA VALUES ('KHOA02', N'Khoa thần kinh', '0900000002', NULL);
