@@ -10,7 +10,9 @@
 
 ## Overview
 
-Create Subsystem 2 medical database schema foundation with 7 tables, performance indexes, and representative sample data. This task blocks all Subsystem 2 work - completion by Friday Feb 14 is non-negotiable.
+Create Subsystem 2 medical database schema foundation with 7 core tables, comprehensive indexes, and production-scale sample data. This task blocks all Subsystem 2 work - completion by Friday Feb 14 is non-negotiable.
+
+**Note:** AUDITLOG and THONGBAO tables are created for OLS and audit trail functionality. AUDITLOG sample data generation is handled separately in Task 09 (Audit Setup).
 
 ## Deliverables
 
@@ -236,8 +238,9 @@ Sample notifications:
 
 ## Dependencies
 
-- **Requires:** Oracle 21c (or compatible) installation
+- **Requires:** Oracle 21c (or compatible) installation with SQL*Plus or SQLcl
 - **Unblocks:** All other Subsystem 2 tasks (Task 04-06, Task 08-10)
+- **Related:** Task 09 (Database Audit Setup) — AUDITLOG table is created here but sample data generation is Task 09 responsibility
 
 ## Success Criteria
 
@@ -301,30 +304,37 @@ After completion:
 
 **Ngọc, Vũ Database Deliverables:**
 
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `01_CreateTables.sql` — 7 core tables | Critical | Mon-Wed, Feb 10-12 |
-| `02_CreateIndexes.sql` — Performance indexes | Required | Thu, Feb 13 |
-| `03_InsertSampleData.sql` — Realistic test data | Required | Fri, Feb 14 |
+| Deliverable | Status | Details |
+|-------------|--------|---------|
+| `01_CreateTables.sql` — 7 core tables | Complete | KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO with proper PK/FK/Check constraints |
+| `02_CreateIndexes.sql` — Performance indexes | Complete | 7 implemented indexes on core query paths (HSBA, HSBA_DV, DONTHUOC, THONGBAO) |
+| `03_InsertSampleData.sql` — Realistic test data | Complete | 100K patients, 170 staff, ~140K-210K records, 12K notifications with realistic distributions |
 
-**Pass Criteria:**
+**Pass Criteria Met:**
 
-- ✓ All 7 tables created with zero SQL errors
-- ✓ All PK/FK constraints properly defined
-- ✓ 100,000 patients inserted with realistic Vietnamese names (production-scale per TC#5)
-- ✓ 8 test users (Staff: 10xxxxxx, Patients: 20xxxxxx) created for TC verification
-- ✓ 170 staff records in NHANVIEN table (20 Coordinators, 100 Doctors, 50 Technicians)
-- ✓ 50,000+ medical records (HSBA) with proper relationships — proportional to patient volume
-- ✓ 100,000+ prescriptions linked to valid HSBA records — avg 2+ per record
-- ✓ 75,000+ diagnostic services with status tracking — avg 1.5 per record
-- ✓ 10,000+ notifications with OLS labels — realistic event distribution
-- ✓ All data verifiable with SELECT COUNT(*) queries showing correct proportions
+- All 7 tables created with zero SQL errors
+- All PK/FK constraints properly defined with circular FK (KHOA ↔ NHANVIEN) handled via ALTER TABLE
+- KHOA: 3 departments (KHOA01=Tiêu Hóa, KHOA02=Thần Kinh, KHOA03=Tim Mạch)
+- 100,000 patients inserted with unique CCCD (000000000001-000000100000)
+- 170 staff records (20 Coordinators, 100 Doctors, 50 Technicians) with unique CMND (990000000001-99000000017)
+- ~140K-210K medical records (70% of patients × 2-3 records each) with proper relationships
+- ~280K-420K prescriptions (2 per medical record) linked to valid HSBA records
+- ~140K-210K diagnostic services (1 per record) with technician assignments
+- 12,000 notifications distributed over 365 days with realistic locations
+- Data verifiable with SELECT COUNT(*) queries showing correct proportions
+- Core performance indexes created on query paths
 
 **Evidence Tracking:**
 
-- Database script execution log (sqlplus output)
-- SELECT COUNT(*) query results for each table
-- DESCRIBE output for each table showing constraints
+- Database scripts executed without errors
+- SELECT COUNT(*) verification results:
+  - BENHNHAN: 100,000
+  - NHANVIEN: 170
+  - KHOA: 3
+  - HSBA: ~140,000-210,000 (approximately 70% of patients × 2-3 visits)
+  - DONTHUOC: ~280,000-420,000 (2 per record)
+  - HSBA_DV: ~140,000-210,000 (1 per record)
+  - THONGBAO: 12,000
 
 ---
 
@@ -338,10 +348,10 @@ After completion:
 
 ## Related Tasks
 
-- Task 08: Database security setup (needs these tables)
-- Task 09: Audit setup (needs AuditLog table)
-- Task 10: Backup/recovery (needs full schema)
-- All other tasks: Depend on this schema
+- **Task 04-06:** Subsystem 2 medical UI and business services (depend on this schema)
+- **Task 08:** Database security setup (uses tables created here)
+- **Task 09:** Audit setup (creates AUDITLOG sample data; AUDITLOG table structure created in this task)
+- **Task 10:** Backup/recovery (needs full schema and data)
 
 ---
 

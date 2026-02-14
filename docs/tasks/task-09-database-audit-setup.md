@@ -12,10 +12,11 @@
 
 Implement comprehensive audit logging to track all Subsystem 2 database operations for compliance, security monitoring, and troubleshooting per test case requirements:
 
-- Standard Oracle auditing for basic operations
+- **Create AUDITLOG table** (deferred from Task 07) for custom audit trail
+- Standard Oracle auditing for basic operations on 7 tables (BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, KHOA, THONGBAO)
 - Fine-grained auditing (FGA) for sensitive data access and column-specific updates
 - Unified auditing for comprehensive tracking
-- Audit log query utilities for reports
+- Audit log query utilities for reports and compliance
 
 ## Audit Logging Requirements by Test Case
 
@@ -76,7 +77,42 @@ Implement comprehensive audit logging to track all Subsystem 2 database operatio
 
 ## Deliverables
 
-### 08_StandardAudit_Setup.sql
+### 01_CreateAuditLog_Table.sql
+
+**Create AUDITLOG table for custom audit trail (deferred from Task 07):**
+
+Table Structure:
+```sql
+CREATE TABLE AUDITLOG (
+    AUDITID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    USERID VARCHAR2(50),          -- User who performed action (matches NHANVIEN.MANV or BENHNHAN.MABN)
+    THOIGIAN TIMESTAMP,           -- When action occurred
+    LOAIHD VARCHAR2(50),          -- Type of action (INSERT, UPDATE, DELETE, SELECT, etc.)
+    TENTABLE VARCHAR2(50),        -- Table affected
+    MARECORD VARCHAR2(100),       -- Record identifier (table:id format)
+    MABN INT,                     -- Patient ID if applicable
+    MANV INT,                     -- Staff ID if applicable
+    OLD_VALUES CLOB,              -- Previous values (for updates)
+    NEW_VALUES CLOB,              -- New values (for updates/inserts)
+    CONSTRAINT FK_AUDIT_BN FOREIGN KEY (MABN) REFERENCES BENHNHAN(MABN),
+    CONSTRAINT FK_AUDIT_NV FOREIGN KEY (MANV) REFERENCES NHANVIEN(MANV)
+);
+
+CREATE INDEX IDX_AUDIT_USERID ON AUDITLOG(USERID);
+CREATE INDEX IDX_AUDIT_THOIGIAN ON AUDITLOG(THOIGIAN);
+CREATE INDEX IDX_AUDIT_LOAIHD ON AUDITLOG(LOAIHD);
+CREATE INDEX IDX_AUDIT_TENTABLE ON AUDITLOG(TENTABLE);
+```
+
+Purpose:
+- Store custom application-level audit events
+- Track operations across all 7 tables (KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO)
+- Track operations from all 4 user roles (Điều phối viên, Bác sĩ/Y sĩ, Kỹ thuật viên, Bệnh nhân)
+- Complement standard Oracle audit trail
+- Support detailed old/new value comparison for compliance
+- Store 50,000+ audit entries over 2-week period
+
+### 02_StandardAudit_Setup.sql
 
 Enable Oracle standard auditing:
 
@@ -113,7 +149,7 @@ AUDIT GRANT ON SYSTEM;
 - Alternative: AUDIT_TRAIL = OS (audit to OS files)
 - Restart database after enabling
 
-### 09_FineGrainedAudit_Setup.sql
+### 03_FineGrainedAudit_Setup.sql
 
 Implement fine-grained auditing for sensitive columns:
 
@@ -172,7 +208,7 @@ DBMS_FGA.ADD_POLICY(
 -- Repeat for DONTHUOC and BENHNHAN
 ```
 
-### 10_UnifiedAudit_Setup.sql
+### 04_UnifiedAudit_Setup.sql
 
 Implement modern Unified Auditing:
 
@@ -225,7 +261,7 @@ AUDIT POLICY [policy_name];
 -- Results stored in UNIFIED_AUDIT_TRAIL
 ```
 
-### 11_ReadAuditLogs.sql
+### 05_ReadAuditLogs.sql
 
 Provide queries for audit log analysis:
 
@@ -285,7 +321,7 @@ WHERE EVENT_TIMESTAMP >= trunc(sysdate)
 ORDER BY EVENT_TIMESTAMP DESC;
 ```
 
-### 12_BackupAndRecovery_Documentation.md
+### 06_BackupAndRecovery_Documentation.md
 
 Document backup and recovery procedures:
 
@@ -331,21 +367,23 @@ Maintenance
 
 ## Dependencies
 
-- **Requires:** Task 07 tables completed
-- **Requires:** Task 08 security setup
-- **Complements:** Task 06 AuditService (uses audit tables)
-- **Optional for:** Week 4 compliance testing
+- **Requires:** Task 07 tables completed (Fri Feb 14 - COMPLETED)
+- **Requires:** Task 08 security setup (users and roles must exist before auditing them)
+- **Complements:** Task 06 AuditService (uses audit tables for reporting)
+- **Timeline-dependent:** Task 09 runs Feb 21 - Feb 28 (after Task 08 completes)
 
 ## Success Criteria
 
-✓ Standard auditing captures basic operations  
-✓ FGA logs sensitive data access attempts  
-✓ Unified audit captures all important events  
-✓ Audit log queries work and return data  
-✓ AuditService can read logs effectively  
-✓ Backup procedures documented  
-✓ Audit data persists correctly  
-✓ No performance impact from auditing
+✓ AUDITLOG table created with proper structure and FK constraints (deferred deliverable from Task 07)
+✓ AUDITLOG indexes created on USERID, THOIGIAN, LOAIHD, TENTABLE for query performance
+✓ Standard auditing captures basic operations on all 7 tables
+✓ FGA logs sensitive data access attempts on BENHNHAN, HSBA, DONTHUOC
+✓ Unified audit captures all important events with context
+✓ Audit log queries work and return data from DBA_AUDIT_TRAIL, FGA_LOG$, UNIFIED_AUDIT_TRAIL
+✓ AuditService can read logs and generate reports effectively
+✓ Backup procedures documented for disaster recovery
+✓ Audit data persists correctly across user sessions
+✓ No significant performance impact from auditing (< 5% overhead)
 
 ## Storage and Maintenance
 
@@ -380,14 +418,37 @@ COMMIT;
 
 ## Timeline
 
-- **Fri Feb 21:** Basic auditing (Tasks 08, 09, 10)
-- **Mon Feb 24:** Verify audit logs working
-- **Fri Feb 28:** Backup documentation complete
-- **Week 4:** Backup/recovery testing
+- **Fri Feb 21:** Create AUDITLOG table + Basic auditing (Tasks 01-02)
+- **Mon Feb 24:** Fine-Grained auditing setup (Task 03) + Verify audit logs working
+- **Wed Feb 26:** Unified auditing setup (Task 04) + Query utilities (Task 05)
+- **Fri Feb 28:** Backup documentation complete (Task 06) + Final testing
 
 ## Traceability Matrix
 
-### AUD#1: Standard Audit Configuration
+### AUD#1: AUDITLOG Table Creation (Deferred from Task 07)
+
+| Aspect | Details |
+|--------|---------|
+| **Related Requirement** | Req 3: Audit & Monitoring |
+| **Test Timeline** | Fri Feb 21 |
+
+**Ngọc, Vũ Database Deliverables:**
+
+| Deliverable | Status | Completion Date |
+|-------------|--------|-----------------|
+| `01_CreateAuditLog_Table.sql` — AUDITLOG with FKs and indexes | Required | Fri, Feb 21 |
+
+**Pass Criteria:**
+
+- ✓ AUDITLOG table created with 9 columns (AUDITID, USERID, THOIGIAN, LOAIHD, TENTABLE, MARECORD, MABN, MANV, OLD_VALUES, NEW_VALUES)
+- ✓ Primary key on AUDITID (auto-increment)
+- ✓ Foreign keys to BENHNHAN.MABN and NHANVIEN.MANV (both optional)
+- ✓ 4 indexes created for query performance (USERID, THOIGIAN, LOAIHD, TENTABLE)
+- ✓ Table ready to store 50,000+ audit events
+
+---
+
+### AUD#2: Standard Audit Configuration
 
 | Aspect | Details |
 |--------|---------|
@@ -398,20 +459,20 @@ COMMIT;
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `08_Standard_Audit.sql` — Standard audit policies | Required | Week 2 |
-| `09_FGA_Setup.sql` — Fine-Grained Audit policies | Required | Week 2 |
+| `02_StandardAudit_Setup.sql` — Standard audit policies | Required | Fri, Feb 21 |
 
 **Pass Criteria:**
 
-- ✓ Standard audit enabled for CREATE USER, DROP USER, ALTER USER
-- ✓ Standard audit enabled for GRANT, REVOKE operations
+- ✓ Standard audit enabled for CREATE USER, DROP USER, ALTER USER operations
+- ✓ Standard audit enabled for GRANT and REVOKE operations (all privileges)
+- ✓ Standard audit enabled for INSERT, UPDATE, DELETE on 7 main tables (BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, KHOA, THONGBAO)
 - ✓ Audit trail records include: username, timestamp, action, object
 - ✓ DBA_AUDIT_TRAIL populated after test operations
 - ✓ Audit retention policy configured (90 days minimum)
 
 ---
 
-### AUD#2: Fine-Grained Audit (FGA)
+### AUD#3: Fine-Grained Audit (FGA)
 
 | Aspect | Details |
 |--------|---------|
@@ -422,21 +483,16 @@ COMMIT;
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `09_FGA_Setup.sql` — FGA policies for sensitive data | Required | Week 2 |
+| `03_FineGrainedAudit_Setup.sql` — FGA policies for sensitive data | Required | Mon, Feb 24 |
 
 **Pass Criteria:**
 
-- ✓ FGA policy on BENHNHAN: logs access to CCCD (national ID), patient details
-- ✓ FGA policy on HSBA: logs access to diagnosis and treatment details
-- ✓ FGA policy on DONTH: logs access to prescriptions
+- ✓ FGA policy on BENHNHAN: logs access to CCCD (national ID), patient details, medical history fields
+- ✓ FGA policy on HSBA: logs access to diagnosis (CHANDOAN), treatment (DIEUTRI), conclusion (KETLUAN)
+- ✓ FGA policy on DONTHUOC: logs access to prescriptions (TENTHUOC, LIEUDUNG)
+- ✓ FGA policies configured with DBMS_FGA.ADD_POLICY for affected tables
 - ✓ DBA_FGA_AUDIT_TRAIL populated after SELECT on sensitive columns
-- ✓ FGA handler sends notification on suspicious access patterns
 - ✓ FGA overhead < 5% on normal query performance
-
-**Evidence Tracking:**
-
-- Query DBA_FGA_AUDIT_TRAIL after test SELECT operations
-- Performance comparison (FGA enabled vs disabled)
 
 ---
 
@@ -451,16 +507,17 @@ COMMIT;
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| `10_Backup_Config.sql` — RMAN backup scripts | Required | Week 3 |
-| Backup documentation | Required | Week 3 |
+| `06_BackupAndRecovery_Documentation.md` — RMAN backup scripts and procedures | Required | Fri, Feb 28 |
 
 **Pass Criteria:**
 
-- ✓ Full backup script executes without errors
-- ✓ Incremental backup script executes without errors
-- ✓ Backup verification (RMAN VALIDATE) passes
-- ✓ Backup catalog updated with latest backup information
-- ✓ Backup retention period configured (7 days minimum)
+- ✓ Full backup script for entire database
+- ✓ Incremental backup scripts for daily backups
+- ✓ Backup catalog configuration
+- ✓ Retention policy documented (7 days minimum)
+- ✓ Recovery procedures documented (full, point-in-time, tablespace-level)
+- ✓ Recovery time objectives (RTO): < 4 hours for full recovery
+- ✓ Recovery point objectives (RPO): < 1 hour acceptable data loss
 
 ---
 
@@ -475,22 +532,15 @@ COMMIT;
 
 | Deliverable | Status | Completion Date |
 |-------------|--------|-----------------|
-| Recovery test documentation | Required | Week 3 |
-| Point-in-time recovery demonstration | Required | Week 3 |
+| Recovery test results and documentation | Required | Fri, Feb 28 |
 
 **Pass Criteria:**
 
 - ✓ Full database restore from backup completes successfully
-- ✓ Point-in-time recovery (PITR) restores to specific timestamp
+- ✓ Point-in-time recovery (PITR) restores to specific timestamp (within 1-hour window)
 - ✓ Tablespace recovery isolates and restores individual tablespace
-- ✓ All data verified after recovery (row counts match)
-- ✓ Recovery time documented (RTO metrics)
-
-**Evidence Tracking:**
-
-- RMAN restore/recover log output
-- Before/after row count comparison
-- RTO measurement documentation
+- ✓ All data verified after recovery (row counts match baseline: 100K patients, 170 staff, ~140K-210K records, etc.)
+- ✓ Recovery time documented and meets RTO targets
 
 ---
 
@@ -639,8 +689,9 @@ Last 7 Days:
 
 ## Related Tasks
 
-- Task 07: Provides audit table
-- Task 06: AuditService reads these logs
-- All other tasks: Audited by these mechanisms
+- **Task 07:** Provides table foundation (COMPLETED - Feb 14)
+- **Task 08:** Creates users and roles to be audited (Feb 17-20) — MUST COMPLETE BEFORE TASK 09
+- Task 06: AuditService reads audit logs and generates reports
+- Task 10: Backup/recovery procedures include audit data protection
 
 ---

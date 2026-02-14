@@ -15,9 +15,10 @@ Configure all Subsystem 2 access control mechanisms per Vietnamese specification
 - **TC#1:** Create user accounts, link to NHANVIEN/BENHNHAN rows via primary key matching
 - **TC#2 (Coordinator) & TC#5 (Patient):** Use **RBAC** role-based access control
 - **TC#3 (Doctor) & TC#4 (Technician):** Use **VPD** (Virtual Private Database) for transparent row-level filtering
-- Create 4 database roles with specific permission mappings
-- Implement Oracle Label Security (OLS) with 3-level hierarchy for notifications
-- Create test users with proper role assignments
+- Create 4 database roles with specific permission mappings (Điều phối viên, Bác sĩ/Y sĩ, Kỹ thuật viên, Bệnh nhân)
+- Implement Oracle Label Security (OLS) with 3-level hierarchy for THONGBAO notifications
+- Create test users and production-scale accounts with proper role assignments
+- Tables secured: BENHNHAN (100K patients), NHANVIEN (170 staff), HSBA (~140K-210K records), HSBA_DV (~140K-210K services), DONTHUOC (~280K-420K prescriptions), THONGBAO (12K notifications)
 
 ## Deliverables
 
@@ -52,25 +53,27 @@ DBA creates Oracle user accounts linked to database records without separate use
 - All patients assigned 'Bệnh nhân' role automatically
 - VPD/RLS automatically filters to patient's own records via WHERE MABN = SYS_CONTEXT('USERENV','SESSION_USER')
 
-**Test User Sample (8 representative accounts):**
+**Test User Sample (8-12 representative accounts):**
 
-| Account | Type | Data Row | Key Used | Assigned Role | Purpose |
-|---------|------|----------|----------|---------------|---------|
-| NV001 | Staff | NHANVIEN | MANV='NV001' | 'Điều phối viên' | Coordinator staff |
-| NV005 | Staff | NHANVIEN | MANV='NV005' | 'Điều phối viên' | Coordinator staff |
-| NV010 | Staff | NHANVIEN | MANV='NV010' | 'Bác sĩ/Y sĩ' | Doctor staff |
-| NV020 | Staff | NHANVIEN | MANV='NV020' | 'Bác sĩ/Y sĩ' | Doctor staff |
-| NV050 | Staff | NHANVIEN | MANV='NV050' | 'Kỹ thuật viên' | Technician staff |
-| NV055 | Staff | NHANVIEN | MANV='NV055' | 'Kỹ thuật viên' | Technician staff |
-| 20000001 | Patient | BENHNHAN | MABN=20000001 | 'Bệnh nhân' | Patient access |
-| 20000002 | Patient | BENHNHAN | MABN=20000002 | 'Bệnh nhân' | Patient access |
+Note: NHANVIEN.MANV uses GENERATED ALWAYS AS IDENTITY (auto-increment from 1), so actual staff IDs are 1-170.
+
+| Account | Type | Data Row | Link Method | Assigned Role | Purpose |
+|---------|------|----------|---------|---------------|----------|
+| 1 | Coordinator | NHANVIEN.MANV=1 | Oracle user '1', query NHANVIEN WHERE MANV=1 | Điều phối viên | Coordinator #1 |
+| 5 | Coordinator | NHANVIEN.MANV=5 | Oracle user '5', query NHANVIEN WHERE MANV=5 | Điều phối viên | Coordinator #5 |
+| 25 | Doctor | NHANVIEN.MANV=25 | Oracle user '25', query NHANVIEN WHERE MANV=25 | Bác sĩ/Y sĩ | Doctor (KHOA01) |
+| 75 | Doctor | NHANVIEN.MANV=75 | Oracle user '75', query NHANVIEN WHERE MANV=75 | Bác sĩ/Y sĩ | Doctor (KHOA02) |
+| 130 | Technician | NHANVIEN.MANV=130 | Oracle user '130', query NHANVIEN WHERE MANV=130 | Kỹ thuật viên | Technician #1 |
+| 160 | Technician | NHANVIEN.MANV=160 | Oracle user '160', query NHANVIEN WHERE MANV=160 | Kỹ thuật viên | Technician #2 |
+| 1234 | Patient | BENHNHAN.MABN=1234 | Oracle user '1234', query BENHNHAN WHERE MABN=1234 | Bệnh nhân | Patient #1234 |
+| 50000 | Patient | BENHNHAN.MABN=50000 | Oracle user '50000', query BENHNHAN WHERE MABN=50000 | Bệnh nhân | Patient #50000
 
 **Production Scale:**
 
-- Create 20 Coordinator accounts (NHANVIEN with VAITRO='Điều phối viên')
-- Create 100 Doctor accounts (NHANVIEN with VAITRO='Bác sĩ/Y sĩ')
-- Create 50 Technician accounts (NHANVIEN with VAITRO='Kỹ thuật viên')
-- Create ~100,000 Patient accounts (BENHNHAN records automatically)
+- Create 20 Coordinator accounts (NHANVIEN MANV 1-20 with VAITRO='Điều phối viên')
+- Create 100 Doctor accounts (NHANVIEN MANV 21-120 with VAITRO='Bác sĩ/Y sĩ')
+- Create 50 Technician accounts (NHANVIEN MANV 121-170 with VAITRO='Kỹ thuật viên')
+- Create ~100,000 Patient accounts (BENHNHAN MABN 1-100,000 representing patient population)
 
 **Bulk Patient Account Creation Strategy (~100,000 Scale):**
 
@@ -320,18 +323,25 @@ Create OLS policy using DBMS_MACADM:
 ## Implementation Schedule
 
 - **Mon Feb 17:** 01_Users_Creation.sql
-  - Creates all test users and assigns to RESOURCE role
+  - Creates all test and production-scale users (170 staff, ~100K patients concept)
+  - Creates 8 test users for functional testing
   - Must run FIRST before any role assignments
+  - Unblocks tasks that need authentication
 
 - **Wed Feb 19:** 02_RBAC_Setup.sql
-  - Creates 4 roles ('Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân')
-  - Assigns roles to users
+  - Creates 4 roles (Điều phối viên, Bác sĩ/Y sĩ, Kỹ thuật viên, Bệnh nhân)
+  - Assigns roles to test users
   - Unblocks Phôn to start AuthenticationService
-  - Allows testing of role-based access
+  - Allows testing of role-based access control
 
 - **Thu Feb 20:** 03_VPD_Setup.sql + 04_OLS_Setup.sql
+  - Implements row-level filtering for HSBA (doctors) and HSBA_DV (technicians)
+  - Implements 3-level label hierarchy on THONGBAO table
+  - Assigns user labels based on roles
   - Unblocks Phôn VPDService and OLSService
   - Unblocks Duyên medical forms
+
+**Note:** Task 08 must complete before Task 09 (Audit Setup) can properly audit user actions.
 
 ## Testing Checklist
 
@@ -441,10 +451,11 @@ After implementation:
 
 ## Related Tasks
 
-- Task 07: Provides table foundation
+- Task 07: Provides table foundation (COMPLETED)
+- **Task 09:** Database audit setup (depends on users/roles created here)
 - Task 05: Depends on users and roles existing
 - Task 04: Depends on security mechanisms working
-- Task 09: Audit logging complements security
+- Task 10: Backup/recovery complements security
 
 ---
 
