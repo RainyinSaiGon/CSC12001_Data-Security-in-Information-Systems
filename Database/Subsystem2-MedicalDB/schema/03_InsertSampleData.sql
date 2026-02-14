@@ -112,24 +112,6 @@ END;
 SET DEFINE OFF;
 SET SERVEROUTPUT ON;
 
--- 2. TỰ ĐỘNG SỬA LỖI ĐỘ RỘNG CỘT
--- Chạy lệnh này để đảm bảo cột chứa đủ tên dịch vụ dài
-BEGIN
-    EXECUTE IMMEDIATE 'ALTER TABLE HSBA_DV MODIFY LOAIDV NVARCHAR2(100)';
-    DBMS_OUTPUT.PUT_LINE('--- ĐÃ MỞ RỘNG CỘT LOAIDV THÀNH CÔNG ---');
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('--- Cột LOAIDV đã đủ rộng hoặc có lỗi khác (Bỏ qua) ---');
-END;
-/
-
--- 3. RESET DATA (Xóa dữ liệu cũ để chạy lại sạch sẽ)
-DELETE FROM THONGBAO;
-DELETE FROM DONTHUOC;
-DELETE FROM HSBA_DV;
-DELETE FROM HSBA;
-COMMIT;
-
 DECLARE
     -- ================= KHAI BÁO KHO DỮ LIỆU =================
     TYPE t_list IS TABLE OF NVARCHAR2(200);
