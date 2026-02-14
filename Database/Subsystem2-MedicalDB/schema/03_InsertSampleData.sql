@@ -1,9 +1,9 @@
 --gen data
 --KHOA
 
-INSERT INTO KHOA VALUES ('K001', N'Khoa tiêu hóa', '0900000001', NULL);
-INSERT INTO KHOA VALUES ('K002', N'Khoa thần kinh', '0900000002', NULL);
-INSERT INTO KHOA VALUES ('K003', N'Khoa tim mạch', '0900000003', NULL);
+INSERT INTO KHOA VALUES ('KHOA01', N'Khoa tiêu hóa', '0900000001', NULL);
+INSERT INTO KHOA VALUES ('KHOA02', N'Khoa thần kinh', '0900000002', NULL);
+INSERT INTO KHOA VALUES ('KHOA03', N'Khoa tim mạch', '0900000003', NULL);
 COMMIT;
 
 
@@ -38,16 +38,16 @@ BEGIN
         -- 2. Logic Vai trò & Khoa
         IF i <= 20 THEN 
             v_vaitro := N'Điều phối viên';
-            IF MOD(i,3)=0 THEN v_khoa:='K001'; ELSIF MOD(i,3)=1 THEN v_khoa:='K002'; ELSE v_khoa:='K003'; END IF;
+            IF MOD(i,3)=0 THEN v_khoa:='KHOA01'; ELSIF MOD(i,3)=1 THEN v_khoa:='KHOA02'; ELSE v_khoa:='KHOA03'; END IF;
         ELSIF i <= 120 THEN 
             v_vaitro := N'Bác sĩ/Y sĩ';
-            IF i BETWEEN 21 AND 53 THEN v_khoa := 'K001';
-            ELSIF i BETWEEN 54 AND 86 THEN v_khoa := 'K002';
-            ELSE v_khoa := 'K003';
+            IF i BETWEEN 21 AND 53 THEN v_khoa := 'KHOA01';
+            ELSIF i BETWEEN 54 AND 86 THEN v_khoa := 'KHOA02';
+            ELSE v_khoa := 'KHOA03';
             END IF;
         ELSE 
             v_vaitro := N'Kỹ thuật viên';
-            IF MOD(i,3)=0 THEN v_khoa:='K001'; ELSIF MOD(i,3)=1 THEN v_khoa:='K002'; ELSE v_khoa:='K003'; END IF;
+            IF MOD(i,3)=0 THEN v_khoa:='KHOA01'; ELSIF MOD(i,3)=1 THEN v_khoa:='KHOA02'; ELSE v_khoa:='KHOA03'; END IF;
         END IF;
 
         -- 3. TẠO CMND NHÂN VIÊN (ĐẦU SỐ 99 ĐỂ KHÔNG TRÙNG)
@@ -134,17 +134,17 @@ DECLARE
     -- ================= KHAI BÁO KHO DỮ LIỆU =================
     TYPE t_list IS TABLE OF NVARCHAR2(200);
 
-    -- KHOA TIÊU HÓA (K001)
+    -- KHOA TIÊU HÓA (KHOA01)
     g_benh_th  t_list := t_list(N'Viêm loét dạ dày tá tràng', N'Trào ngược dạ dày (GERD)', N'Hội chứng ruột kích thích', N'Viêm đại tràng', N'Nhiễm khuẩn HP');
     g_thuoc_th t_list := t_list(N'Omeprazole 20mg', N'Gaviscon', N'Phosphalugel', N'Metronidazole 250mg', N'Domperidon 10mg', N'Yumangel', N'Nexium 40mg');
     g_dv_th    t_list := t_list(N'Nội soi thực quản - dạ dày', N'Siêu âm ổ bụng tổng quát', N'Test hơi thở HP');
 
-    -- KHOA THẦN KINH (K002)
+    -- KHOA THẦN KINH (KHOA02)
     g_benh_tk  t_list := t_list(N'Rối loạn tiền đình', N'Đau nửa đầu Migraine', N'Mất ngủ mãn tính', N'Đau dây thần kinh tọa', N'Suy nhược thần kinh');
     g_thuoc_tk t_list := t_list(N'Paracetamol 500mg', N'Piracetam 800mg', N'Magnesium B6', N'Ginkgo Biloba', N'Rotunda 30mg', N'Gabapentin');
     g_dv_tk    t_list := t_list(N'Chụp cộng hưởng từ (MRI) sọ não', N'Đo điện não đồ (EEG)', N'Chụp CT Scanner sọ não');
 
-    -- KHOA TIM MẠCH (K003)
+    -- KHOA TIM MẠCH (KHOA03)
     g_benh_tm  t_list := t_list(N'Tăng huyết áp', N'Thiếu máu cơ tim', N'Rối loạn nhịp tim', N'Suy tim độ 2', N'Hở van 2 lá nhẹ');
     g_thuoc_tm t_list := t_list(N'Amlodipine 5mg', N'Losartan 50mg', N'Concor 2.5mg', N'Aspirin 81mg', N'Atorvastatin 10mg', N'Panangin');
     g_dv_tm    t_list := t_list(N'Đo điện tâm đồ (ECG)', N'Siêu âm tim Doppler màu', N'Holter huyết áp 24h');
@@ -166,9 +166,9 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('>>> BẮT ĐẦU GENERATE DỮ LIỆU KHỐI LƯỢNG LỚN...');
 
     -- 1. CACHE ID NHÂN VIÊN
-    SELECT MANV BULK COLLECT INTO bs_th FROM NHANVIEN WHERE CHUYENKHOA = 'K001' AND (VAITRO LIKE N'%Bác sĩ%' OR VAITRO LIKE N'%Y sĩ%');
-    SELECT MANV BULK COLLECT INTO bs_tk FROM NHANVIEN WHERE CHUYENKHOA = 'K002' AND (VAITRO LIKE N'%Bác sĩ%' OR VAITRO LIKE N'%Y sĩ%');
-    SELECT MANV BULK COLLECT INTO bs_tm FROM NHANVIEN WHERE CHUYENKHOA = 'K003' AND (VAITRO LIKE N'%Bác sĩ%' OR VAITRO LIKE N'%Y sĩ%');
+    SELECT MANV BULK COLLECT INTO bs_th FROM NHANVIEN WHERE CHUYENKHOA = 'KHOA01' AND (VAITRO LIKE N'%Bác sĩ%' OR VAITRO LIKE N'%Y sĩ%');
+    SELECT MANV BULK COLLECT INTO bs_tk FROM NHANVIEN WHERE CHUYENKHOA = 'KHOA02' AND (VAITRO LIKE N'%Bác sĩ%' OR VAITRO LIKE N'%Y sĩ%');
+    SELECT MANV BULK COLLECT INTO bs_tm FROM NHANVIEN WHERE CHUYENKHOA = 'KHOA03' AND (VAITRO LIKE N'%Bác sĩ%' OR VAITRO LIKE N'%Y sĩ%');
     SELECT MANV BULK COLLECT INTO ktv_list FROM NHANVIEN WHERE VAITRO LIKE N'%Kỹ thuật viên%';
 
     -- 2. LOOP 100,000 BỆNH NHÂN
@@ -191,7 +191,7 @@ BEGIN
                     v_cur_benh := g_benh_th(TRUNC(DBMS_RANDOM.VALUE(1, g_benh_th.COUNT + 1)));
                     
                     INSERT INTO HSBA (MABN, NGAY, CHANDOAN, DIEUTRI, KETLUAN, MABS, MAKHOA)
-                    VALUES (v_mabn, v_ngaykham, v_cur_benh, N'Điều trị ngoại trú', N'Tái khám', v_cur_bs, 'K001')
+                    VALUES (v_mabn, v_ngaykham, v_cur_benh, N'Điều trị ngoại trú', N'Tái khám', v_cur_bs, 'KHOA01')
                     RETURNING MAHSBA INTO v_new_mahsba;
 
                     -- 2 Thuốc
@@ -212,7 +212,7 @@ BEGIN
                     v_cur_benh := g_benh_tk(TRUNC(DBMS_RANDOM.VALUE(1, g_benh_tk.COUNT + 1)));
                     
                     INSERT INTO HSBA (MABN, NGAY, CHANDOAN, DIEUTRI, KETLUAN, MABS, MAKHOA)
-                    VALUES (v_mabn, v_ngaykham, v_cur_benh, N'Nghỉ ngơi', N'Theo dõi', v_cur_bs, 'K002')
+                    VALUES (v_mabn, v_ngaykham, v_cur_benh, N'Nghỉ ngơi', N'Theo dõi', v_cur_bs, 'KHOA02')
                     RETURNING MAHSBA INTO v_new_mahsba;
 
                     -- 2 Thuốc
@@ -233,7 +233,7 @@ BEGIN
                     v_cur_benh := g_benh_tm(TRUNC(DBMS_RANDOM.VALUE(1, g_benh_tm.COUNT + 1)));
                     
                     INSERT INTO HSBA (MABN, NGAY, CHANDOAN, DIEUTRI, KETLUAN, MABS, MAKHOA)
-                    VALUES (v_mabn, v_ngaykham, v_cur_benh, N'Duy trì huyết áp', N'Đo huyết áp', v_cur_bs, 'K003')
+                    VALUES (v_mabn, v_ngaykham, v_cur_benh, N'Duy trì huyết áp', N'Đo huyết áp', v_cur_bs, 'KHOA03')
                     RETURNING MAHSBA INTO v_new_mahsba;
 
                     -- 2 Thuốc
@@ -415,7 +415,7 @@ END;
 --
 --PROMPT ========================================================
 --PROMPT BÁO CÁO 2: PHÂN BỔ NHÂN SỰ VÀO CÁC KHOA
---PROMPT (Yêu cầu: Bác sĩ phải chia đều vào 3 khoa K001, K002, K003)
+--PROMPT (Yêu cầu: Bác sĩ phải chia đều vào 3 khoa KHOA01, KHOA02, KHOA03)
 --PROMPT ========================================================
 --
 --SELECT 
