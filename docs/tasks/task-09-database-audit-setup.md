@@ -68,13 +68,9 @@ Implement comprehensive auditing using Standard, Fine-Grained (FGA), and Unified
 * Scripts to extract and read audit logs
 * Generates compliance reports showing Who, When, What, and How
 
-
-
 ## 4. Acceptance Criteria
 
 * [ ] **Standard Audit:** 5 distinct scenarios logged successfully
 * [ ] **Prescription Audit:** Updates to DONTHUOC logged with context
 * [ ] **Medical Record Integrity:** Authorized and unauthorized changes captured
 * [ ] **Service Tampering:** Any INSERT/UPDATE/DELETE on HSBA_DV triggers audit
-
-
