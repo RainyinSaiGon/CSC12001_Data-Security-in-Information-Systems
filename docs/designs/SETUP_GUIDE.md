@@ -7,7 +7,7 @@
 | .NET SDK | 10.0.102 | ? Ready |
 | Oracle Database | Express 21c (21.3.0.0.0) | ? Ready |
 | ODP.NET Package | 23.26.100 | ? Available |
-| Visual Studio | 2022 | Required |
+| Visual Studio | 2022+ | Required |
 | Windows Desktop Runtime | 10.0.2 | ? Installed |
 
 ## Connection Details

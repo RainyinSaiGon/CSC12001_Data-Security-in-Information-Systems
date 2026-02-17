@@ -1,165 +1,138 @@
 # Subsystem 1: Oracle Database Administration Application
 
-WinForm-based database administration tool for managing Oracle users, roles, and permissions with support for column-level security.
+WinForm-based database administration tool for managing Oracle users, roles, and permissions with column-level security support.
 
 ## Overview
 
-This application provides a comprehensive interface for DBA operations including:
+Comprehensive Oracle DBA interface providing:
 
-- User and role management
-- Permission granting/revoking with WITH GRANT OPTION support
-- Column-level security for SELECT/UPDATE operations
-- Permission viewing and administration
-
-## Architecture
-
-### Intended Project Structure
-
-The following architecture outlines the planned directory structure for this application. Create these files and folders as you implement features:
-
-```
-subsystem1-oracleDBAdmin/source/oracleDBAdmin/
-├── forms/                              # [CREATE] UI Forms & Windows
-│   ├── MainForm.cs                    # Main application window
-│   ├── MainForm.Designer.cs
-│   ├── UserManagementForm.cs          # User CRUD operations
-│   ├── UserManagementForm.Designer.cs
-│   ├── RoleManagementForm.cs          # Role CRUD operations
-│   ├── RoleManagementForm.Designer.cs
-│   ├── PermissionForm.cs              # Permission management UI
-│   ├── PermissionForm.Designer.cs
-│   └── PrivilegeViewerForm.cs         # View user/role privileges
-│
-├── models/                             # [CREATE] Data models & entities
-│   ├── User.cs
-│   ├── Role.cs
-│   ├── Permission.cs
-│   ├── OracleObject.cs
-│   └── PrivilegeInfo.cs
-│
-├── services/                           # [CREATE] Business logic & database access
-│   ├── OracleConnectionService.cs     # Database connection management
-│   ├── UserService.cs                 # User operations (CRUD)
-│   ├── RoleService.cs                 # Role operations (CRUD)
-│   ├── PermissionService.cs           # Permission operations (Grant/Revoke)
-│   ├── PrivilegeService.cs            # Privilege querying
-│   └── ValidationService.cs           # Input validation & error handling
-│
-├── Program.cs                          # Application entry point
-├── App.config                          # Application configuration
-└── OracleDBAdmin.csproj               # Project file
-```
-
-### File Creation Guide
-
-When implementing features:
-
-1. **Start with Models** - Define data structures first
-2. **Create Services** - Implement business logic and Oracle interactions
-3. **Build Forms** - Create UI forms that use services
-4. **Add Program.cs** - Main entry point and initialization
-
-See [Development](#development) section below for implementation details.
+* User and role management
+* Permission granting/revoking with WITH GRANT OPTION delegation
+* Column-level security for SELECT/UPDATE operations
+* Enterprise privilege tracking and administration
 
 ## Features
 
-- **User Management**: Create, modify, delete Oracle users
-- **Role Management**: Create and manage roles
-- **Permission Control**: Grant/revoke permissions with options
-- **Column-level Security**: Specify permissions on specific columns
-- **Grant Option**: WITH GRANT OPTION support for permission delegation
-- **Privilege Viewer**: View permissions for users and roles
+* **User Management** - Create, modify, delete Oracle users
+* **Role Management** - Create and manage roles with hierarchy
+* **Permission Control** - Grant/revoke with delegation options
+* **Column-level Security** - Fine-grained control on specific columns
+* **Privilege Viewer** - Track permissions across users and roles
+* **Audit Support** - Full audit trail of all operations
+
+## Project Structure
+
+```
+subsystem1-oracleDBAdmin/source/oracleDBAdmin/
+├── forms/
+│   ├── MainForm.cs                     # Application window
+│   ├── UserManagementForm.cs           # User CRUD operations
+│   ├── RoleManagementForm.cs           # Role management
+│   ├── PermissionForm.cs               # Permission management
+│   └── PrivilegeViewerForm.cs          # Privilege viewer
+├── models/
+│   ├── User.cs
+│   ├── Role.cs
+│   ├── Permission.cs
+│   └── OracleObject.cs
+├── services/
+│   ├── OracleConnectionService.cs
+│   ├── UserService.cs
+│   ├── RoleService.cs
+│   ├── PermissionService.cs
+│   ├── PrivilegeService.cs
+│   └── ValidationService.cs
+├── Program.cs
+└── OracleDBAdmin.csproj
+```
 
 ## Getting Started
 
-### Prerequisites
+**Prerequisites:**
 
-- .NET 10.0 SDK or higher
-- Visual Studio 2022 or later
-- Oracle Data Provider for .NET Core (ODP.NET Core)
-- Oracle Database Express 21c (XE)
+* .NET 10.0 SDK or higher
+* Visual Studio 2022 or later
+* Oracle Data Provider for .NET Core (ODP.NET Core)
+* Oracle Database Express 21c (XE)
 
-### Setup
+**Setup:**
 
 1. Open the solution in Visual Studio 2022
-2. Install NuGet package for .NET 10.0:
+2. Install the required NuGet package:
 
    ```bash
    dotnet add package Oracle.ManagedDataAccess.Core
-   # Or in Package Manager Console:
-   Install-Package Oracle.ManagedDataAccess.Core
    ```
 
-3. Configure database credentials (see Database Connection section below)
-4. Build and run
+3. Configure database connection (see SETUP_GUIDE.md)
+4. Build and run the application
 
-## Database Connection
+**Security Notice:**
 
-**Security Warning**: Never commit passwords or credentials to version control. See [CONTRIBUTING.md](../../CONTRIBUTING.md#security-checklist) security guidelines.
+Never commit credentials to version control. Use User Secrets, environment variables, or configuration files. See [CONTRIBUTING.md](../../CONTRIBUTING.md#security-checklist) for security guidelines.
 
-For detailed setup instructions on configuring connection strings (User Secrets, Environment Variables, Local Config), see [docs/SETUP_GUIDE.md](../../docs/SETUP_GUIDE.md#step-3-configure-connection-strings).
+## Usage
 
-## Usage Guide
+**Create User:**
 
-### Creating a User
+1. Open Main Form → User Management
+2. Enter username and password
+3. Click Create User
 
-1. Open Main Form
-2. Click "User Management"
-3. Enter username and password
-4. Click "Create User"
+**Grant Permission:**
 
-### Granting Permissions
-
-1. Open "Permission Management"
-2. Select user/role and object (table, view, etc.)
+1. Open Permission Management
+2. Select user/role and target object
 3. Choose permission type (SELECT, INSERT, UPDATE, DELETE)
-4. For SELECT/UPDATE: optionally specify columns
-5. Check "WITH GRANT OPTION" if delegation needed
-6. Click "Grant"
+4. For SELECT/UPDATE: optionally specify columns for column-level security
+5. Check "WITH GRANT OPTION" for delegation
+6. Click Grant
 
-### Viewing Permissions
+**View Privileges:**
 
-1. Open "Privilege Viewer"
+1. Open Privilege Viewer
 2. Select user or role
 3. View all granted permissions and objects
 
 ## Development
 
-### Code Standards
+**Code Standards:**
 
-- Follow Microsoft C# coding guidelines
-- Use meaningful variable names
-- Add XML documentation to public methods
-- Handle exceptions appropriately
+* Follow Microsoft C# coding guidelines
+* Use meaningful variable names
+* Add XML documentation to public methods
+* Handle exceptions appropriately
 
-### Building
+**Build:**
 
 ```bash
 dotnet build OracleDBAdmin.slnx
 ```
 
-### Testing
+**Testing:**
 
-- Test user creation with various usernames
-- Verify permission granting/revoking
-- Test column-level security
-- Test WITH GRANT OPTION functionality
+* Test user creation with various usernames
+* Verify permission granting/revoking
+* Test column-level security permissions
+* Validate WITH GRANT OPTION delegation
+* Test privilege viewer accuracy
 
 ## Troubleshooting
 
-### Connection Failed
+**Connection Failed:**
 
-- Check Oracle listener is running
-- Verify TNS alias exists
-- Check connection string credentials
+* Verify Oracle listener is running
+* Check TNS alias configuration in tnsnames.ora
+* Validate connection string credentials
 
-### Permission Errors
+**Permission Errors:**
 
-- Ensure DBA user has proper privileges
-- Check if object exists before granting
-- Verify role exists for role-based grants
+* Ensure DBA user has proper system privileges
+* Verify target object exists before granting
+* Check that role exists for role-based grants
 
 ## References
 
-- [Oracle WinForm Guide](https://docs.oracle.com/cd/E11882_01/windows.112/e10927/toc.htm)
-- [Oracle Database Security](https://docs.oracle.com/database/121/DBSEG/toc.htm)
+* [Oracle Database Security](https://docs.oracle.com/database/121/DBSEG/toc.htm)
+* [Using WinForms with Oracle](https://docs.oracle.com/cd/E11882_01/windows.112/e10927/)
+* [ODP.NET Core Documentation](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/odp-net-core.htm)

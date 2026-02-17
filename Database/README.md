@@ -1,102 +1,115 @@
-# Database Administration & Scripts
+# Database Administration and Scripts
 
-Two separate Oracle database systems organized by subsystem functionality. Each subsystem has its own independent database schema.
+Oracle 21c database setup and configuration scripts organized by subsystem. Each subsystem has independent database schemas with separate security, schema, and audit configurations.
 
 ## Overview
 
 This directory contains SQL scripts for two separate database systems:
 
-1. **Subsystem 1 (OracleDBAdmin):** Administrative database for managing users, roles, and permissions
-2. **Subsystem 2 (MedicalDataManagement):** Medical data database with patient records, staff, prescriptions, etc.
+* Subsystem 1 (OracleDBAdmin) - Administrative database for user, role, and permission management
+* Subsystem 2 (MedicalDataManagement) - Medical data database with patient records, staff, and diagnostics
+
+## Subsystem 1 - Admin Database
+
+Administrative database supporting the OracleDBAdmin WinForm application.
+
+* Schema: Tables for admin users, roles, permissions, database objects
+* Security: User creation, RBAC role assignments, admin audit logging
+* Deliverables: 7 SQL scripts for schema, views, procedures, functions, indexes, and sample data
+
+## Subsystem 2 - Medical Database
+
+Medical data database supporting the Medical Data Management WinForm application with RBAC, VPD, and OLS security.
+
+* Schema: 7 core tables (KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO)
+* Security: User creation, RBAC role assignments, VPD policies, OLS labels
+* Audit: Standard audit, Fine-Grained Audit (FGA), Unified Audit configuration
+* Deliverables: 14 SQL scripts organized in schema/, security/, and audit/ folders
 
 ## Directory Structure
 
 ```
-Database/
-├── Subsystem1-AdminDB/                            # Admin Tool Database
-│   ├── schema/                                    (Create these files)
-│   │   ├── 01_CreateTables.sql                   # Admin users, roles, permissions
-│   │   ├── 02_CreateIndexes.sql                  # Performance indexes
-│   │   └── 03_InsertSampleData.sql               # Sample admin users
-│   ├── security/                                  (Create these files)
-│   │   ├── 01_AdminUsers_Creation.sql            # Create admin database users
-│   │   ├── 02_AdminRBAC_Setup.sql                # Admin role-based access control
-│   │   └── 03_AdminAudit_Setup.sql               # Audit admin operations
-│   ├── audit/                                     (Create these files)
-│   │   └── 01_AdminOperationAudit.sql            # Audit trail for admin actions
-│   └── README.md                                  # Subsystem 1 documentation
-│
-├── Subsystem2-MedicalDB/                         # Medical Data Database
-│   ├── schema/                                    (Create these files)
-│   │   ├── 01_CreateTables.sql                   # 7 medical data tables
-│   │   ├── 02_CreateIndexes.sql                  # Performance indexes
-│   │   └── 03_InsertSampleData.sql               # Sample data (100,000 patients, 170 staff)
-│   ├── security/                                  (Create these files)
-│   │   ├── 01_Users_Creation.sql                 # Create 4 role users
-│   │   ├── 02_RBAC_Setup.sql                     # Role-Based Access Control
-│   │   ├── 03_VPD_Setup.sql                      # Virtual Private Database (row-level)
-│   │   └── 04_OLS_Setup.sql                      # Oracle Label Security
-│   ├── audit/                                     (Create these files)
-│   │   ├── 01_StandardAudit_Setup.sql
-│   │   ├── 02_FineGrainedAudit_Setup.sql
-│   │   ├── 03_UnifiedAudit_Setup.sql
-│   │   └── ReadAuditLogs.sql
-│   └── README.md                                  # Subsystem 2 documentation
-│
-├── Audit/                                         # Legacy audit scripts
+Subsystem1-AdminDB/
+├── schema/                 # Database schema (tables, views, procedures)
+│   ├── 01_CreateAdminTables.sql
+│   ├── 02_CreateDatabaseObjectTables.sql
+│   ├── 03_CreateAdminViews.sql
+│   ├── 04_CreateAdminStoredProcedures.sql
+│   ├── 05_CreateAdminFunctions.sql
+│   ├── 06_CreateAdminIndexes.sql
+│   └── 07_InsertSampleData.sql
+├── security/               # User and RBAC setup
+│   ├── 01_AdminUsers_Creation.sql
+│   ├── 02_AdminRBAC_Setup.sql
+│   └── 03_AdminAudit_Setup.sql
+├── audit/                  # Admin audit configuration
+│   └── 01_AdminOperationAudit.sql
+└── README.md
+
+Subsystem2-MedicalDB/
+├── schema/                 # Medical data tables and indexes
+│   ├── 01_CreateTables.sql
+│   ├── 02_CreateIndexes.sql
+│   └── 03_InsertSampleData.sql
+├── security/               # RBAC, VPD, OLS, and user creation
+│   ├── 01_Users_Creation.sql
+│   ├── 02_RBAC_Setup.sql
+│   ├── 03_VPD_Setup.sql
+│   └── 04_OLS_Setup.sql
+├── audit/                  # Standard, FGA, and Unified Audit
+│   ├── 01_StandardAudit_Setup.sql
+│   ├── 02_FineGrainedAudit_Setup.sql
+│   ├── 03_UnifiedAudit_Setup.sql
 │   └── ReadAuditLogs.sql
-│
-└── README.md                                      # This file
+└── README.md
 ```
 
-## Execution Order for Both Subsystems
+## Execution Order
 
-**Warning:** Replace `<SYS_PASSWORD>` with your actual SYS account password. Never commit or share real credentials in documentation.
+### Subsystem 1 Setup
 
-### Phase 1: Subsystem 1 Admin Database Setup
+1. Execute schema scripts (01-07)
+2. Execute security scripts (01-03)  
+3. Execute audit scripts (01)
 
-#### 1.1 Create Admin Schema (Run First)
+### Subsystem 2 Setup
 
-```sql
--- For Oracle 21c XE:
-sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
--- Or: sqlplus / as sysdba
+1. Execute schema scripts (01-03)
+2. Execute security scripts (01-04)
+3. Execute audit scripts (01-03)
 
-@Subsystem1-AdminDB/schema/01_CreateTables.sql
-@Subsystem1-AdminDB/schema/02_CreateIndexes.sql
-@Subsystem1-AdminDB/schema/03_InsertSampleData.sql
-```
+See individual README files in each subsystem folder for detailed execution instructions.
 
-#### 1.2 Configure Admin Security (Run Second - CRITICAL ORDER)
+## Key Features
 
-**IMPORTANT: Execute security scripts in this EXACT order!**
+* Complete schema definitions with primary and foreign keys
+* RBAC implementation for role assignment and permissions
+* VPD policies for row-level security filtering
+* OLS label hierarchy for multi-level access control
+* Comprehensive audit trails for compliance
+* Performance indexes on frequently queried columns
+* Sample data representing realistic scenarios
 
-- Admin users MUST be created FIRST before roles can be assigned
+## Security Considerations
 
-```sql
-sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
+* Secure credential management using environment variables or secrets
+* No plaintext passwords in scripts
+* Proper grant hierarchies with WITH GRANT OPTION support
+* Immutable audit logging for compliance tracking
+* Principle of least privilege applied to all roles
 
--- Step 1: CREATE ADMIN USERS FIRST
-@Subsystem1-AdminDB/security/01_AdminUsers_Creation.sql
+## Documentation
 
--- Step 2: Create and assign admin roles with permissions
-@Subsystem1-AdminDB/security/02_AdminRBAC_Setup.sql
+* [../../SETUP_GUIDE.md](../../SETUP_GUIDE.md) - Complete setup instructions
+* [../../CONTRIBUTING.md](../../CONTRIBUTING.md) - Development guidelines
+* Individual subsystem README files with detailed specifications
 
--- Step 3: Enable audit for admin operations
-@Subsystem1-AdminDB/security/03_AdminAudit_Setup.sql
-```
+## Related Files
 
-#### 1.3 Setup Admin Audit (Run Third)
-
-```sql
-sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba
-
-@Subsystem1-AdminDB/audit/01_AdminOperationAudit.sql
-```
-
-### Phase 2: Subsystem 2 Medical Database Setup
-
-#### 2.1 Create Medical Schema (Run First)
+* [../docs/tasks/task-03-subsystem1-database-schema.md](../docs/tasks/task-03-subsystem1-database-schema.md) - Subsystem 1 schema design
+* [../docs/tasks/task-07-database-schema-setup.md](../docs/tasks/task-07-database-schema-setup.md) - Subsystem 2 schema setup
+* [../docs/tasks/task-08-database-security-setup.md](../docs/tasks/task-08-database-security-setup.md) - Security setup details
+* [../docs/tasks/task-09-database-audit-setup.md](../docs/tasks/task-09-database-audit-setup.md) - Audit configuration
 
 ```sql
 sqlplus sys/<SYS_PASSWORD>@localhost:1521/XE as sysdba

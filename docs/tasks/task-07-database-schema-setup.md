@@ -110,24 +110,20 @@ Create 7 core tables with complete Vietnamese schema specification:
 
 **Key Implementation Details:**
 
-- Use **NVARCHAR2** for all Vietnamese text (patient names, diagnoses, etc.)
-- Use **GENERATED ALWAYS AS IDENTITY** for auto-increment numeric PKs
-- Foreign key constraints: KHOA → NHANVIEN → HSBA chain
-- USERNAME column links to Oracle database users (no separate user table)
-- VAITRO values: 'Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên'
-- Departments: KHOA01 (Tim Mạch), KHOA02 (Thần Kinh), KHOA03 (Tiêu Hóa)
-- Locations: 'Cơ sở Hồ Chí Minh', 'Cơ sở Hải Phòng', 'Cơ sở Hà Nội'
-- Allow all INSERT/UPDATE/DELETE operations for testing phase
+* Use **NVARCHAR2** for Vietnamese text, **GENERATED ALWAYS AS IDENTITY** for auto-increment PKs
+* USERNAME links directly to Oracle users (no separate table)
+* VAITRO values: Điều phối viên, Bác sĩ/Y sĩ, Kỹ thuật viên
+* Departments: KHOA01 (Tim Mạch), KHOA02 (Thần Kinh), KHOA03 (Tiêu Hóa)
+* Locations: Hồ Chí Minh, Hải Phòng, Hà Nội
 
 ### 02_CreateIndexes.sql
 
-**Create table-specific indexes for query optimization (7 indexes):**
+**Create 7 indexes for query optimization:**
 
-**Index Summary:**
-- **HSBA**: 2 indexes (MABN, MABS) for patient and doctor record lookups
-- **HSBA_DV**: 2 indexes (LOAIDV, NGAYDV) for service type and date filtering
-- **THONGBAO**: 2 indexes (NOIDUNG, DIADIEM) for content and location searches
-- **DONTHUOC**: 1 index (TENTHUOC) for drug name lookups
+* **HSBA:** MABN, MABS — patient and doctor record lookups
+* **HSBA_DV:** LOAIDV, NGAYDV — service type and date filtering
+* **THONGBAO:** NOIDUNG, DIADIEM — content and location searches
+* **DONTHUOC:** TENTHUOC — drug name lookups
 
 ### 03_InsertSampleData.sql
 
@@ -139,130 +135,58 @@ Create 7 core tables with complete Vietnamese schema specification:
 - KHOA02, Khoa Thần Kinh (Neurology), Trưởng: MANV=10000011
 - KHOA03, Khoa Tiêu Hóa (Gastroenterology), Trưởng: MANV=10000021
 
-#### BENHNHAN (100,000 patients) — **PRODUCTION-SCALE per TC#5**
+#### BENHNHAN (100,000 patients)
 
-Sample records:
-- MABN=20000001: Nguyễn Văn An, Nam, DOB 1985-03-15, CCCD=079085012345, 123 Lê Lợi, Quận 1, TP.HCM
-- MABN=20000002: Trần Thị Hoa, Nữ, DOB 1992-07-22, CCCD=079092007222, 456 Nguyễn Hue, Quận 3, TP.HCM
-- MABN=20000003: Lê Minh Phúc, Nam, DOB 1978-11-10, CCCD=079078101010, 789 Tôn Đức Thắng, Quận 7, TP.HCM
-- Generated script should create 100,000 records with:
-  - Diverse Vietnamese names
-  - CCCD: 12-digit unique national ID numbers
-  - Birth dates creating realistic age distribution (18-80 years old)
-  - Medical history: Common conditions (Tiểu đường, Cao huyết áp, Bệnh tim mạch)
-  - Drug allergies: Penicillin, Aspirin, various others
-  - Distributed across 3 locations (TP.HCM, Hải Phòng, Hà Nội)
+* 100,000 unique records with Vietnamese names, CCCD (national ID), birth dates (18-80 years)
+* Medical history: Common conditions (Tiểu đường, Cao huyết áp, Bệnh tim mạch)
+* Drug allergies and addresses distributed across 3 locations
 
 #### NHANVIEN (170 staff)
 
-Distribution by role and location:
+* **Coordinators (20):** 10 HCM, 5 Hải Phòng, 5 Hà Nội
+* **Doctors (100):** 60 HCM (20 per dept), 20 Hải Phòng, 20 Hà Nội
+* **Technicians (50):** 30 HCM, 10 Hải Phòng, 10 Hà Nội
+* Unique Vietnamese names, CMND (national ID), assigned to departments
 
-**Coordinators (20 total):** Điều phối viên
-- 10 TP.HCM: MANV 10000001-10000010
-- 5 Hải Phòng: MANV 10000062-10000066
-- 5 Hà Nội: MANV 10000117-10000121
+#### HSBA (50,000+ medical records)
 
-**Doctors/Nurses (100 total):** Bác sĩ/Y sĩ
-- 60 TP.HCM: MANV 10000011-10000070 (distributed: 20 KHOA01, 20 KHOA02, 20 KHOA03)
-- 20 Hải Phòng: MANV 10000067-10000086
-- 20 Hà Nội: MANV 10000122-10000141
+* ~0.5 records per patient average
+* Diagnoses, treatments, assigned doctor, and department
 
-**Technicians (50 total):** Kỹ thuật viên
-- 30 TP.HCM: MANV 10000087-10000116 (Xét nghiệm, Chẩn đoán hình ảnh, EKG)
-- 10 Hải Phòng: MANV 10000142-10000151
-- 10 Hà Nội: MANV 10000152-10000161
+#### HSBA_DV (75,000+ diagnostic services)
 
-Sample staff records:
-- MANV=10000001: Trần Thị Mai, Nữ, DOB 1990-10-21, CMND=079090102122, VAITRO='Điều phối viên', KHOA='KHOA01'
-- MANV=10000011: Phạm Văn Hùng, Nam, DOB 1985-05-30, CMND=079085053030, VAITRO='Bác sĩ/Y sĩ', KHOA='KHOA02'
-- MANV=10000051: Võ Thị Lan, Nữ, DOB 1988-12-15, CMND=079088121515, VAITRO='Kỹ thuật viên', KHOA='KHOA01'
+* ~1.5 services per medical record
+* Types: Blood tests (30%), Imaging (25%), EKG (15%), Endoscopy (15%), Ultrasound (15%)
+* Includes test results and technician assignments
 
-#### HSBA (50,000+ medical records) — **0.5 records/patient avg**
+#### DONTHUOC (100,000+ prescriptions)
 
-Distribution across 100,000 patients:
-- 50,000 patients with 1 active record
-- 40,000 patients with 0 records (outpatient follow-up patients)
-- 10,000 patients with 2-4 records (chronic conditions needing multiple visits)
+* ~2 drugs per medical record
+* Common medications: Diabetes, cardiac, gastric, neurologic, and antibiotic drugs
 
-Sample records:
-- MAHSBA=1: MABN=20000001, NGAY=2025-01-10, CHANDOAN='Viêm dạ dày', DIEUTRI='Dùng thuốc 14 ngày + kiêng cơm nóng', MABS=10000011, KHOA='KHOA03'
-- MAHSBA=2: MABN=20000002, NGAY=2025-01-12, CHANDOAN='Đau đầu migraine', DIEUTRI='Kê đơn giảm đau kết hợp chuyên khoa', MABS=10000021, KHOA='KHOA02'
-- MAHSBA=3: MABN=20000003, NGAY=2025-01-08, CHANDOAN='Khám tái khám bệnh tim', DIEUTRI='Tiếp tục điều trị hiện tại', MABS=10000051, KHOA='KHOA01'
+#### THONGBAO (10,000+ notifications)
 
-#### HSBA_DV (75,000+ diagnostic services) — **1.5 services/record avg**
-
-Service distribution by type:
-- Xét nghiệm máu: 30% (blood tests, hematology)
-- Chẩn đoán hình ảnh: 25% (X-ray, ultrasound, CT scans)
-- EKG: 15% (electrocardiograms)
-- Nội soi: 15% (endoscopy/colonoscopy)
-- Siêu âm: 15% (ultrasound specialized)
-
-Sample records:
-- MAHSBA_DV=1: LOAIDV='Xét nghiệm máu', MAHSBA=1, NGAYDV=2025-01-11, KETQUA='Hb: 13.5, WBC: 6.8, Glucose: 5.5 mmol/L', MAKTV=10000051
-- MAHSBA_DV=2: LOAIDV='Chẩn đoán hình ảnh', MAHSBA=2, NGAYDV=2025-01-13, KETQUA='Đầu: Bình thường, Không tấn công', MAKTV=10000061
-- MAHSBA_DV=3: LOAIDV='EKG', MAHSBA=3, NGAYDV=2025-01-10, KETQUA='Nhịp đều, Không có bất thường', MAKTV=10000071
-
-#### DONTHUOC (100,000+ prescriptions) — **2+ drugs per record avg**
-
-Sample prescriptions:
-
-| MAHSBA | TENTHUOC | LIEUDUNG | NGAYDT |
-|--------|----------|----------|--------|
-| 1 | Omeprazole | 20mg x 1 lần/ngày, sau bữa ăn | 2025-01-10 |
-| 1 | Domperidone | 10mg x 3 lần/ngày, trước bữa ăn | 2025-01-10 |
-| 2 | Sumatriptan | 50mg x 1 lần khi đau | 2025-01-12 |
-| 2 | Paracetamol | 500mg x 2 lần/ngày | 2025-01-12 |
-| 3 | Atorvastatin | 20mg x 1 lần/tối | 2025-01-08 |
-| 3 | Aspirin | 100mg x 1 lần/sáng | 2025-01-08 |
-
-Common medications in dataset:
-- Đường huyết: Metformin, Glibenclamide
-- Tim mạch: Lisinopril, Atorvastatin, Aspirin
-- Tiêu hóa: Omeprazole, Domperidone, Aluminium hydroxide
-- Thần kinh: Paracetamol, Ibuprofen, Diazepam
-- Kháng sinh: Amoxicillin, Azithromycin, Cephalexin
-
-#### THONGBAO (10,000+ notifications) — **0.2 notifications/record avg**
-
-Notification types:
-- **Nhắc lịch tái khám** (30%): "Quý khách được mời tái khám vào [ngày]. Vui lòng liên hệ để xác nhận."
-- **Kết quả xét nghiệm** (25%): "Kết quả xét nghiệm của quý khách đã sẵn sàng. Vui lòng liên hệ khoa để nhận kết quả."
-- **Lịch tiêm chủng** (20%): "Quý khách hãy đến tiêm chủng vào [ngày]. Địa chỉ [cơ sở]."
-- **Thông báo dược sĩ** (15%): "Cần kiểm tra k lại liều dùng thuốc với dược sĩ."
-- **Khác** (10%): Various health reminders
-
-Sample notifications:
-- MATHONGBAO=1: NOIDUNG='Nhắc lịch tái khám bệnh tim vào 2025-02-15', NGAYGIO=2025-01-15 09:00, DIADIEM='Cơ sở Hồ Chí Minh', KHOA='KHOA01'
-- MATHONGBAO=2: NOIDUNG='Kết quả xét nghiệm của quý khách đã sẵn sàng', NGAYGIO=2025-01-14 14:30, DIADIEM='Cơ sở Hải Phòng', KHOA='KHOA03'
+* ~0.2 notifications per medical record
+* Types: Appointment reminders (30%), Test results (25%), Vaccination (20%), Pharmacist notes (15%), Other (10%)
 
 ## Dependencies
 
-- **Requires:** Oracle 21c (or compatible) installation with SQL*Plus or SQLcl
-- **Unblocks:** All other Subsystem 2 tasks (Task 04-06, Task 08-10)
-- **Related:** Task 09 (Database Audit Setup) — AUDITLOG table is created here but sample data generation is Task 09 responsibility
+* **Requires:** Oracle 21c or compatible with SQL*Plus or SQLcl
+* **Unblocks:** All Subsystem 2 tasks (Tasks 04-06, 08-10)
+* **Related:** Task 09 (Audit Setup) — AUDITLOG table created here, sample data in Task 09
 
 ## Success Criteria
 
-[ ] All 7 tables created with correct Vietnamese column names (KHOA, BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO)
-[ ] KHOA: PK=MAKHOA (CHAR 6), 3 departments created  
-[ ] BENHNHAN: PK=MABN (GENERATED ALWAYS AS IDENTITY), includes all address fields (SONHA, TENDUONG, QUANHUYEN, TINHTP), CCCD unique constraint
-[ ] NHANVIEN: PK=MANV (GENERATED ALWAYS AS IDENTITY), VAITRO constraint enforces 3 valid roles
-[ ] HSBA: PK=MAHSBA (GENERATED ALWAYS AS IDENTITY), FK constraints on MABN, MABS, MAKHOA  
-[ ] HSBA_DV: PK=MAHSBA_DV (GENERATED ALWAYS AS IDENTITY), FK constraints on MAHSBA, MAKTV
-[ ] DONTHUOC: PK=MADONTHUOC (GENERATED ALWAYS AS IDENTITY), FK on MAHSBA
-[ ] THONGBAO: PK=MATHONGBAO (GENERATED ALWAYS AS IDENTITY), includes KHOA and CAPBAC for OLS
-[ ] All constraints enforced (PK, FK, NOT NULL, UNIQUE, CHECK)  
-[ ] All 7 indexes created as specified (IDX_HSBA_MABN, IDX_HSBA_MABS, IDX_HSBADV_LOAIDV, IDX_HSBADV_NGAYDV, IDX_THONGBAO_NOIDUNG, IDX_THONGBAO_DIADIEM, IDX_DONTHUOC_TENTHUOC)  
-[ ] 100,000 patients inserted (BENHNHAN) — production-scale per TC#5 requirement
-[ ] 170 staff inserted (20 coordinators, 100 doctors, 50 technicians) with realistic distribution
-[ ] 50,000+ medical records inserted (HSBA) — proportional to patient count
-[ ] 100,000+ prescriptions inserted (DONTHUOC) — 2+ per medical record  
-[ ] 75,000+ diagnostic services inserted (HSBA_DV) — 1.5+ per medical record
-[ ] 10,000+ notifications inserted (THONGBAO) — proportional to records
-[ ] Data matches Vietnamese specification exactly (names, addresses, diagnoses, medications)
-[ ] No orphaned records — all FK relationships maintain referential integrity  
-[ ] Tables ready for application use and OLS/RBAC testing
+* [ ] All 7 tables created with correct Vietnamese names
+* [ ] All primary keys and foreign keys properly defined
+* [ ] All constraints enforced (NOT NULL, UNIQUE, CHECK)
+* [ ] All 7 indexes created and functional
+* [ ] 100,000 patients inserted (BENHNHAN)
+* [ ] 170 staff inserted with role distribution
+* [ ] 50,000+ medical records (HSBA) with proper relationships
+* [ ] 100,000+ prescriptions, 75,000+ diagnostic services
+* [ ] 10,000+ notifications distributed across locations
+* [ ] No orphaned records — referential integrity maintained
 
 ## Critical Dates
 
@@ -272,27 +196,20 @@ Sample notifications:
 
 ## Script Standards
 
-Each SQL script must:
-
-- Include detailed comments
-- Handle pre-existing objects gracefully
-- Use proper Oracle syntax
-- Never hardcode credentials
-- Include transaction control (COMMIT)
-- Be idempotent (can run multiple times safely)
-- Include error checking
+* Include detailed comments
+* Handle pre-existing objects gracefully
+* Use proper Oracle syntax
+* Include transaction control (COMMIT)
+* Be idempotent (can run multiple times safely)
 
 ## Testing
 
-After completion:
+* Verify all tables exist with correct data types
+* Test foreign key constraints and referential integrity
+* Verify indexes are created and functional
+* Validate sample data distributions
 
-- Verify all tables exist and contain data
-- Test foreign key constraints
-- Verify indexes are being used
-- Check sample data representativeness
-- Document any issues immediately
-
-## Traceability Matrix
+## Traceability
 
 ### TC#1: User Account Setup (Database Foundation)
 
@@ -302,7 +219,7 @@ After completion:
 | **Primary Owner** | **Ngọc, Vũ (Database)**, Duyên, Triết (Service), Duyên, Triết (Form) |
 | **Test Timeline** | End of Week 1 (Fri Feb 14) |
 
-**Ngọc, Vũ Database Deliverables:**
+**Database Deliverables:**
 
 | Deliverable | Status | Details |
 |-------------|--------|---------|
@@ -312,47 +229,23 @@ After completion:
 
 **Pass Criteria Met:**
 
-- All 7 tables created with zero SQL errors
-- All PK/FK constraints properly defined with circular FK (KHOA ↔ NHANVIEN) handled via ALTER TABLE
-- KHOA: 3 departments (KHOA01=Tiêu Hóa, KHOA02=Thần Kinh, KHOA03=Tim Mạch)
-- 100,000 patients inserted with unique CCCD (000000000001-000000100000)
-- 170 staff records (20 Coordinators, 100 Doctors, 50 Technicians) with unique CMND (990000000001-99000000017)
-- ~140K-210K medical records (70% of patients × 2-3 records each) with proper relationships
-- ~280K-420K prescriptions (2 per medical record) linked to valid HSBA records
-- ~140K-210K diagnostic services (1 per record) with technician assignments
-- 12,000 notifications distributed over 365 days with realistic locations
-- Data verifiable with SELECT COUNT(*) queries showing correct proportions
-- Core performance indexes created on query paths
+* All 7 tables created with correct Vietnamese schema
+* All PK/FK/constraints properly enforced
+* 100,000 patients, 170 staff with correct distributions
+* ~140K-210K medical records with proper relationships
+* ~280K-420K prescriptions (2 per record)
+* ~140K-210K diagnostic services (1 per record)
+* 12,000 notifications distributed across locations
+* All 7 performance indexes created and functional
 
-**Evidence Tracking:**
+**Verification:**
 
-- Database scripts executed without errors
-- SELECT COUNT(*) verification results:
-  - BENHNHAN: 100,000
-  - NHANVIEN: 170
-  - KHOA: 3
-  - HSBA: ~140,000-210,000 (approximately 70% of patients × 2-3 visits)
-  - DONTHUOC: ~280,000-420,000 (2 per record)
-  - HSBA_DV: ~140,000-210,000 (1 per record)
-  - THONGBAO: 12,000
+* BENHNHAN: 100,000 patients
+* NHANVIEN: 170 staff
+* KHOA: 3 departments
+* HSBA: ~140K-210K records
+* DONTHUOC: ~280K-420K prescriptions
+* HSBA_DV: ~140K-210K services
+* THONGBAO: 12,000 notifications
 
 ---
-
-### Phase 1 Gate: Foundation Complete
-
-> [!IMPORTANT]
-> All Phase 2 work (Tasks 02-05, 07-08) is **BLOCKED** until this task is complete.
-> Deadline: **Friday, February 14 EOD** (non-negotiable).
-
----
-
-## Related Tasks
-
-- **Task 04-06:** Subsystem 2 medical UI and business services (depend on this schema)
-- **Task 08:** Database security setup (uses tables created here)
-- **Task 09:** Audit setup (creates AUDITLOG sample data; AUDITLOG table structure created in this task)
-- **Task 10:** Backup/recovery (needs full schema and data)
-
----
-
-**CRITICAL: Failure to complete by Friday 2/14 delays entire project**

@@ -1,197 +1,41 @@
 # Task 05: Subsystem 2 - Security Services Implementation
 
-**Assigned to:** Phôn  
-**Type:** Backend Security Services  
-**Duration:** 30-35 hours  
-**Priority:** Critical (blocks Task 04)  
+**Assigned to:** Phôn
+**Type:** Backend Security Services
+**Duration:** 30-35 hours
+**Priority:** Critical (Blocks Task 04)
 **Timeline:** Feb 19 - Feb 28, 2026
 
 ---
 
-## Overview
+## 1. Objective
 
-Implement 6 critical security services implementing all access control mechanisms:
+Develop the centralized security layer for Subsystem 2, acting as the bridge between the application UI (Forms) and the Oracle Database security mechanisms. This task involves implementing 6 core services that handle authentication, connection management, and the enforcement of RBAC, VPD, and OLS policies.
 
-- User authentication with role determination
-- Role-based access control (RBAC) with action verification
-- Virtual Private Database (VPD) for row-level filtering
-- Oracle Label Security (OLS) for label-based access
-- Validation services for data integrity
+## 2. Scope of Work
 
-## Deliverables
+* **OracleConnectionService:** Manage secure, pooled connections with transaction support
+* **AuthenticationService:** Handle login, password verification, and session initialization with role detection (Coordinator, Doctor, Technician, Patient)
+* **ValidationService:** Sanitize inputs and enforce data integrity before database interaction
+* **RBACService:** Verify user authorization for role-specific actions (Technician, Patient roles)
+* **VPDService:** Wrapper for VPD-enabled queries ensuring transparent filtering for Doctor/Coordinator roles
+* **OLSService:** Compare user labels against notification (`THONGBAO`) labels using 3-component hierarchy (Levels: Director > Dept Head > Staff; Compartments: Cardiology, Gastroenterology, Neurology; Groups: Ho Chi Minh, Hai Phong, Ha Noi)
 
-| Service | Purpose | Security Mechanism |
-|---------|---------|-------------------|
-| AuthenticationService | User login and role detection | Basic auth → role assignment |
-| OracleConnectionService | Connection management | Secure connections |
-| RBACService | Action authorization | Role → Available actions |
-| VPDService | Row-level security | Transparent filtering in DB |
-| OLSService | Label-based access | 3-level label hierarchy |
-| ValidationService | Input validation | Data integrity |
 
-## Requirements
 
-- Implement 4 distinct roles: Coordinator, Doctor, Technician, Patient
-- Support RBAC with role-action mapping
-- Implement VPD policies (transparent to forms)
-- Support OLS with 3-level hierarchy:
-  - Level 1: Department (Cardiology, Gastroenterology, Neurology)
-  - Level 2: Location (Ho Chi Minh, Hai Phong, Ha Noi)
-  - Level 3: Classification (Staff, DepartmentHead, Director)
-- All security enforced at database level
-- Proper error handling and logging
+## 3. Deliverables
 
-## Dependencies
+* `OracleConnectionService.cs` — Connection pooling and transaction management
+* `AuthenticationService.cs` — Login, logout, role detection via `GetCurrentUserRole()`
+* `RBACService.cs` — Authorization verification with `CheckPermission()`, `GetAvailableActions()`
+* `VPDService.cs` — VPD context validation and exception handling
+* `OLSService.cs` — Label comparison via `GetUserLabels()`, `CanAccessNotification()`
+* `ValidationService.cs` — Input sanitization and data integrity enforcement
 
-- **Requires:** Ngọc, Vũ's database users and security setup (Wed Feb 19 for RBAC, Thu Feb 20 for VPD/OLS)
-- **Blocks:** Task 04 (forms need these services)
-- **Uses:** OracleConnectionService from this or Duyên, Triết
+## 4. Acceptance Criteria
 
-## Success Criteria
-
-✓ AuthenticationService authenticates all 4 user types correctly  
-✓ RBAC prevents unauthorized actions  
-✓ VPD filtering works at database level  
-✓ OLS label filtering enforces label hierarchy  
-✓ All services work transparently with forms  
-✓ Comprehensive error handling  
-✓ Security enforced (database level, not app level)
-
-## Role Definitions
-
-**Coordinator** (20 staff):
-
-- Available Actions: ViewAllPatients, AddPatient, EditPatient, DeletePatient, CreateMedicalRecord, AssignDoctor, AssignTechnician, ViewAllRecords, ViewAllStaff
-
-**Doctor/Nurse** (100 staff):
-
-- Available Actions: ViewAssignedPatients, ViewOwnPatientHistory, CreateDiagnosis, UpdateTreatment, CreatePrescription, UpdatePrescription, OrderDiagnosticService, ViewPatientAllergies
-
-**Technician** (50 staff):
-
-- Available Actions: ViewAssignedServices, UpdateServiceResults, MarkServiceComplete, ViewRelatedPatientInfo
-
-**Patient** (100,000+):
-
-- Available Actions: ViewOwnRecords, ViewOwnPrescriptions, ViewAppointmentHistory, UpdateOwnContactInfo
-
-## Critical Implementation Order
-
-1. **OracleConnectionService** (first - all others depend)
-2. **AuthenticationService** (immediately after)
-3. **RBACService** (after auth works)
-4. **VPDService** (depends on DB setup)
-5. **OLSService** (depends on DB setup)
-6. **ValidationService** (independant, can be last)
-
-## VPD Setup
-
-Policies must be configured at database level by Ngọc, Vũ:
-
-- HSBA policy (medical records filtering)
-- HSBA_DV policy (diagnostic service filtering)
-- Service methods query pre-filtered data
-
-## OLS 3-Level Hierarchy
-
-Label examples (Vietnamese names):
-
-- "Tim mạch:Hồ Chí Minh:Nhân viên" - Staff level (Cardiology:Ho Chi Minh:Staff)
-- "Tim mạch:Hồ Chí Minh:Lãnh đạo khoa" - Department head level (Cardiology:Ho Chi Minh:DepartmentHead)
-- "Tiêu hóa:Hà Nội:Ban Giám đốc" - Director level (Gastroenterology:Ha Noi:Director)
-- "Cardiology:*:Director" - Director (all locations)
-
-Users compare labels hierarchically - must meet all 3 dimensions.
-
-## Traceability Matrix
-
-### TC#2: RBAC Configuration (Service Deliverables)
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 1: Access Control & Interface |
-| **Test Timeline** | End of Week 2 |
-
-**Phôn Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
-| `services/AuthenticationService.cs` — Login(), ValidateUserRole() | Critical | Week 2 - Early |
-| `services/RBACService.cs` — CheckUserRole(), CheckPermission(), GetAvailableActions() | Required | Week 2 |
-
-**Pass Criteria:**
-
-- ✓ AuthenticationService.Login() returns correct role for valid credentials
-- ✓ AuthenticationService.ValidateUserRole() correctly verifies role assignments
-- ✓ RBACService.CheckUserRole() returns user's role from database
-- ✓ RBACService.CheckPermission() verifies user has action permission (whitelist check)
-- ✓ RBACService.GetAvailableActions() returns complete list for user's role
-- ✓ Coordinator can perform coordinator actions, not doctor actions
-- ✓ Doctor can perform doctor actions, not technician actions
-- ✓ Technician cannot access coordinator or doctor functions
-- ✓ Patient cannot access staff functions
-- ✓ All RBAC checks complete in < 100ms
-
----
-
-### TC#3: VPD Implementation (Service Deliverables)
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 1: Access Control & Interface |
-| **Test Timeline** | End of Week 2 |
-
-**Phôn Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
-| `services/AuthenticationService.cs` | Prerequisite | Week 2 |
-| `services/VPDService.cs` — GetVisiblePatients(), GetVisibleRecords(), GetVisibleServices() | Required | Week 2 |
-| `services/RBACService.cs` | Prerequisite | Week 2 |
-
-**Pass Criteria:**
-
-- ✓ VPDService.GetVisiblePatients() returns only doctor's assigned patients
-- ✓ VPDService.GetVisibleRecords() returns only staff's authorized records
-- ✓ VPDService.GetVisibleServices() returns only technician's assigned services
-- ✓ Doctor cannot access patient records via direct SQL query (VPD enforced)
-- ✓ VPD filtering transparent to application (no changes to form code needed)
-- ✓ VPD overhead < 10% performance impact
-
----
-
-### OLS#2: User Label Assignment (Service Deliverables)
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 2: OLS Notification System |
-| **Test Timeline** | End of Week 3 |
-
-**Phôn Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `services/OracleConnectionService.cs` | Prerequisite | Week 1 |
-| `services/AuthenticationService.cs` | Prerequisite | Week 2 |
-| `services/OLSService.cs` — GetUserLabels(), CanAccessNotification(), GetAccessibleNotifications() | Required | Week 2 |
-
-**Pass Criteria:**
-
-- ✓ OLSService.GetUserLabels() retrieves correct labels for each user
-- ✓ OLSService.CanAccessNotification() verifies label compatibility correctly
-- ✓ Director can access notifications at any label level (all 15 notifications)
-- ✓ Department Head can access own department notifications + lower classifications
-- ✓ Staff can access only notifications matching their exact labels
-- ✓ OLSService.GetAccessibleNotifications() returns only accessible notification IDs
-
----
-
-## Related Tasks
-
-- Task 04: Depends on these services
-- Task 06: Complements business services
-- Task 07-09: Database must provide VPD/OLS infrastructure
-
----
+* [ ] **Authentication:** System correctly identifies all 4 user roles upon login.
+* [ ] **RBAC Enforcement:** Technicians are blocked from accessing Doctor-specific features.
+* [ ] **VPD Transparency:** Doctor forms display *only* assigned patients; Coordinators see the full list (or Dept list).
+* [ ] **OLS Logic:** The `OLSService` correctly determines that a "Cardiology Staff" cannot view a "Director" level notification.
+* [ ] **Integration:** All services function seamlessly with the UI Forms (Task 04).

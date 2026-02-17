@@ -8,193 +8,41 @@
 
 ---
 
-## Overview
+## 1. Objective
 
-Implement 7 role-specific Windows Forms for medical data management with automatic security filtering:
+Implement 6 role-specific Windows Forms with automatic security filtering:
 
-- Login form (authentication entry point)
-- Coordinator interface (manage all patients/records)
-- Doctor interface (see only assigned patients - VPD filtered)
-- Technician interface (see only assigned services - VPD filtered)
-- Patient interface (see own records only - row-level security)
-- Notification viewer (OLS label-based filtering)
+* **LoginForm** — Authentication, role detection
+* **CoordinatorForm** — Patient/record management, full access
+* **DoctorForm** — VPD-filtered patient list showing only assigned patients
+* **TechnicianForm** — VPD-filtered service list showing only assigned services
+* **PatientForm** — Row-level security; own records/prescriptions read-only
+* **NotificationForm** — OLS label-based filtering
 
-## Deliverables
+## 2. Scope of Work
 
-| Form | Role | Purpose | Security |
-|------|------|---------|----------|
-| LoginForm.cs | All | User authentication, role determination | Basic auth |
-| CoordinatorForm.cs | Coordinator | Patient/record management, role assignment | RBAC controlled |
-| DoctorForm.cs | Doctor | Patient care, diagnoses, prescriptions | VPD filtered |
-| TechnicianForm.cs | Technician | Service management, results | VPD filtered |
-| PatientForm.cs | Patient | View own records/prescriptions | Row-level security |
-| NotificationForm.cs | All | Role-specific notifications | OLS label filtered |
+* `LoginForm.cs` — User authentication, role determination
+* `CoordinatorForm.cs` — Patient/record management with RBAC control
+* `DoctorForm.cs` — VPD-filtered patient care (diagnoses, prescriptions)
+* `TechnicianForm.cs` — VPD-filtered service management with result entry
+* `PatientForm.cs` — Own records/prescriptions view with contact info edit
+* `NotificationForm.cs` — OLS-filtered role-specific notifications
 
-## Requirements
+## 3. Requirements & Dependencies
 
-- Windows Forms (C#) with role-based interfaces
-- Integrate with Phôn's security services (AuthenticationService, RBACService, VPDService, OLSService)
-- Forms display data pre-filtered by database security policies
-- Automatic role detection after login
-- DataGrids for patient/record/service lists
-- Read-only medical data (no patient editing of diagnoses)
-- Professional UI with clear status displays
+* Windows Forms (C#) with role-based interfaces
+* Integrate security services (AuthenticationService, RBACService, VPDService, OLSService)
+* Automatic role detection and form redirection after login
+* DataGrids for patient/record/service lists with database-enforced filtering
+* Medical data read-only where appropriate (no patient editing of diagnoses)
+* Dependencies: Task 07-09 (database), Task 05 (security services), Task 06 (business services)
 
-## Dependencies
+## 4. Acceptance Criteria
 
-- **Requires:** Ngọc, Vũ's database + security setup (Fri Feb 21)
-- **Requires:** Phôn's security services (available Fri Feb 21)
-- **Requires:** Phôn's business services for data access
-- **Blocks:** System testing (Week 4)
-
-## Success Criteria
-
-✓ Login authenticates correctly and determines role  
-✓ Each role sees only authorized data  
-✓ VPD filtering works (doctors see only assigned patients)  
-✓ OLS filtering works (notifications by label)  
-✓ Row-level security enforced (patients see own records)  
-✓ Medical data is read-only where appropriate  
-✓ Forms handle all security mechanisms transparently  
-✓ Professional appearance, intuitive workflow
-
-## Critical: LoginForm
-
-Entry point for entire system:
-
-- Username/password input
-- Validate credentials via AuthenticationService
-- Return user role (Coordinator, Doctor, Technician, Patient)
-- Open appropriate role-specific form
-- Handle failed authentications gracefully
-- Close login form after transition
-
-## Security Implementation
-
-All forms leverage Phôn security services:
-
-- AuthenticationService.Login() for credential validation
-- RBACService.CheckPermission() for action authorization
-- VPDService queries return pre-filtered data
-- OLSService filters notifications by user labels
-- No additional filtering needed in forms (database enforces)
-
-## Traceability Matrix
-
-### TC#2: RBAC Configuration (LoginForm)
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 1: Access Control & Interface |
-| **Test Timeline** | End of Week 2 |
-
-**Duyên Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `forms/LoginForm.cs` (redirect to role-specific forms) | Required | Week 3 |
-
-**Pass Criteria:**
-
-- ✓ LoginForm opens correct role-specific form (Coordinator/Doctor/Technician/Patient)
-
----
-
-### TC#3: VPD Implementation (DoctorForm, TechnicianForm)
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 1: Access Control & Interface |
-| **Test Timeline** | End of Week 2 |
-
-**Duyên Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `forms/DoctorForm.cs` — Display only assigned patients (VPD filtered) | Required | Week 3 |
-| `forms/TechnicianForm.cs` — Display only assigned services (VPD filtered) | Required | Week 3 |
-
-**Pass Criteria:**
-
-- ✓ DoctorForm displays only assigned patients in DataGrid (0 excluded patients visible)
-- ✓ TechnicianForm displays only assigned services in DataGrid
-- ✓ VPD filtering transparent to application (no changes to form code needed)
-
----
-
-### TC#4: Technician Access
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 1: Access Control & Interface |
-| **Test Timeline** | End of Week 2-3 |
-
-**Duyên Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `forms/TechnicianForm.cs` — Display assigned services, update results, mark complete | Required | Week 3 |
-
-**Pass Criteria:**
-
-- ✓ TechnicianForm displays technician's assigned services only
-- ✓ TechnicianForm cannot view/edit services assigned to other technicians
-- ✓ TechnicianForm UpdateResults() validates technician has permission
-- ✓ TechnicianForm CompleteService() marks service as complete
-
----
-
-### TC#5: Patient Self-Service Access
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 1: Access Control & Interface |
-| **Test Timeline** | End of Week 3 |
-
-**Duyên Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `forms/LoginForm.cs` — Authenticate patients | Prerequisite | Week 3 |
-| `forms/PatientForm.cs` — Display own records, prescriptions, appointments; edit contact info | Required | Week 3 |
-
-**Pass Criteria:**
-
-- ✓ PatientForm displays authenticated patient's name, ID, contact info
-- ✓ PatientForm displays patient's medical records in read-only DataGrid
-- ✓ PatientForm displays patient's prescriptions in read-only DataGrid
-- ✓ PatientForm displays patient's appointment history
-- ✓ Patient cannot access other patient's records
-- ✓ Contact info edit functionality works (saves to database)
-- ✓ Medical data fields are read-only (cannot be modified)
-
----
-
-### OLS#2: User Label Assignment (NotificationForm)
-
-| Aspect | Details |
-|--------|---------|
-| **Related Requirement** | Req 2: OLS Notification System |
-| **Test Timeline** | End of Week 3 |
-
-**Duyên Deliverables:**
-
-| Deliverable | Status | Completion Date |
-|-------------|--------|-----------------|
-| `forms/NotificationForm.cs` — Display OLS-filtered notifications | Required | Week 3 |
-
-**Pass Criteria:**
-
-- ✓ NotificationForm displays only filtered notifications per user's labels
-- ✓ Notification content shows title, content, and label information
-- ✓ Label-based filtering transparent to application form (database enforced)
-
----
-
-## Related Tasks
-
-- Task 05: Security services (must complete first)
-- Task 06: Business services (provide data queries)
-- Task 07-09: Database setup (enables all security)
-
----
+* [ ] LoginForm authenticates correctly and determines role
+* [ ] Coordinator sees all patients; Doctor sees only assigned; Technician sees only assigned services
+* [ ] VPD filtering transparent (database enforced, no application changes needed)
+* [ ] OLS filtering on notifications by user labels
+* [ ] Row-level security enforced (patients see own records only)
+* [ ] Medical data read-only where required; contact info editable
+* [ ] Professional UI with clear status displays
