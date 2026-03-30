@@ -24,7 +24,7 @@ Implement 5 Windows Forms for Oracle database administration:
 * Integrate with OracleConnectionService, ValidationService, UserService, RoleService, PermissionService, PrivilegeService
 * Form-level input validation with DataGrid sorting/filtering
 * Clear error handling and user feedback with connection status display
-* Dependencies: Task 03 (database schema), Task 02 (services)
+* Dependencies: Task 03 (Oracle catalog queries and admin SQL support), Task 02 (services)
 
 ## 3. Form Specifications
 

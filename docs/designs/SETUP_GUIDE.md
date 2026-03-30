@@ -1,440 +1,231 @@
-# Complete Setup Guide - .NET 10.0 & Oracle 21c XE
+# Setup Guide
 
-## Quick Reference
+This guide is aligned to [Requirements.md](./Requirements.md). It describes how to prepare the Oracle environment and the current repository snapshot for the course project.
 
-| Component | Version | Status |
-|-----------|---------|--------|
-| .NET SDK | 10.0.102 | ? Ready |
-| Oracle Database | Express 21c (21.3.0.0.0) | ? Ready |
-| ODP.NET Package | 23.26.100 | ? Available |
-| Visual Studio | 2022+ | Required |
-| Windows Desktop Runtime | 10.0.2 | ? Installed |
+## Current Repository Snapshot
 
-## Connection Details
+The repository currently contains:
 
-### Oracle 21c XE
-- **Host**: localhost
-- **Port**: 1521
-- **Service Name**: XE
-- **Connection String**: `Data Source=localhost:1521/XE;User Id=username;Password=password;`
-- **SQL*Plus**: `sqlplus username/password@localhost:1521/XE`
+- `docs/designs/Requirements.md` as the authoritative assignment text
+- database scripts under `database/`
+- checked-in source for `subsystem2-medicalDataManagement`
+- task briefs for both subsystems
 
-### .NET 10.0
-- **Target Framework**: net10.0
-- **Package**: Oracle.ManagedDataAccess.Core
-- **Package Version**: 23.26.100
-- **Project Type**: Windows Forms Application
+The Subsystem 1 WinForms client is not currently checked in, so this guide separates:
 
-## Step-by-Step Setup
+- required Oracle/database setup for the full project
+- what can already be built from the current repo snapshot
 
-### 1. Verify Prerequisites
+## Core Assumptions
+
+- Windows 10 or Windows 11
+- Visual Studio 2022 or newer
+- .NET 10 SDK
+- Oracle Database 21c environment
+- SQL*Plus or SQL Developer
+- A `SYSDBA` account for installation
+
+Before starting Requirement 2, verify that the Oracle environment you will use for the final demo supports Oracle Label Security. The project requirement depends on OLS.
+
+## Recommended Oracle Identities
+
+Use distinct identities for installation and runtime:
+
+- `SYS` or another `SYSDBA` account: one-time installation and privileged setup
+- schema owner, for example `HOSPITAL_ADMIN`: owns project tables, policies, and supporting objects
+- runtime admin account: used by Subsystem 1 to perform Oracle administration tasks
+- runtime staff and patient accounts: used by Subsystem 2 so Oracle can enforce RBAC, VPD, and OLS per real user
+
+Do not use a single all-powerful application account as the normal runtime identity for every user.
+
+## Step 1: Verify Prerequisites
 
 ```powershell
-# Check .NET version
 & "C:\Program Files\dotnet\dotnet.exe" --version
-# Should show: 10.0.102
-
-# Check Oracle service
 sc query OracleServiceXE
-# Should show: STATE = RUNNING
-
-# Check Oracle listener
 lsnrctl status
-# Should show: Listening on port 1521
-
-# Check SQL*Plus
 sqlplus -version
-# Should show: SQL*Plus: Release 21.0.0.0.0
 ```
 
-### 2. Create Database User
+Expected outcome:
+
+- `.NET 10.x` is installed
+- Oracle service is running
+- listener is active on port `1521`
+- SQL*Plus is available
+
+## Step 2: Create the Schema Owner
+
+Connect as `SYSDBA` and create a dedicated owner account. Replace the placeholder password.
 
 ```sql
--- Connect as SYSDBA
 sqlplus / as sysdba
 
--- Create project_admin user
-CREATE USER project_admin IDENTIFIED BY YourStrongPassword123!;
+CREATE USER hospital_admin IDENTIFIED BY "<STRONG_PASSWORD>";
 
--- Grant basic privileges
-GRANT CONNECT, RESOURCE TO project_admin;
-GRANT CREATE VIEW, CREATE PROCEDURE, CREATE SEQUENCE TO project_admin;
-GRANT CREATE TRIGGER, CREATE TYPE, CREATE SYNONYM TO project_admin;
-GRANT UNLIMITED TABLESPACE TO project_admin;
+GRANT CONNECT, RESOURCE TO hospital_admin;
+GRANT CREATE VIEW, CREATE PROCEDURE, CREATE SEQUENCE TO hospital_admin;
+GRANT CREATE TRIGGER, CREATE TYPE, CREATE SYNONYM TO hospital_admin;
+GRANT UNLIMITED TABLESPACE TO hospital_admin;
 
--- Grant advanced security privileges
-GRANT CREATE USER, ALTER USER, DROP USER TO project_admin;
-GRANT CREATE ROLE, DROP ANY ROLE, GRANT ANY ROLE TO project_admin;
-GRANT GRANT ANY PRIVILEGE TO project_admin;
-GRANT EXECUTE ON DBMS_RLS TO project_admin;
-GRANT AUDIT SYSTEM TO project_admin;
-GRANT SELECT ON SYS.DBA_AUDIT_TRAIL TO project_admin;
-GRANT SELECT ON SYS.DBA_FGA_AUDIT_TRAIL TO project_admin;
-
--- Verify
-SELECT username, account_status, default_tablespace 
-FROM dba_users 
-WHERE username = 'PROJECT_ADMIN';
-
-EXIT;
+GRANT EXECUTE ON DBMS_RLS TO hospital_admin;
+GRANT AUDIT SYSTEM TO hospital_admin;
+GRANT SELECT_CATALOG_ROLE TO hospital_admin;
 ```
 
-### 3. Test Connection
+If you decide to let the schema owner create helper views over data dictionary information for Subsystem 1, grant only the additional privileges that are truly needed.
+
+## Step 3: Install the Medical Schema
+
+The checked-in scripts under `database/Subsystem2-MedicalDB` are the concrete setup assets currently present in the repo.
+
+Run them in this order:
 
 ```sql
--- Test connection
-sqlplus project_admin/YourStrongPassword123!@localhost:1521/XE
+sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
 
--- Run test query
-SELECT 'Connection successful!' AS status FROM dual;
-
--- Check privileges
-SELECT * FROM session_privs ORDER BY privilege;
-
-EXIT;
+@database/Subsystem2-MedicalDB/schema/01_CreateTables.sql
+@database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
+@database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
 ```
 
-### 4. Create WinForm Projects
+Notes:
 
-#### Subsystem 1 - OracleDBAdmin
+- Keep the required assignment relations intact: `BENHNHAN`, `NHANVIEN`, `HSBA`, `HSBA_DV`, `DONTHUOC`.
+- `THONGBAO` is required for the OLS part.
+- If you add helper columns such as `USERNAME`, document them as schema extensions, not replacements for the required columns.
+
+## Step 4: Configure Security in Oracle
+
+Run the security scripts that exist in the repo:
+
+```sql
+sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
+
+@database/Subsystem2-MedicalDB/security/01_RBAC_Setup.sql
+@database/Subsystem2-MedicalDB/security/02_VPD_Setup.sql
+@database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql
+```
+
+Required interpretation:
+
+- `01_RBAC_Setup.sql` should cover Oracle user creation and role grants for the RBAC cases in the assignment.
+- `02_VPD_Setup.sql` should implement coordinator and doctor policies.
+- `03_OLS_Setup.sql` should implement Requirement 2 on `THONGBAO`.
+
+The current repo does not contain checked-in audit or recovery scripts yet, even though the project still requires them.
+
+## Step 5: Provision Runtime Oracle Accounts
+
+The assignment requires Oracle-managed accounts for staff and patients.
+
+Recommended pattern:
+
+1. Add `USERNAME` to `NHANVIEN` and `BENHNHAN`, or create an equivalent supported mapping strategy.
+2. Create Oracle users for:
+   - coordinators
+   - doctors
+   - technicians
+   - test patients
+3. Grant Oracle roles according to the assignment.
+4. For policy logic, resolve the active row via `SYS_CONTEXT('USERENV', 'SESSION_USER')`.
+
+Do not create a custom account-management table for this purpose.
+
+## Step 6: Build the Checked-In Application
+
+Only Subsystem 2 source is currently checked in.
 
 ```powershell
-# Navigate to project directory
-cd subsystem1-oracleDBAdmin
-mkdir source
-cd source
+cd subsystem2-medicalDataManagement\source
+& "C:\Program Files\dotnet\dotnet.exe" restore
+& "C:\Program Files\dotnet\dotnet.exe" build MedicalDataSystem.csproj
+```
 
-# Create WinForm project for .NET 10.0
-& "C:\Program Files\dotnet\dotnet.exe" new winforms -n OracleDBAdmin -f net10.0
+If you later add the Subsystem 1 client to the repo, document its build path separately instead of assuming it already exists.
 
-# Navigate to project
-cd OracleDBAdmin
+## Step 7: Configure Application Secrets
 
-# Add Oracle package
-& "C:\Program Files\dotnet\dotnet.exe" add package Oracle.ManagedDataAccess.Core
+Use secrets or a local non-committed configuration file. Avoid hardcoded credentials.
 
-# Add configuration package
-& "C:\Program Files\dotnet\dotnet.exe" add package Microsoft.Extensions.Configuration
-& "C:\Program Files\dotnet\dotnet.exe" add package Microsoft.Extensions.Configuration.UserSecrets
-
-# Verify packages
-& "C:\Program Files\dotnet\dotnet.exe" list package
-
-# Initialize user secrets
+```powershell
 & "C:\Program Files\dotnet\dotnet.exe" user-secrets init
-
-# Set connection credentials
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:UserId" "project_admin"
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:Password" "YourStrongPassword123!"
 & "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:DataSource" "localhost:1521/XE"
-
-# Build project
-& "C:\Program Files\dotnet\dotnet.exe" build
+& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:UserId" "<RUNTIME_USER>"
+& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:Password" "<RUNTIME_PASSWORD>"
 ```
 
-#### Subsystem 2 - MedicalDataSystem
+For security testing, connect as the actual Oracle end user whose privileges you want to verify, not always as the schema owner.
 
-```powershell
-# Navigate to project directory
-cd subsystem2-medicalDataManagement
-mkdir source
-cd source
+## Suggested Validation Checklist
 
-# Create WinForm project for .NET 10.0
-& "C:\Program Files\dotnet\dotnet.exe" new winforms -n MedicalDataSystem -f net10.0
+### Schema Validation
 
-# Navigate to project
-cd MedicalDataSystem
-
-# Add Oracle package
-& "C:\Program Files\dotnet\dotnet.exe" add package Oracle.ManagedDataAccess.Core
-
-# Add configuration packages
-& "C:\Program Files\dotnet\dotnet.exe" add package Microsoft.Extensions.Configuration
-& "C:\Program Files\dotnet\dotnet.exe" add package Microsoft.Extensions.Configuration.UserSecrets
-
-# Initialize user secrets
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets init
-
-# Set connection credentials
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:UserId" "project_admin"
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:Password" "YourStrongPassword123!"
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "OracleDbConnection:DataSource" "localhost:1521/XE"
-
-# Build project
-& "C:\Program Files\dotnet\dotnet.exe" build
+```sql
+SELECT table_name
+FROM user_tables
+WHERE table_name IN ('BENHNHAN', 'NHANVIEN', 'HSBA', 'HSBA_DV', 'DONTHUOC', 'THONGBAO');
 ```
 
-### 5. Test Oracle Connection in C#
+### Role and User Validation
 
-Create a test file `TestConnection.cs`:
-
-```csharp
-using Oracle.ManagedDataAccess.Client;
-using Microsoft.Extensions.Configuration;
-
-class TestConnection
-{
-    static void Main()
-    {
-        try
-        {
-            // Load configuration from user secrets
-            var config = new ConfigurationBuilder()
-                .AddUserSecrets<TestConnection>()
-                .Build();
-
-            string userId = config["OracleDbConnection:UserId"];
-            string password = config["OracleDbConnection:Password"];
-            string dataSource = config["OracleDbConnection:DataSource"];
-
-            string connectionString = $"Data Source={dataSource};User Id={userId};Password={password};";
-
-            using (var connection = new OracleConnection(connectionString))
-            {
-                connection.Open();
-                Console.WriteLine("? Successfully connected to Oracle 21c XE!");
-                Console.WriteLine($"Oracle Version: {connection.ServerVersion}");
-                Console.WriteLine($"Database: {connection.Database}");
-                
-                // Test query
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT 'Hello from Oracle!' AS message FROM dual";
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            Console.WriteLine($"Test Query: {reader.GetString(0)}");
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"? Connection failed: {ex.Message}");
-            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-        }
-    }
-}
+```sql
+SELECT username FROM dba_users;
+SELECT role FROM dba_roles;
 ```
 
-Run the test:
-```powershell
-& "C:\Program Files\dotnet\dotnet.exe" run
+### VPD Validation
+
+```sql
+SELECT object_owner, object_name, policy_name
+FROM dba_policies
+WHERE object_owner = 'HOSPITAL_ADMIN';
 ```
 
-## Configuration Templates
+### Audit Validation
 
-### appsettings.json (Committed)
+Use the audit views appropriate to the auditing mode you configure later in Requirement 3, for example:
 
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning"
-    }
-  },
-  "OracleDbConnection": {
-    "DataSource": "localhost:1521/XE"
-  }
-}
-```
-
-### appsettings.local.json (NOT Committed - Add to .gitignore)
-
-```json
-{
-  "OracleDbConnection": {
-    "UserId": "project_admin",
-    "Password": "YourStrongPassword123!",
-    "DataSource": "localhost:1521/XE"
-  }
-}
-```
-
-### .gitignore Entry
-
-```
-# Sensitive configuration files
-appsettings.local.json
-appsettings.*.local.json
-**/appsettings.local.json
-**/appsettings.*.local.json
-```
-
-## Common Commands
-
-### Oracle Service Management
-
-```powershell
-# Check service status
-sc query OracleServiceXE
-
-# Start service
-net start OracleServiceXE
-
-# Stop service
-net stop OracleServiceXE
-
-# Restart service
-net stop OracleServiceXE && net start OracleServiceXE
-```
-
-### Oracle Listener Management
-
-```powershell
-# Check listener status
-lsnrctl status
-
-# Start listener
-lsnrctl start
-
-# Stop listener
-lsnrctl stop
-
-# Reload listener
-lsnrctl reload
-```
-
-### .NET Commands
-
-```powershell
-# Check .NET version
-& "C:\Program Files\dotnet\dotnet.exe" --version
-
-# List installed SDKs
-& "C:\Program Files\dotnet\dotnet.exe" --list-sdks
-
-# List installed runtimes
-& "C:\Program Files\dotnet\dotnet.exe" --list-runtimes
-
-# Create new WinForm project
-& "C:\Program Files\dotnet\dotnet.exe" new winforms -n ProjectName -f net10.0
-
-# Add NuGet package
-& "C:\Program Files\dotnet\dotnet.exe" add package PackageName
-
-# List packages
-& "C:\Program Files\dotnet\dotnet.exe" list package
-
-# Build project
-& "C:\Program Files\dotnet\dotnet.exe" build
-
-# Run project
-& "C:\Program Files\dotnet\dotnet.exe" run
-
-# Clean build artifacts
-& "C:\Program Files\dotnet\dotnet.exe" clean
-```
-
-### User Secrets Management
-
-```powershell
-# Initialize user secrets
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets init
-
-# Set a secret
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets set "Key" "Value"
-
-# List all secrets
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets list
-
-# Remove a secret
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets remove "Key"
-
-# Clear all secrets
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets clear
-```
+- `DBA_AUDIT_TRAIL`
+- `DBA_FGA_AUDIT_TRAIL`
+- `UNIFIED_AUDIT_TRAIL`
 
 ## Troubleshooting
 
-### Oracle Connection Issues
+### `ORA-12154`
 
-**Problem**: ORA-12154: TNS:could not resolve the connect identifier
-```powershell
-# Solution: Use direct connection string
+Use a full connect descriptor such as:
+
+```text
 Data Source=localhost:1521/XE
-# Instead of: Data Source=XE
 ```
 
-**Problem**: ORA-01017: invalid username/password
-```powershell
-# Solution: Verify credentials
-sqlplus project_admin/password@localhost:1521/XE
+### `ORA-01017`
+
+Verify the exact Oracle account and password:
+
+```sql
+sqlplus some_user/some_password@localhost:1521/XE
 ```
 
-**Problem**: ORA-12541: TNS:no listener
+### `ORA-12541`
+
+Start the listener:
+
 ```powershell
-# Solution: Start the listener
 lsnrctl start
 ```
 
-**Problem**: Service not running
-```powershell
-# Solution: Start Oracle service
-net start OracleServiceXE
-```
+### Missing OLS Features
 
-### .NET Issues
+If the Oracle environment used on your machine does not expose OLS features needed for Requirement 2, do not hide that fact in the docs. Document the limitation and move the OLS demo to a compatible Oracle environment for the final evaluation.
 
-**Problem**: 'dotnet' is not recognized
-```powershell
-# Solution: Use full path or add to PATH
-& "C:\Program Files\dotnet\dotnet.exe" --version
+## What Is Still Missing in the Repo
 
-# Or add to PATH permanently
-$env:Path += ";C:\Program Files\dotnet"
-```
+The following items are still required by the assignment but are not fully checked in as finished assets in the current snapshot:
 
-**Problem**: Package restore failed
-```powershell
-# Solution: Clear NuGet cache and restore
-& "C:\Program Files\dotnet\dotnet.exe" nuget locals all --clear
-& "C:\Program Files\dotnet\dotnet.exe" restore
-```
+- Subsystem 1 WinForms client source
+- audit scripts for Requirement 3
+- backup and recovery scripts for Requirement 4
 
-### Connection String Issues
-
-**Problem**: Cannot read user secrets
-```powershell
-# Solution: Initialize user secrets first
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets init
-& "C:\Program Files\dotnet\dotnet.exe" user-secrets list
-```
-
-**Problem**: Connection string format error
-```csharp
-// ? Correct format for Oracle 21c XE
-"Data Source=localhost:1521/XE;User Id=project_admin;Password=password;"
-
-// ? Wrong formats
-"Data Source=XE;..." // Missing host and port
-"Data Source=orcl;..." // Wrong service name
-```
-
-## Next Steps
-
-1. ? Prerequisites verified
-2. ? Database user created
-3. ? Connection tested
-4. ?? Create database tables (Schema scripts)
-5. ?? Configure security (RBAC, VPD, OLS)
-6. ?? Setup audit mechanisms
-7. ?? Build WinForm applications
-8. ?? Test all features
-
-## Resources
-
-- [.NET 10.0 Documentation](https://learn.microsoft.com/en-us/dotnet/)
-- [Oracle 21c XE Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/21/)
-- [ODP.NET Core Documentation](https://www.oracle.com/database/technologies/appdev/dotnet/odp.html)
-- [Visual Studio 2022 Download](https://visualstudio.microsoft.com/vs/)
-
----
-
-**Last Updated**: February 2026  
-**Project**: CSC12001 - Data Security in Information Systems  
-**Institution**: University of Science - Faculty of Information Technology
+That is a project-status fact, not a requirements change.

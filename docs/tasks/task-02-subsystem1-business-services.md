@@ -23,7 +23,7 @@ Implement 6 foundational services for database user/role/permission management:
 
 * Use Oracle.ManagedDataAccess.Core; parameterized queries to prevent SQL injection
 * Exception handling, configuration-based connection strings, no hardcoded credentials
-* Dependencies: Task 03 (admin database schema), Task 01 (UI forms consume these)
+* Dependencies: Task 03 (Oracle catalog queries and admin SQL support), Task 01 (UI forms consume these)
 * Models required: User.cs, Role.cs, Permission.cs, OracleObject.cs
 
 ## 3. Method Specifications

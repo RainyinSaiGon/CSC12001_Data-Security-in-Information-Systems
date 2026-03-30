@@ -1,80 +1,85 @@
-# Task 08: Subsystem 2 Database Security Setup (RBAC, VPD, OLS)
+# Task 08: Subsystem 2 Database Security Setup
 
-**Assigned to:** Ngọc, Vũ (Part B)
-**Duration:** 10 hours
-**Priority:** Critical
-**Timeline:** Feb 17 - Feb 21, 2026
+**Assigned to:** Ngoc, Vu  
+**Priority:** Critical  
 
----
+## Objective
 
-## 1. Objective
+Configure Oracle security for the medical module exactly as required by the assignment:
 
-Configure the Oracle Database security layer for the Medical Data Management System (Subsystem 2) in adherence to the project specifications. This task involves establishing authentication, Role-Based Access Control (RBAC), Virtual Private Database (VPD) policies, and Oracle Label Security (OLS) to enforce data privacy and hierarchical access rules.
+- RBAC for technician and patient cases
+- VPD for coordinator and doctor cases
+- OLS for `THONGBAO`
 
-## 2. Scope of Work
+## Requirement Mapping
 
-### 2.1. User Account Provisioning (TC#1)
+### TC#1: Oracle Account Provisioning
 
-* **Strategy:** Create Oracle Database accounts corresponding to all records in the `NHANVIEN` and `BENHNHAN` tables.
+- Create Oracle accounts for staff and the patient sample set used for testing.
+- Link each Oracle account to exactly one row in `NHANVIEN` or `BENHNHAN`.
+- Do not create a custom account-management table.
+- Recommended extension: `USERNAME` columns plus a helper view for lookup.
 
-* **Linking Mechanism:** Map Oracle accounts directly to data rows using the `USERNAME` column, strictly avoiding the creation of external user management tables.
+### RBAC Cases
 
-* **Scale:**
-  * **Staff:** Provision 170 accounts (20 Coordinators, 100 Doctors, 50 Technicians)
-  * **Patients:** Implement a deferred creation strategy for ~100,000 patient accounts to optimize resource usage
+Use Oracle roles and grants for the cases explicitly assigned to RBAC:
 
-### 2.2. Role-Based Access Control (RBAC) Implementation
+#### Technician
 
-* **Technician Role (TC#4):**
-  * **Target Users:** 50 Staff members (Position: "Kỹ thuật viên")
-  * **Permissions:** Grant `UPDATE` privileges solely on the `KETQUA` column of the `HSBA_DV` table
-  * **Access Control:** Restrict visibility to assigned services only (`HSBA_DV` rows where `MAKTV` matches the user)
-  * **Mechanism:** Implement via RBAC as specified in Requirement 1, Question 2
+- view only assigned `HSBA_DV` rows
+- update only `KETQUA`
+- audit updates to `KETQUA`
 
-* **Patient Role (TC#5):**
-  * **Target Users:** ~100,000 Users (Position: "Bệnh nhân")
-  * **Permissions:** Grant view access to own records in `BENHNHAN`
-  * **Update Restrictions:** Allow updates only to contact fields (`SONHA`, `TENDUONG`, `QUANHUYEN`, `TINHTP`). Strictly deny updates to identity fields (`MABN`, `TENBN`, `NGAYSINH`, `CCCD`)
-  * **Mechanism:** Implement via RBAC as specified in Requirement 1, Question 2
+#### Patient
 
-### 2.3. Virtual Private Database (VPD) Implementation
+- view only own information
+- update only allowed personal fields
+- must not update protected identity fields
 
-* **Coordinator Role (TC#2):**
-  * **Target Users:** 20 Staff members (Position: "Điều phối viên")
-  * **Permissions:** Full access to view, add, and edit `BENHNHAN` records. Authorized to create `HSBA` and assign Doctors (`MABS`) or Technicians (`MAKTV`)
-  * **Mechanism:** Implement via VPD as specified in Requirement 1, Question 3
+### VPD Cases
 
-* **Doctor Role (TC#3):**
-  * **Target Users:** 100 Staff members (Position: "Bác sĩ/Y sĩ")
-  * **Policy Logic:** Enforce row-level security to ensure doctors only view `HSBA` records where they are the assigned physician (`MABS`)
-  * **Extended Permissions:**
-    * View patient list associated with treated HSBAs
-    * Update medical history fields (`TIENSUBENH`, `TIENSUBENHGD`, `DIUNGTHUOC`) for treated patients
-    * Add/Delete diagnostic services in `HSBA_DV`
-    * Manage prescriptions in `DONTHUOC`
-    * Update `CHANDOAN`, `DIEUTRI`, `KETLUAN` (Audit required)
+Use VPD for the cases explicitly assigned to VPD:
 
-### 2.4. Oracle Label Security (OLS) Setup (Requirement 2)
+#### Coordinator
 
-* **Target Object:** `THONGBAO` table (Fields: `NOIDUNG`, `NGAYGIO`, `DIADIEM`)
+- view, add, and edit `BENHNHAN`
+- create `HSBA`
+- assign `MABS`
+- coordinate `MAKTV`
 
-* **Security Model:** Implement a 3-component label hierarchy:
-  1. **Levels (Rank):** Ban Giám đốc (Director) > Lãnh đạo khoa (Head) > Nhân viên (Staff)
-  2. **Compartments (Department):** Tim mạch, Tiêu hóa, Thần kinh
-  3. **Groups (Location):** Hồ Chí Minh, Hải Phòng, Hà Nội
+#### Doctor
 
-* **Label Policy:** Ensure data visibility strictly follows the label dominance rules (e.g., a "Cardiology Staff" in "HCM" cannot view notifications designated for "Directors" or "Neurology" departments)
+- view only `HSBA` rows where that doctor is responsible
+- add and delete `HSBA_DV` rows for treated cases
+- update `CHANDOAN`, `DIEUTRI`, `KETLUAN`
+- view related patients
+- update `TIENSUBENH`, `TIENSUBENHGD`, `DIUNGTHUOC`
+- add, delete, and update `DONTHUOC`
 
-## 3. Deliverables & Execution Order
+### OLS Case
 
+Configure `THONGBAO` with three components:
 
-1. **`01_RBAC_Setup.sql`** — Script to provision Oracle users linked to `NHANVIEN`/`BENHNHAN` and create Roles and Grants for Technicians and Patients
-2. **`02_VPD_Setup.sql`** — Script to apply VPD policies for Coordinators and Doctors
-3. **`03_OLS_Setup.sql`** — Script to configure OLS policies, levels, and labels for the `THONGBAO` table
+- levels: `Ban giam doc > Lanh dao khoa > Nhan vien`
+- compartments: `Tim mach`, `Than kinh`, `Tieu hoa`
+- groups: `Ho Chi Minh`, `Hai Phong`, `Ha Noi`
 
-## 4. Acceptance Criteria
+The setup must support all example users `u1` to `u8` and all example messages `t1` to `t7`.
 
-* [ ] **User Linkage:** All 170 staff users and sample patient users can authenticate; `SYS_CONTEXT` correctly identifies their `MANV`/`MABN`
-* [ ] **RBAC Verification:** Technicians cannot delete from `HSBA_DV`; Patients cannot modify their Date of Birth or Name
-* [ ] **VPD Verification:** Doctors querying `HSBA` see *only* their assigned patients; Coordinators maintain oversight access
-* [ ] **OLS Verification:** A user with the label `Tim mạch:Hồ Chí Minh:Nhân viên` cannot view notifications labeled for `Ban Giám đốc` or `Khoa thần kinh`
+## Current Checked-In Script Names
+
+The repository currently contains:
+
+- `database/Subsystem2-MedicalDB/security/01_RBAC_Setup.sql`
+- `database/Subsystem2-MedicalDB/security/02_VPD_Setup.sql`
+- `database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql`
+
+Keep those scripts aligned with the requirement mapping above.
+
+## Acceptance Criteria
+
+- Oracle accounts are mapped to rows without a custom account table.
+- Technician and patient cases are implemented through Oracle-role-based design.
+- Coordinator and doctor cases are implemented through VPD.
+- `THONGBAO` is protected with a three-component OLS model.
+- The design remains traceable to Requirement 1 and Requirement 2 without using the older separate-admin-database idea.

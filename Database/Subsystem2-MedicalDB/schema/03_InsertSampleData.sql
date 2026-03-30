@@ -82,7 +82,10 @@ DECLARE
     v_tenduong NVARCHAR2(50);
     v_quanhuyen NVARCHAR2(30);
     v_cccd_bn CHAR(12); -- Biến lưu CCCD bệnh nhân
+    
+    v_skipped NUMBER := 0; 
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('>>> BẮT ĐẦU TẠO BỆNH NHÂN...');
     FOR i IN 1..100000 LOOP
         IF DBMS_RANDOM.VALUE > 0.5 THEN 
             v_phai := N'Nữ';
@@ -100,12 +103,24 @@ BEGIN
         -- Kết quả: 000000000001...
         v_cccd_bn := LPAD(i, 12, '0');
 
-        INSERT INTO BENHNHAN (TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN, TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME)
-        VALUES (v_hoten, v_phai, ADD_MONTHS(SYSDATE, -1 * TRUNC(DBMS_RANDOM.VALUE(18*12, 90*12))), v_cccd_bn, v_sonha, v_tenduong, v_quanhuyen, N'TP. Hồ Chí Minh', N'Không', N'Không', N'Không', 'BN' || LPAD(i, 9, '0'));
+        BEGIN
+            INSERT INTO BENHNHAN (TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN, TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME)
+            VALUES (v_hoten, v_phai, ADD_MONTHS(SYSDATE, -1 * TRUNC(DBMS_RANDOM.VALUE(18*12, 90*12))), v_cccd_bn, v_sonha, v_tenduong, v_quanhuyen, N'TP. Hồ Chí Minh', N'Không', N'Không', N'Không', 'BN' || LPAD(i, 9, '0'));
+        EXCEPTION
+            WHEN DUP_VAL_ON_INDEX THEN
+                v_skipped := v_skipped + 1;
+                -- Optionally: DBMS_OUTPUT.PUT_LINE('Skipped duplicate for i=' || i || ' (CCCD=' || v_cccd_bn || ')');
+            WHEN OTHERS THEN
+                RAISE; -- Re-raise other errors
+        END;
 
-        IF MOD(i, 2000) = 0 THEN COMMIT; END IF;
+        IF MOD(i, 2000) = 0 THEN 
+            COMMIT; 
+            --DBMS_OUTPUT.PUT_LINE('Committed batch at i=' || i || ' (Skipped so far: ' || v_skipped || ')');
+        END IF;
     END LOOP;
     COMMIT;
+    DBMS_OUTPUT.PUT_LINE('=== HOÀN TẤT TẠO BỆNH NHÂN');
 END;
 /
 -- =====

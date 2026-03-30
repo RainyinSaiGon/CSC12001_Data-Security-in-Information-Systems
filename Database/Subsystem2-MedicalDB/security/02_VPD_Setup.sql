@@ -18,7 +18,17 @@ BEGIN
     IF v_user NOT LIKE 'NV%' THEN RETURN '1=1'; END IF;
 
     -- Extract Employee ID from Username (e.g., 'NV001' -> 1)
-    v_manv := TO_NUMBER(REGEXP_SUBSTR(v_user, '\d+'));
+    BEGIN
+        v_manv := TO_NUMBER(REGEXP_SUBSTR(v_user, '\d+'));
+    EXCEPTION WHEN INVALID_NUMBER THEN
+        -- If conversion fails, deny access
+        RETURN '1=0';
+    END;
+
+    -- Validate Employee ID is in reasonable range (security: ensure v_manv is valid)
+    IF v_manv IS NULL OR v_manv < 1 OR v_manv > 999999 THEN
+        RETURN '1=0'; -- Deny access if invalid
+    END IF;
 
     -- Get Role
     BEGIN
@@ -30,7 +40,8 @@ BEGIN
     IF v_role = N'Điều phối viên' THEN
         RETURN '1=1'; -- Coordinator sees all
     ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        RETURN 'MABS = ' || v_manv; -- Doctor sees only assigned records
+        -- Use TO_CHAR for explicit type conversion and security (prevents SQL injection)
+        RETURN 'MABS = ' || TO_CHAR(v_manv); -- Doctor sees only assigned records
     ELSE
         RETURN '1=1'; -- Default for others
     END IF;
@@ -50,7 +61,17 @@ CREATE OR REPLACE FUNCTION VPD_BENHNHAN_FUNCTION(
 BEGIN
     IF v_user NOT LIKE 'NV%' THEN RETURN '1=1'; END IF;
 
-    v_manv := TO_NUMBER(REGEXP_SUBSTR(v_user, '\d+'));
+    BEGIN
+        v_manv := TO_NUMBER(REGEXP_SUBSTR(v_user, '\d+'));
+    EXCEPTION WHEN INVALID_NUMBER THEN
+        -- If conversion fails, deny access
+        RETURN '1=0';
+    END;
+
+    -- Validate Employee ID is in reasonable range (security: ensure v_manv is valid)
+    IF v_manv IS NULL OR v_manv < 1 OR v_manv > 999999 THEN
+        RETURN '1=0'; -- Deny access if invalid
+    END IF;
 
     BEGIN
         SELECT VAITRO INTO v_role FROM NHANVIEN WHERE MANV = v_manv;
@@ -62,7 +83,8 @@ BEGIN
         RETURN '1=1'; -- Coordinator sees all
     ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
         -- Doctor sees only patients they have treated in HSBA
-        RETURN 'MABN IN (SELECT DISTINCT MABN FROM HSBA WHERE MABS = ' || v_manv || ')';
+        -- Use TO_CHAR for explicit type conversion and security (prevents SQL injection)
+        RETURN 'MABN IN (SELECT DISTINCT MABN FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
     ELSE
         RETURN '1=1';
     END IF;

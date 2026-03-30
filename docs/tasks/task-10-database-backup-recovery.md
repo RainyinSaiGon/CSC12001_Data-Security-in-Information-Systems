@@ -1,75 +1,44 @@
-# Task 10: Subsystem 2 Database Backup & Recovery
+# Task 10: Database Backup and Recovery
 
-**Assigned to:** Ngọc, Vũ (Part C)
-**Duration:** 8 hours
-**Priority:** Medium-High
-**Timeline:** Feb 28 - Mar 7, 2026
+**Assigned to:** Ngoc, Vu  
+**Priority:** High  
 
----
+## Objective
 
-## 1. Objective
+Implement Requirement 4 using Oracle-native backup and recovery methods. No UI is required.
 
-Design, implement, and validate a comprehensive backup and recovery strategy for the Medical Data Management System. Ensure data durability for 100,000+ patient records using Oracle RMAN, Flashback, and audit trail integration.
+## Required Scope
 
-## 2. Scope of Work
+1. Research Oracle backup and recovery methods
+2. Implement manual backup
+3. Implement automatic backup
+4. Recover from a problem using information obtained from the audit logs in Requirement 3
+5. Evaluate advantages and disadvantages of the methods tested
+6. Write a short conclusion
 
-### 2.1. Methodology Research & Strategy (Requirement 4.1, 4.2)
+## Recommended Oracle Methods to Compare
 
-* **Research:** Analyze pros/cons/use-cases for four Oracle backup methods:
-  * RMAN (Recovery Manager) — Primary strategy
-  * Hot Backup — Online backup while DB is active
-  * Cold Backup — Offline backup
-  * Data Pump — Logical backup for specific tables
+- RMAN full backup
+- RMAN incremental backup
+- Data Pump export/import
+- Flashback features where available
 
-* **Configuration:** Enable ARCHIVELOG mode for point-in-time recovery
+## Output Expectations
 
-### 2.2. Automated Backup Implementation
+Place finished recovery assets in `database/Subsystem2-MedicalDB/recovery/`.
 
-* **Tooling:** Configure Oracle RMAN with 30-day retention policy
-* **Scheduling:** Implement DBMS_SCHEDULER jobs:
-  * **Daily:** Incremental backups (23:00)
-  * **Weekly:** Full database backups (Sunday 00:00)
-  * **Maintenance:** Automatic obsolete archive log deletion
+Suggested contents:
 
-### 2.3. Incident Recovery Scenarios (Requirement 4.3)
+- backup strategy notes
+- manual backup commands
+- automatic backup scheduling scripts
+- recovery walkthrough scripts
+- comparison summary
 
-Execute and validate recovery procedures using Audit Logs (Task 09) to identify failure timestamps:
+## Acceptance Criteria
 
-* **Scenario A (Data Corruption):** Recover erroneous HSBA row update (Method: Flashback Table)
-* **Scenario B (Data Loss):** Recover deleted HSBA_DV record (Method: Point-in-Time Recovery)
-* **Scenario C (Disaster Recovery):** Restore entire database after failure (Method: RMAN Full Restore)
-* **Scenario D (Table Restoration):** Restore single table from backup (Method: RMAN/Data Pump)
-
-## 3. Deliverables & Execution Order
-
-### `01_Backup_Strategy.sql`
-
-* SQL commands to enable ARCHIVELOG
-* RMAN configuration scripts (retention policy, channels, optimization)
-* Comparison documentation of 4 backup methods
-
-### `02_AutomaticBackup.sql`
-
-* PL/SQL scripts creating DBMS_SCHEDULER jobs for daily/weekly backups
-* Archive log deletion policy configuration
-* Queries to monitor backup status in V$RMAN_BACKUP_JOB_DETAILS
-
-### `03_RecoveryScenarios.sql`
-
-* Executable scripts demonstrating:
-  * FLASHBACK TABLE operations
-  * RMAN RESTORE DATABASE commands
-  * Audit log timestamp integration with recovery
-
-## 4. Acceptance Criteria
-
-* [ ] **Automation:** Daily and weekly backup jobs scheduled and visible
-* [ ] **Retention:** RMAN confirms 30-day recovery window
-* [ ] **Data Integrity:** Post-recovery row counts match baseline:
-  * BENHNHAN: ~100,000
-  * NHANVIEN: 170
-  * HSBA: ~140,000+
-  * DONTHUOC: ~280,000+
-* [ ] **Precision Recovery:** Successfully recovered specific row using audit log timestamp
-* [ ] **Performance:** Full recovery completed within RTO < 2 hours
-
+- At least one manual backup flow is demonstrated.
+- At least one automatic backup flow is demonstrated.
+- A recovery scenario is tied to an incident time visible in the audit logs.
+- The documentation clearly states the tradeoffs of each tested method.
+- The deliverables remain traceable to Requirement 4.

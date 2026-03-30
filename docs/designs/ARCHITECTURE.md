@@ -1,564 +1,315 @@
 # Architecture & Design
 
-Complete system architecture and technical design documentation for the Data Security in Information Systems project.
+This document follows [Requirements.md](./Requirements.md) as the source of truth. If any other note, README, or task brief conflicts with the assignment text, `Requirements.md` wins.
 
-## System Overview Diagram
+## Design Principles
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                     Medical Hospital System                          │
-│                    (Data Security Project)                           │
-└──────────────────────────────────────────────────────────────────────┘
-                              │
-           ┌──────────────────┼───────────────────┐
-           │                  │                   │
-    ┌──────▼────────┐  ┌──────▼─────────┐  ┌─────▼──────────────────┐
-    │ Subsystem 1   │  │ Subsystem 2    │  │  Oracle 21c XE         │
-    │ DB Admin      │  │ Medical System │  │  Separate Databases    │
-    │ WinForm       │  │ WinForm        │  │  + Security Features   │
-    └──────┬────────┘  └──────┬─────────┘  └─────┬──────────────────┘
-           │                  │                   │
-       .NET 10        .NET 10                 RBAC,VPD
-       ODP.NET        ODP.NET                 OLS,Audit
-           │                  │                   │
-    ┌──────▼────────┐  ┌──────▼─────────┐       │
-    │  Admin DB     │  │  Medical DB    │ ◄─────┘
-    │               │  │                │
-    │ Users/Roles   │  │ Patients       │
-    │ Permissions   │  │ Staff          │
-    │ Audit Logs    │  │ Medical Rec.   │
-    │ (Independent) │  │ Prescriptions  │
-    └───────────────┘  └────────────────┘
-```
+- The project is one application with two functional modules, not two unrelated systems.
+- Oracle accounts, roles, and privileges are managed by Oracle itself.
+- Subsystem 1 must not introduce custom tables that replace Oracle user or role management.
+- Security controls must be enforced in the database first, with the WinForms UI acting as an operator interface.
+- Any schema extension is allowed only when it supports the assignment without changing the required meaning of the original relations.
 
-## Database Separation
+## System Overview
 
-**Key Change:** Subsystem 1 and Subsystem 2 use **separate Oracle databases** for clear architectural separation:
-
-1. **Subsystem 1 Admin Database:** Stores administrative metadata (users, roles, permissions, admin audit logs)
-2. **Subsystem 2 Medical Database:** Stores patient and medical data (with RBAC, VPD, OLS, data audit)
-
-## Architecture Layers
-
-### 1. Presentation Layer (UI Forms)
-
-**Subsystem 1 - Oracle DB Admin:**
-```
-MainForm (Navigation Hub)
-├── UserManagementForm
-├── RoleManagementForm
-├── PermissionForm
-└── PrivilegeViewerForm
+```text
+CSC12001 Application
+|
++-- Module 1: Oracle DB Administration
+|   +-- Create, alter, drop users and roles
+|   +-- Grant and revoke system, role, object, and column privileges
+|   +-- Inspect effective privileges
+|
++-- Module 2: Medical Data Management
+|   +-- Coordinator workflow
+|   +-- Doctor workflow
+|   +-- Technician workflow
+|   +-- Patient self-service workflow
+|   +-- Notification viewer for OLS
+|
++-- Oracle Database
+    +-- Oracle users and roles
+    +-- BENHNHAN
+    +-- NHANVIEN
+    +-- HSBA
+    +-- HSBA_DV
+    +-- DONTHUOC
+    +-- THONGBAO
+    +-- RBAC, VPD, OLS, Audit, Backup/Recovery
 ```
 
-**Subsystem 2 - Medical System:**
-```
-LoginForm (Authentication)
-├── CoordinatorForm (Patient Management)
-├── DoctorForm (Clinical Records)
-├── TechnicianForm (Service Management)
-├── PatientForm (Self-Service Portal)
-└── NotificationForm (OLS Label-based)
-```
+## Module Boundaries
 
-### 2. Business Logic Layer (Services)
+### Module 1: Oracle DB Administration
 
-**Subsystem 1 Services:**
-- `OracleConnectionService`: Database connection pooling
-- `UserService`: User CRUD operations
-- `RoleService`: Role management
-- `PermissionService`: Permission grant/revoke
-- `PrivilegeService`: Privilege querying
-- `ValidationService`: Input validation
+The first module is an administration UI for real Oracle security objects. It should work with Oracle data dictionary views and Oracle DDL, for example:
 
-**Subsystem 2 Services:**
-- `AuthenticationService`: User login & role determination
-- `OracleConnectionService`: Connection management
-- `RBACService`: Role-based access control
-- `VPDService`: Virtual private database filtering
-- `OLSService`: Oracle label security management
-- `PatientService`: Patient operations
-- `DoctorService`: Doctor operations
-- `CoordinatorService`: Coordinator operations
-- `TechnicianService`: Technician operations
-- `AuditService`: Audit logging
-- `ValidationService`: Input validation
+- `DBA_USERS`, `ALL_USERS`
+- `DBA_ROLES`
+- `DBA_SYS_PRIVS`
+- `DBA_TAB_PRIVS`
+- `DBA_COL_PRIVS`
+- `ROLE_ROLE_PRIVS`
+- `DBA_OBJECTS`
+- `DBA_PROCEDURES`
+- `DBA_TAB_COLUMNS`
 
-### 3. Data Access Layer (Models)
+Required capabilities from the assignment:
 
-**Subsystem 1 Models:**
-- `User`: Database user representation
-- `Role`: Database role representation
-- `Permission`: Permission with grant options
-- `OracleObject`: Database object metadata
+1. Create, edit, and drop users or roles.
+2. List users and roles in Oracle.
+3. Grant privileges to users and roles, including role-to-user assignment.
+4. Support `WITH GRANT OPTION` where applicable.
+5. Support object privilege management on tables, views, stored procedures, and functions.
+6. Support column-level `SELECT` and `UPDATE`.
+7. Revoke privileges from users or roles.
+8. Display privileges already granted on database objects.
 
-**Subsystem 2 Models:**
-- `Patient`: BENHNHAN table mapping
-- `Staff`: NHANVIEN table mapping
-- `MedicalRecord`: HSBA table mapping
-- `DiagnosticService`: HSBA_DV table mapping
-- `Prescription`: DONTHUOC table mapping
-- `Notification`: THONGBAO table mapping
+Important constraint:
 
-### 4. Database Layer (Oracle 21c XE)
+- Do not model Oracle accounts in custom tables such as `ADMIN_USERS` or `ADMIN_ROLES`. Those ideas were part of an older draft and are not valid for this project.
 
-**Two separate Oracle 21c XE databases with independent schemas:**
+### Module 2: Medical Data Management
 
-#### Database 1: Subsystem 1 Admin Database
-- **Connection:** `localhost:1521/XE` (Admin DB credentials)
-- **Purpose:** Administrative metadata and operations
-- **Tables:** ADMIN_USERS, ADMIN_ROLES, ADMIN_PERMISSIONS, ADMIN_ROLE_PERMISSIONS, ADMIN_USER_ROLES, ADMIN_OPERATION_AUDIT
-- **Security:** RBAC for admin operations
-- **Audit:** Complete audit trail of all admin actions
+The second module implements the hospital scenario from the assignment and must enforce the required policies on Oracle:
 
-#### Database 2: Subsystem 2 Medical Database
-- **Connection:** `localhost:1521/XE` (Medical DB credentials)
-- **Purpose:** Patient and medical data
-- **Tables:** BENHNHAN, NHANVIEN, HSBA, HSBA_DV, DONTHUOC, THONGBAO, AUDITLOG
-- **Security:** RBAC + VPD (row-level) + OLS (label-based)
-- **Audit:** Comprehensive data access and modification audit trail
+- Technicians and patients: RBAC-based implementation for the required actions.
+- Coordinators and doctors: VPD-based implementation for the required actions.
+- Notifications: OLS-based implementation on `THONGBAO`.
+- Audit: Standard Audit plus FGA or Unified Audit for the required scenarios.
+- Backup and recovery: Oracle-native backup and recovery procedures, no UI required.
 
-## Entity Relationship Diagram (ERD)
+Suggested forms in the combined WinForms application:
 
-### Subsystem 1 Admin Database (OracleDBAdmin)
+- `LoginForm`
+- `AdminMainForm`
+- `UserManagementForm`
+- `RoleManagementForm`
+- `PermissionForm`
+- `PrivilegeViewerForm`
+- `CoordinatorForm`
+- `DoctorForm`
+- `TechnicianForm`
+- `PatientForm`
+- `NotificationForm`
 
-```
-ADMIN_USERS (Administrative Users)
-├── ADMIN_USER_ID (PK)
-├── TENTAIKHOAN (Username)
-├── HOTEN (Full Name)
-├── EMAIL
-├── QUYHAN (Permission Level)
-├── ACTIVE (Y/N)
-└─── Has Multiple ──► ADMIN_USER_ROLES
-                     ├── ADMIN_USER_ID (FK)
-                     └── ADMIN_ROLE_ID (FK)
-                     
-                     ◄─── References ADMIN_ROLES
-                          ├── ADMIN_ROLE_ID (PK)
-                          ├── TENROLEVAITRO (Role Name)
-                          └── MOTA (Description)
-                          
-                          Related To ──► ADMIN_ROLE_PERMISSIONS
-                                        ├── ADMIN_ROLE_ID (FK)
-                                        ├── PERMISSION_ID (FK)
-                                        └── WITH_GRANT_OPTION
+## Required Data Model
 
-                                        ◄─── References ADMIN_PERMISSIONS
-                                             ├── PERMISSION_ID (PK)
-                                             ├── TENQUYEN (Permission Name)
-                                             └── LOAIQUYEN (Type)
+The base schema should preserve the assignment relations and names.
 
-ADMIN_OPERATION_AUDIT (Audit Trail)
-├── AUDIT_ID (PK)
-├── ADMIN_USER_ID (FK)
-├── OPERATION_TYPE
-├── OBJECT_TYPE
-├── OBJECT_NAME
-├── TIMESTAMP
-├── SUCCESS (Y/N)
-└── DETAILS (JSON)
-```
+### BENHNHAN
 
-### Subsystem 2 Medical Database (MedicalDataSystem)
+Required columns:
 
-```
-BENHNHAN (Patient)
-├── MABN (PK)
-├── TENBN
-├── PHAI
-├── NGAYSINH
-├── CCCD (UNIQUE)
-├── DiaChi
-└── DiUng
-    │
-    └─── Has Multiple ──► HSBA (Medical Record)
-                         ├── MAHSBA (PK)
-                         ├── MABN (FK to Patient)
-                         ├── MANV (FK to Doctor)
-                         ├── CHANDOAN
-                         ├── DIEUTRI
-                         ├── KETLUAN
-                         └─── Related To ──► HSBA_DV (Diagnostic Service)
-                                            ├── MADV (PK)
-                                            ├── MAHSBA (FK)
-                                            ├── MANV_Technician (FK)
-                                            ├── TenDichVu
-                                            ├── Ngay
-                                            └── KETQUA
-                                            
-                                 Related To ──► DONTHUOC (Prescription)
-                                                ├── MADON (PK)
-                                                ├── MAHSBA (FK)
-                                                ├── TENHOA
-                                                ├── LIEU
-                                                └── HUONGDAN
+- `MABN`
+- `TENBN`
+- `PHAI`
+- `NGAYSINH`
+- `CCCD`
+- `SONHA`
+- `TENDUONG`
+- `QUANHUYEN`
+- `TINHTP`
+- `TIENSUBENH`
+- `TIENSUBENHGD`
+- `DIUNGTHUOC`
 
-NHANVIEN (Staff)
-├── MANV (PK)
-├── HOTEN
-├── VAITRO ['Điều phối viên'|'Bác sĩ/Y sĩ'|'Kỹ thuật viên'|'Bệnh nhân']
-├── CHUYENKHOA
-└── Email
-    │
-    └─── Assigned As ──► Doctor in HSBA
-    └─── Assigned As ──► Technician in HSBA_DV
-    └─── Can Create ──► HSBA (Medical Records)
-    └─── Can Create ──► DONTHUOC (Prescriptions)
+### NHANVIEN
 
-THONGBAO (Notification) - OLS Label Security
-├── MATHONG (PK)
-├── Title
-├── Content
-├── Ngay  
-├── Department (Label Component 1)
-├── Location (Label Component 2)
-└── Classification (Label Component 3)
-```
+Required columns:
+
+- `MANV`
+- `HOTEN`
+- `PHAI`
+- `NGAYSINH`
+- `CMND`
+- `QUEQUAN`
+- `SODT`
+- `VAITRO`
+- `CHUYENKHOA`
+
+Allowed role values are the ones stated in the assignment:
+
+- `Dieu phoi vien`
+- `Bac si/Y si`
+- `Ky thuat vien`
+- `Benh nhan`
+
+### HSBA
+
+Required columns:
+
+- `MAHSBA`
+- `MABN`
+- `NGAY`
+- `CHANDOAN`
+- `DIEUTRI`
+- `MABS`
+- `MAKHOA`
+- `KETLUAN`
+
+### HSBA_DV
+
+Required columns:
+
+- `MAHSBA`
+- `LOAIDV`
+- `NGAYDV`
+- `MAKTV`
+- `KETQUA`
+
+Recommended key:
+
+- Composite primary key on `MAHSBA, LOAIDV, NGAYDV`
+
+### DONTHUOC
+
+Required columns:
+
+- `MAHSBA`
+- `NGAYDT`
+- `TENTHUOC`
+- `LIEUDUNG`
+
+Recommended key:
+
+- Composite primary key on `MAHSBA, NGAYDT, TENTHUOC`
+
+### THONGBAO
+
+Requirement 2 explicitly introduces `THONGBAO` with at least:
+
+- `NOIDUNG`
+- `NGAYGIO`
+- `DIADIEM`
+
+For OLS, it is acceptable to add:
+
+- A hidden Oracle label column managed by OLS
+- Optional helper columns for seed data only, if they do not replace the OLS label as the enforcement mechanism
+
+## Allowed Supporting Extensions
+
+The assignment allows adjusting the model when needed. The following extensions are consistent with the requirements:
+
+- Add `USERNAME` to `NHANVIEN` and `BENHNHAN` to link each Oracle account to exactly one row.
+- Create a `UNION ALL` view such as `V_SYSTEM_USERS` so the application can resolve the current session user from one logical object instead of scattering lookup logic.
+- Add lookup tables for departments or locations if useful, but do not replace the required relations above.
+- Add audit helper views or packaged procedures.
+
+## Account-to-Row Mapping Strategy
+
+TC#1 requires Oracle-managed accounts without a custom account-management table. A practical design is:
+
+1. Oracle stores the actual login accounts.
+2. `NHANVIEN.USERNAME` links staff accounts to staff rows.
+3. `BENHNHAN.USERNAME` links patient accounts to patient rows.
+4. A helper view presents both sources as one logical user directory for the application.
+5. Policies use `SYS_CONTEXT('USERENV', 'SESSION_USER')` to identify the active Oracle account.
+
+This satisfies the requirement more closely than the older design that authenticated only through `NHANVIEN`.
 
 ## Security Architecture
 
-### Subsystem 1: Admin Database Security
+### RBAC Scope
 
-```
-┌──────────────────────────────────────────────────────┐
-│  OracleDBAdmin Application (WinForm)        [S1]    │
-│  ├─ User Login (Admin Authentication)                │
-│  ├─ Role-Based Feature Access                        │
-│  └─ Operation Permission Checking                    │
-├──────────────────────────────────────────────────────┤
-│  Business Logic Layer (Admin Services)      [S1]    │
-│  ├─ User Management Service                          │
-│  ├─ Role Management Service                          │
-│  ├─ Permission Grant/Revoke Service                  │
-│  └─ Audit Service (Log all operations)               │
-├──────────────────────────────────────────────────────┤
-│  Admin Database Security Layer              [S1]    │
-│  ├─ RBAC (Admin roles for DBA, SecAdmin, etc.)       │
-│  └─ Audit Trails (Admin operation history)           │
-├──────────────────────────────────────────────────────┤
-│  Oracle Database 21c XE (Admin)                      │
-│  ├─ ADMIN_USERS table                                │
-│  ├─ ADMIN_ROLES, ADMIN_PERMISSIONS tables            │
-│  └─ ADMIN_OPERATION_AUDIT table                      │
-└──────────────────────────────────────────────────────┘
-```
+Use Oracle roles and grants to implement the role-based cases required in Requirement 1, Question 2:
 
-### Subsystem 2: Medical Database Security
+- Technician permissions on assigned service work
+- Patient self-view and self-update permissions
 
-```
-┌──────────────────────────────────────────────────────┐
-│  MedicalDataSystem Application (WinForm)    [S2]    │
-│  ├─ Authentication Check (LoginForm)                 │
-│  ├─ Role-Based Menu Display                          │
-│  └─ Patient Data Access Control                      │
-├──────────────────────────────────────────────────────┤
-│  Business Logic Layer (Medical Services)    [S2]    │
-│  ├─ RBAC Service (Role verification)                 │
-│  └─ VPD Service (Row filtering)                      │
-├──────────────────────────────────────────────────────┤
-│  Database Security Layer (Oracle)            [S2]    │
-│  ├─ VPD Policies (Transparent filtering)             │
-│  ├─ OLS Labels (Multi-component hierarchy)           │
-│  └─ Audit Trails (Immutable logging)                 │
-├──────────────────────────────────────────────────────┤
-│  Oracle Database 21c XE (Medical)                    │
-│  ├─ RBAC Roles & Privileges                          │
-│  ├─ Row-Level Security (VPD)                         │
-│  ├─ Column-Level Security                            │
-│  └─ Comprehensive Audit Trail (AUDITLOG)             │
-└──────────────────────────────────────────────────────┘
+RBAC can be combined with:
 
-Legend: [S1] = Subsystem 1  [S2] = Subsystem 2
-```
+- Views
+- Stored procedures
+- Column-specific grants
 
-### Access Control Layers (Subsystem 2)
+This is acceptable as long as Oracle roles remain the primary authorization mechanism for these cases.
 
-```
-┌──────────────────────────────────────────────────────┐
-│  Application Layer (Forms)                   [S2]    │
-│  ├─ Authentication Check (LoginForm)                 │
-│  └─ Role-Based Menu Display                          │
-├──────────────────────────────────────────────────────┤
-│  Business Logic Layer (Services)             [S2]    │
-│  ├─ RBAC Service (Role verification)                 │
-│  └─ VPD Service (Row filtering)                      │
-├──────────────────────────────────────────────────────┤
-│  Database Security Layer (Oracle)            [S2]    │
-│  ├─ VPD Policies (Transparent filtering)             │
-│  ├─ OLS Labels (Multi-component hierarchy)           │
-│  └─ Audit Trails (Immutable logging)                 │
-├──────────────────────────────────────────────────────┤
-│  Oracle Database 21c XE                              │
-│  ├─ RBAC Roles & Privileges                          │
-│  ├─ Row-Level Security (VPD)                         │
-│  ├─ Column-Level Security                            │
-│  └─ Comprehensive Audit Trail                        │
-└──────────────────────────────────────────────────────┘
-```
+### VPD Scope
 
-### Role-Based Isolation
+Use VPD for the roles explicitly required in Requirement 1, Question 3:
 
-```
-Coordinator Access:
-├─ SELECT, INSERT, UPDATE on BENHNHAN
-├─ SELECT, INSERT, UPDATE on HSBA
-├─ SELECT on NHANVIEN
-└─ VIEW: All Patients, Assignment Records
+- Coordinators
+- Doctors
 
-Doctor Access (VPD Filtered):
-├─ SELECT on BENHNHAN (only assigned patients)
-├─ SELECT, INSERT, UPDATE on HSBA (own patients)
-├─ INSERT, UPDATE on DONTHUOC
-├─ INSERT on HSBA_DV
-└─ VIEW: Assigned Patients Only (transparent filtering)
+Typical policy targets:
 
-Technician Access (VPD Filtered):
-├─ SELECT on HSBA_DV (assigned services only)
-├─ UPDATE on HSBA_DV
-├─ SELECT on BENHNHAN (for reference)
-└─ VIEW: Assigned Services Only
+- `HSBA`
+- `HSBA_DV`
+- Coordinator-visible patient workflow objects
+- Doctor-visible patient workflow objects
 
-Patient Access (Row-Level Security):
-├─ SELECT on BENHNHAN (self only)
-├─ UPDATE on BENHNHAN (contact info only)
-├─ SELECT on HSBA (own records)
-├─ SELECT on DONTHUOC (own prescriptions)
-└─ VIEW: Own Medical Records Only (read-only)
-```
+VPD predicates should follow the real schema. For example, doctor visibility should be derived from `HSBA.MABS`, not from a nonexistent `BENHNHAN.MANV`.
 
-## Data Flow Diagrams
+### OLS Scope
 
-### Login & Authentication Flow
+Apply OLS to `THONGBAO` using three label components required by the assignment:
 
-```
-User Input (Username/Password)
-        │
-        ▼
-   LoginForm
-        │
-        ├─► AuthenticationService.Login()
-        │        │
-        │        ▼
-        │   Query NHANVIEN table
-        │        │
-        │        ├─► Valid? ───► Get VAITRO (Role)
-        │        │                    │
-        │        │                    ▼
-        │        │            Return Role String
-        │        │                    │
-        │        │   Invalid? ───────► Return null
-        │
-        ▼
-  Role Determined
-        │
-        ├─ Coordinator ──► Open CoordinatorForm
-        ├─ Doctor ───────► Open DoctorForm
-        ├─ Technician ──► Open TechnicianForm
-        └─ Patient ─────► Open PatientForm
-```
+- Level: `Ban giam doc > Lanh dao khoa > Nhan vien`
+- Compartment: department such as Tim mach, Than kinh, Tieu hoa
+- Group: location such as Ho Chi Minh, Hai Phong, Ha Noi
 
-### VPD Filtering Flow
+The design must support all assignment examples `u1` to `u8` and data labels `t1` to `t7`, including messages that target multiple departments at one location.
 
-```
-Doctor Queries Patient Records
-        │
-        ▼
-   DoctorService.GetAssignedPatients()
-        │
-        ├─► VPDService.GetVisiblePatients()
-        │        │
-        │        ▼
-        │   Executes: SELECT * FROM BENHNHAN
-        │            WHERE MANV = SYS_CONTEXT(...)
-        │        │
-        │        ▼
-        │   VPD Policy Applied Automatically
-        │   (Database level enforcement)
-        │        │
-        │        ▼
-        │   Only Doctor's Patients Returned
-        │        │
-        ▼
-  Results to Doctor Form
-  (Cannot see other doctors' patients)
-```
+### Audit Scope
 
-### OLS Label Security Flow
+Requirement 3 needs:
 
-```
-User Accesses Notification System
-        │
-        ▼
-   NotificationForm
-        │
-        ├─► OLSService.GetUserLabels()
-        │        │
-        │        ▼
-        │   Return: (Department, Location, Classification)
-        │
-        ├─► OLSService.GetAccessibleNotifications()
-        │        │
-        │        ▼
-        │   For Each Notification:
-        │   CanAccessNotification(user, notif_labels)?
-        │        │
-        │        ├─► Compare Labels in Hierarchy
-        │        ├─ user_label >= notification_label?
-        │        │
-        │        ├─ YES ──► Include in Results
-        │        └─ NO  ──► Exclude from Results
-        │        │
-        ▼
-  Display Accessible Notifications Only
-```
+- Standard Audit for five chosen scenarios
+- FGA or Unified Audit for:
+  - Prescription updates after creation
+  - Valid doctor updates on `HSBA`
+  - Invalid updates on `HSBA`
+  - Invalid insert, update, delete on `HSBA_DV`
 
-## Class Diagram (Core Services)
+### Backup and Recovery Scope
 
-```
-Subsystem 2 Service Architecture:
+Requirement 4 needs:
 
-┌─────────────────────────┐
-│  AuthenticationService  │
-├─────────────────────────┤
-│ - _connectionString     │
-├─────────────────────────┤
-│ + Login(user, pwd)      │
-│ + ValidateUserRole()    │
-│ + Logout(user)          │
-└─────────────────────────┘
-           △
-           │ Uses
-           │
-     ┌─────┴──────┐
-     │            │
-┌────▼────────┐  ┌┴──────────────┐
-│  RBACService│  │  VPDService   │
-├─────────────┤  ├───────────────┤
-│ Role defs   │  │ Row filtering │
-├─────────────┤  ├───────────────┤
-│ CheckRole() │  │ GetVisible()  │
-│ GetActions()│  │ Rows filtered │
-└─────────────┘  │ at DB level   │
-                 └───────────────┘
-                       △
-                       │
-     ┌─────────────────┼──────────── ┐
-     │                 │             │
-┌────▼─────┐   ┌───────▼──┐  ┌───────▼──┐
-│  Patient  │  │  Doctor  │  │Technician│
-│ Service   │  │ Service  │  │ Service  │
-├───────────┤  ├──────────┤  ├──────────┤
-│GetPatient │  │GetAssign │  │GetAssign │
-│GetRecords │  │Diagnosis │  │Services  │
-│UpdateInfo │  │PrescRxpt │  │UpdateRst │
-└───────────┘  └──────────┘  └──────────┘
-     △              △              △
-     │              │              │
-     └──────────────┼──────────────┘
-                    │
-            ┌───────▼────────┐
-            │  OracleConnection
-            │  Service        │
-            ├─────────────────┤
-            │- connString     │
-            │- connPool       │
-            ├─────────────────┤
-            │+ GetConnection()│
-            │+ TestConnection│
-            └─────────────────┘
-```
+- Research of Oracle backup and recovery methods
+- Manual and automatic backup
+- Recovery based on incident timing visible in audit logs
+- Evaluation of pros and cons
 
-## Sequence Diagram - Patient Data Access
+## Logical Access Matrix
 
-```
-Patient    PatientForm    PatientService    OracleConn    Database
-  │            │              │                │            │
-  ├─ Login ────►│              │                │            │
-  │            │─ Authenticate ────────────────●            │
-  │            │◄─ Role: Patient ───────────────●            │
-  │            │                 │                          │
-  │            │                 │              │            │
-  ├─ View ─────►│                │              │            │
-  │ Records     │  GetMyRecords() │              │            │
-  │            │◄───────────────●              │            │
-  │            │                │  GetConnection()          │
-  │            │                ├──────────────►│            │
-  │            │                │  ◄──OraConn───│            │
-  │            │                │                │            │
-  │            │                │   SELECT from HSBA        │
-  │            │                ├────────────────────────────►│
-  │            │                │   WHERE MABN = patient_id  │
-  │            │                │   AND row-level security   │
-  │            │                │                            │
-  │            │                │   VPD Policy Applied      │
-  │            │◄───── Filtered Results ─────────────────────│
-  │            │              │                            │
-  │            │              (Only patient's records)      │
-  │            │                                             │
-  │◄─ Display ─│                                             │
-  │ Records    │                                             │
-  
-Legend: ● = Database access
-        VPD = Virtual Private Database filtering (transparent)
-```
+### Coordinator
 
-## Deployment Architecture
+- View, add, and edit `BENHNHAN`
+- Create `HSBA`
+- Assign `MABS`
+- Coordinate `MAKTV` for `HSBA_DV`
+- Enforced with VPD for coordinator scenarios
 
-```
-┌─────────────────────────────────────────────────┐
-│  Windows Client Machines                        │
-│  ├─ Subsystem 1: OracleDBAdmin.exe              │
-│  ├─ Subsystem 2: MedicalDataSystem.exe          │
-│  └─ Required: .NET 10.0 Runtime                 │
-└──────────────┬──────────────────────────────────┘
-               │ Network Connection
-               │ (TCP/IP Port 1521)
-               │
-┌──────────────▼──────────────────────────────────┐
-│  Database Server                                │
-│  ├─ Oracle Database 21c XE                      │
-│  ├─ Port: 1521                                  │
-│  ├─ Service: XE                                 │
-│  │                                               │
-│  ├─ User: project_admin                         │
-│  ├─ Roles: COORDINATOR, DOCTOR, TECHNICIAN,    │
-│  │          PATIENT                             │
-│  │                                               │
-│  ├─ Security:                                   │
-│  │  ├─ RBAC (Database roles)                    │
-│  │  ├─ VPD (Row-level filtering)                │
-│  │  ├─ OLS (Label security)                     │
-│  │  └─ Audit (Standard, Fine-grained, Unified)  │
-│  │                                               │
-│  └─ Tables:                                     │
-│     ├─ BENHNHAN (100K+ patients)                │
-│     ├─ NHANVIEN (170+ staff)                    │
-│     ├─ HSBA (Medical records)                   │
-│     ├─ HSBA_DV (Diagnostic services)            │
-│     ├─ DONTHUOC (Prescriptions)                │
-│     ├─ THONGBAO (Notifications)                 │
-│     └─ AuditLog (Audit trails)                  │
-└─────────────────────────────────────────────────┘
-```
+### Doctor
 
-## Technology Stack Summary
+- View only `HSBA` rows assigned to that doctor
+- Insert and delete related `HSBA_DV`
+- Update `CHANDOAN`, `DIEUTRI`, `KETLUAN`
+- View related patients
+- Update `TIENSUBENH`, `TIENSUBENHGD`, `DIUNGTHUOC` of treated patients
+- Add, delete, and update `DONTHUOC`
+- Enforced with VPD and audited where required
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Presentation** | .NET WinForms | 10.0 |
-| **Business Logic** | C# Services | .NET 10.0 |
-| **Data Access** | ODP.NET Core | 23.26.100 |
-| **Database** | Oracle XE | 21c (21.3.0) |
-| **OS** | Windows 10/11 | Latest |
-| **IDE** | Visual Studio | 2022+ |
+### Technician
 
-## Security Checkpoint Summary
+- View only assigned `HSBA_DV` rows
+- Update only `KETQUA`
+- Enforced with RBAC-oriented design plus role-specific filtering objects
 
-✓ **Authentication**: LoginForm → AuthenticationService
-✓ **Authorization**: RBAC + Application-level checks  
-✓ **Row-Level Security**: VPD policies (transparent)
-✓ **Column Security**: OLS labels for notifications
-✓ **Audit & Logging**: Standard, Fine-grained, Unified audit
-✓ **Data Integrity**: Constraints, Foreign Keys, Cascading Rules
-✓ **Encryption**: Passwords (hashed), Sensitive data (encrypted at storage)
+### Patient
+
+- View only personal row in `BENHNHAN`
+- Update only allowed personal fields
+- Enforced with RBAC-oriented design plus self-service filtering objects
+
+## Current Repository Note
+
+This repository snapshot currently contains:
+
+- Design and task documentation
+- Database folders for both subsystem tracks
+- Checked-in application source for `subsystem2-medicalDataManagement`
+
+It does not currently contain a checked-in Subsystem 1 WinForms client folder. The architecture above still reflects the required final project structure, but the present repo state should be described honestly in README and setup documents.
