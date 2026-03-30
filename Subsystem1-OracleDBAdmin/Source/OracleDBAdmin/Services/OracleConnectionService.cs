@@ -1,4 +1,4 @@
-namespace MedicalDataSystem.Services;
+namespace OracleDBAdmin.Services;
 
 using Oracle.ManagedDataAccess.Client;
 
@@ -11,18 +11,9 @@ public class OracleConnectionService
         _connectionString = connectionString;
     }
 
-    public string ConnectionString => _connectionString;
-
     public static string BuildConnectionString(string dataSource, string userId, string password)
     {
         return $"Data Source={dataSource};User Id={userId};Password={password};Pooling=true;";
-    }
-
-    public bool TestConnection()
-    {
-        using var connection = new OracleConnection(_connectionString);
-        connection.Open();
-        return connection.State == System.Data.ConnectionState.Open;
     }
 
     public OracleConnection GetConnection()
@@ -30,6 +21,12 @@ public class OracleConnectionService
         var connection = new OracleConnection(_connectionString);
         connection.Open();
         return connection;
+    }
+
+    public bool TestConnection()
+    {
+        using var connection = GetConnection();
+        return connection.State == System.Data.ConnectionState.Open;
     }
 
     public T Execute<T>(Func<OracleConnection, T> action)

@@ -1,135 +1,189 @@
-/* ==========================================================================
-    VPD SETUP (Virtual Private Database)
-   ========================================================================== */
-ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+SET SERVEROUTPUT ON;
 
--- =====================================================
--- 1. CREATE POLICY FUNCTION: MEDICAL RECORDS (HSBA)
--- =====================================================
-CREATE OR REPLACE FUNCTION VPD_HSBA_FUNCTION(
-    p_schema_name VARCHAR2,
-    p_object_name VARCHAR2
-) RETURN VARCHAR2 AS
-    v_user VARCHAR2(30) := SYS_CONTEXT('USERENV', 'SESSION_USER');
-    v_role VARCHAR2(50);
+PROMPT === Requirement 1 / VPD setup ===
+
+BEGIN DBMS_RLS.DROP_POLICY(USER, 'HSBA', 'HSBA_VPD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN DBMS_RLS.DROP_POLICY(USER, 'BENHNHAN', 'BENHNHAN_VPD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN DBMS_RLS.DROP_POLICY(USER, 'HSBA_DV', 'HSBA_DV_VPD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN DBMS_RLS.DROP_POLICY(USER, 'DONTHUOC', 'DONTHUOC_VPD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION APP_CURRENT_MANV'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION APP_CURRENT_ROLE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION VPD_HSBA_FN'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION VPD_BENHNHAN_FN'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION VPD_HSBA_DV_FN'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION VPD_DONTHUOC_FN'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+CREATE OR REPLACE FUNCTION APP_CURRENT_MANV
+RETURN NUMBER
+AS
     v_manv NUMBER;
 BEGIN
-    -- If user is not staff (e.g., ADMIN or Patient), allow access (filtered elsewhere)
-    IF v_user NOT LIKE 'NV%' THEN RETURN '1=1'; END IF;
+    SELECT MANV
+    INTO v_manv
+    FROM NHANVIEN
+    WHERE UPPER(USERNAME) = UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER'));
 
-    -- Extract Employee ID from Username (e.g., 'NV001' -> 1)
-    BEGIN
-        v_manv := TO_NUMBER(REGEXP_SUBSTR(v_user, '\d+'));
-    EXCEPTION WHEN INVALID_NUMBER THEN
-        -- If conversion fails, deny access
-        RETURN '1=0';
-    END;
-
-    -- Validate Employee ID is in reasonable range (security: ensure v_manv is valid)
-    IF v_manv IS NULL OR v_manv < 1 OR v_manv > 999999 THEN
-        RETURN '1=0'; -- Deny access if invalid
-    END IF;
-
-    -- Get Role
-    BEGIN
-        SELECT VAITRO INTO v_role FROM NHANVIEN WHERE MANV = v_manv;
-    EXCEPTION WHEN NO_DATA_FOUND THEN RETURN '1=1'; -- Fallback
-    END;
-
-    -- POLICY LOGIC
-    IF v_role = N'Điều phối viên' THEN
-        RETURN '1=1'; -- Coordinator sees all
-    ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        -- Use TO_CHAR for explicit type conversion and security (prevents SQL injection)
-        RETURN 'MABS = ' || TO_CHAR(v_manv); -- Doctor sees only assigned records
-    ELSE
-        RETURN '1=1'; -- Default for others
-    END IF;
+    RETURN v_manv;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
 END;
 /
 
--- =====================================================
--- 2. CREATE POLICY FUNCTION: PATIENTS (BENHNHAN)
--- =====================================================
-CREATE OR REPLACE FUNCTION VPD_BENHNHAN_FUNCTION(
-    p_schema_name VARCHAR2,
-    p_object_name VARCHAR2
-) RETURN VARCHAR2 AS
-    v_user VARCHAR2(30) := SYS_CONTEXT('USERENV', 'SESSION_USER');
-    v_role VARCHAR2(50);
+CREATE OR REPLACE FUNCTION APP_CURRENT_ROLE
+RETURN VARCHAR2
+AS
+    v_role NVARCHAR2(50);
+BEGIN
+    SELECT VAITRO
+    INTO v_role
+    FROM NHANVIEN
+    WHERE UPPER(USERNAME) = UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER'));
+
+    RETURN v_role;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
+END;
+/
+
+CREATE OR REPLACE FUNCTION VPD_HSBA_FN(p_schema VARCHAR2, p_object VARCHAR2)
+RETURN VARCHAR2
+AS
+    v_role NVARCHAR2(50);
     v_manv NUMBER;
 BEGIN
-    IF v_user NOT LIKE 'NV%' THEN RETURN '1=1'; END IF;
+    v_role := APP_CURRENT_ROLE();
+    v_manv := APP_CURRENT_MANV();
 
-    BEGIN
-        v_manv := TO_NUMBER(REGEXP_SUBSTR(v_user, '\d+'));
-    EXCEPTION WHEN INVALID_NUMBER THEN
-        -- If conversion fails, deny access
-        RETURN '1=0';
-    END;
-
-    -- Validate Employee ID is in reasonable range (security: ensure v_manv is valid)
-    IF v_manv IS NULL OR v_manv < 1 OR v_manv > 999999 THEN
-        RETURN '1=0'; -- Deny access if invalid
-    END IF;
-
-    BEGIN
-        SELECT VAITRO INTO v_role FROM NHANVIEN WHERE MANV = v_manv;
-    EXCEPTION WHEN NO_DATA_FOUND THEN RETURN '1=1';
-    END;
-
-    -- POLICY LOGIC
     IF v_role = N'Điều phối viên' THEN
-        RETURN '1=1'; -- Coordinator sees all
-    ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        -- Doctor sees only patients they have treated in HSBA
-        -- Use TO_CHAR for explicit type conversion and security (prevents SQL injection)
-        RETURN 'MABN IN (SELECT DISTINCT MABN FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
-    ELSE
         RETURN '1=1';
+    ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
+        RETURN 'MABS = ' || TO_CHAR(v_manv);
     END IF;
+
+    RETURN '1=1';
 END;
 /
 
--- =====================================================
--- 3. APPLY POLICIES (DROP & ADD)
--- =====================================================
-DECLARE
-    v_schema VARCHAR2(30) := USER; -- Automatically uses current schema
+CREATE OR REPLACE FUNCTION VPD_BENHNHAN_FN(p_schema VARCHAR2, p_object VARCHAR2)
+RETURN VARCHAR2
+AS
+    v_role NVARCHAR2(50);
+    v_manv NUMBER;
 BEGIN
-    -- 1. HSBA POLICY
-    BEGIN DBMS_RLS.DROP_POLICY(v_schema, 'HSBA', 'HSBA_DOCTOR_VPD'); EXCEPTION WHEN OTHERS THEN NULL; END;
-    
+    v_role := APP_CURRENT_ROLE();
+    v_manv := APP_CURRENT_MANV();
+
+    IF v_role = N'Điều phối viên' THEN
+        RETURN '1=1';
+    ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
+        RETURN 'MABN IN (SELECT MABN FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
+    END IF;
+
+    RETURN 'USERNAME = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
+END;
+/
+
+CREATE OR REPLACE FUNCTION VPD_HSBA_DV_FN(p_schema VARCHAR2, p_object VARCHAR2)
+RETURN VARCHAR2
+AS
+    v_role NVARCHAR2(50);
+    v_manv NUMBER;
+BEGIN
+    v_role := APP_CURRENT_ROLE();
+    v_manv := APP_CURRENT_MANV();
+
+    IF v_role = N'Điều phối viên' THEN
+        RETURN '1=1';
+    ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
+        RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
+    END IF;
+
+    RETURN '1=1';
+END;
+/
+
+CREATE OR REPLACE FUNCTION VPD_DONTHUOC_FN(p_schema VARCHAR2, p_object VARCHAR2)
+RETURN VARCHAR2
+AS
+    v_role NVARCHAR2(50);
+    v_manv NUMBER;
+BEGIN
+    v_role := APP_CURRENT_ROLE();
+    v_manv := APP_CURRENT_MANV();
+
+    IF v_role = N'Điều phối viên' THEN
+        RETURN '1=1';
+    ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
+        RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
+    END IF;
+
+    RETURN '1=1';
+END;
+/
+
+BEGIN
     DBMS_RLS.ADD_POLICY(
-        object_schema   => v_schema,
+        object_schema   => USER,
         object_name     => 'HSBA',
-        policy_name     => 'HSBA_DOCTOR_VPD',
-        function_schema => v_schema,
-        policy_function => 'VPD_HSBA_FUNCTION',
-        statement_types => 'SELECT,INSERT,UPDATE,DELETE',
+        policy_name     => 'HSBA_VPD',
+        function_schema => USER,
+        policy_function => 'VPD_HSBA_FN',
+        statement_types => 'SELECT,UPDATE,DELETE,INSERT',
         update_check    => TRUE
     );
 
-    -- 2. BENHNHAN POLICY
-    BEGIN DBMS_RLS.DROP_POLICY(v_schema, 'BENHNHAN', 'BENHNHAN_DOCTOR_VPD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+    DBMS_RLS.ADD_POLICY(
+        object_schema   => USER,
+        object_name     => 'BENHNHAN',
+        policy_name     => 'BENHNHAN_VPD',
+        function_schema => USER,
+        policy_function => 'VPD_BENHNHAN_FN',
+        statement_types => 'SELECT,UPDATE',
+        update_check    => TRUE
+    );
 
     DBMS_RLS.ADD_POLICY(
-        object_schema   => v_schema,
-        object_name     => 'BENHNHAN',
-        policy_name     => 'BENHNHAN_DOCTOR_VPD',
-        function_schema => v_schema,
-        policy_function => 'VPD_BENHNHAN_FUNCTION',
-        statement_types => 'SELECT,INSERT,UPDATE,DELETE',
+        object_schema   => USER,
+        object_name     => 'HSBA_DV',
+        policy_name     => 'HSBA_DV_VPD',
+        function_schema => USER,
+        policy_function => 'VPD_HSBA_DV_FN',
+        statement_types => 'SELECT,UPDATE,DELETE,INSERT',
+        update_check    => TRUE
+    );
+
+    DBMS_RLS.ADD_POLICY(
+        object_schema   => USER,
+        object_name     => 'DONTHUOC',
+        policy_name     => 'DONTHUOC_VPD',
+        function_schema => USER,
+        policy_function => 'VPD_DONTHUOC_FN',
+        statement_types => 'SELECT,UPDATE,DELETE,INSERT',
         update_check    => TRUE
     );
 END;
 /
 
--- =====================================================
--- 4. GRANT PERMISSIONS
--- =====================================================
-GRANT EXECUTE ON VPD_HSBA_FUNCTION TO PUBLIC;
-GRANT EXECUTE ON VPD_BENHNHAN_FUNCTION TO PUBLIC;
+GRANT EXECUTE ON APP_CURRENT_MANV TO PUBLIC;
+GRANT EXECUTE ON APP_CURRENT_ROLE TO PUBLIC;
+GRANT EXECUTE ON VPD_HSBA_FN TO PUBLIC;
+GRANT EXECUTE ON VPD_BENHNHAN_FN TO PUBLIC;
+GRANT EXECUTE ON VPD_HSBA_DV_FN TO PUBLIC;
+GRANT EXECUTE ON VPD_DONTHUOC_FN TO PUBLIC;
 
 COMMIT;
 
+PROMPT === VPD setup completed ===

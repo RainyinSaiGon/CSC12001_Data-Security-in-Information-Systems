@@ -1,18 +1,47 @@
 namespace MedicalDataSystem.Forms;
 
-/// <summary>
-/// Notification viewer with OLS (Oracle Label Security)
-/// Display notifications based on user's label permissions
-/// </summary>
+using MedicalDataSystem.Models;
+using MedicalDataSystem.Services;
+
 public partial class NotificationForm : Form
 {
-    public NotificationForm()
+    private readonly UserSession _session;
+    private readonly OLSService _olsService;
+    private readonly DataGridView _grid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
+
+    public NotificationForm(UserSession session)
     {
+        _session = session;
+        _olsService = new OLSService(new OracleConnectionService(session.ConnectionString));
         InitializeComponent();
+        BuildUi();
+        LoadNotifications();
     }
 
-    // TODO: Implement notification viewer
-    // - Display notifications filtered by OLS labels
-    // - Only show notifications user has label access to
-    // - Test OLS 3-level hierarchy: Department, Location, Classification
+    private void BuildUi()
+    {
+        var header = new Label
+        {
+            Dock = DockStyle.Top,
+            Height = 36,
+            Text = $"Accessible notifications for {_session.FullName} ({_session.Role})",
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+
+        Controls.Add(_grid);
+        Controls.Add(header);
+    }
+
+    private void LoadNotifications()
+    {
+        try
+        {
+            List<Notification> notifications = _olsService.GetAccessibleNotificationsDetailed();
+            _grid.DataSource = notifications;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Notifications", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
 }

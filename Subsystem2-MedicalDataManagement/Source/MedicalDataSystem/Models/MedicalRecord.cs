@@ -1,13 +1,13 @@
 namespace MedicalDataSystem.Models;
 
-// Medical record entity from HSBA table
 public class MedicalRecord
 {
-    public string MAHSBA { get; set; } = string.Empty;
-    public string MABENHNHAN { get; set; } = string.Empty;
+    public int MAHSBA { get; set; }
+    public int MABN { get; set; }
+    public DateTime NGAY { get; set; }
     public string CHANDOAN { get; set; } = string.Empty;
     public string DIEUTRI { get; set; } = string.Empty;
     public string KETLUAN { get; set; } = string.Empty;
-    public string MABACSI { get; set; } = string.Empty;
-    public DateTime NGAYTAO { get; set; }
+    public int MABS { get; set; }
+    public string MAKHOA { get; set; } = string.Empty;
 }

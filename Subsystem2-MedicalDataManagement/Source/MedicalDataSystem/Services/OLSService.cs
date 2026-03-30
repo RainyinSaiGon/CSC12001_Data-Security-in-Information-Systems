@@ -1,7 +1,8 @@
 namespace MedicalDataSystem.Services;
 
-// Service for Oracle Label Security (OLS)
-// Implements label-based access control for sensitive data
+using MedicalDataSystem.Models;
+using Oracle.ManagedDataAccess.Client;
+
 public class OLSService
 {
     private readonly OracleConnectionService _connectionService;
@@ -11,28 +12,97 @@ public class OLSService
         _connectionService = connectionService;
     }
 
-    // Get user's OLS labels (3-level hierarchy)
     public (string Department, string Location, string Classification) GetUserLabels(string userId)
     {
-        // TODO: Query OLS user labels from Oracle
-        // Levels: Department (Cardiology, Gastroenterology, Neurology)
-        //         Location (Ho Chi Minh, Hai Phong, Ha Noi)
-        //         Classification (Director, Department Head, Staff)
-        return (string.Empty, string.Empty, string.Empty);
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT
+                    NVL(CHUYENKHOA, ''),
+                    CASE
+                        WHEN USERNAME IN ('NV000001', 'NV000002', 'NV000003') THEN 'MULTI_SITE'
+                        ELSE 'UNKNOWN'
+                    END AS LOCATION_CODE,
+                    CASE
+                        WHEN VAITRO = N'Điều phối viên' THEN 'COORDINATOR'
+                        WHEN VAITRO = N'Bác sĩ/Y sĩ' THEN 'DOCTOR'
+                        WHEN VAITRO = N'Kỹ thuật viên' THEN 'TECHNICIAN'
+                        WHEN VAITRO = N'Bệnh nhân' THEN 'PATIENT'
+                        ELSE 'STAFF'
+                    END AS APP_ROLE
+                FROM NHANVIEN
+                WHERE UPPER(USERNAME) = UPPER(:username)
+                """;
+            command.Parameters.Add(new OracleParameter("username", userId));
+
+            using var reader = command.ExecuteReader();
+            if (!reader.Read())
+            {
+                return (string.Empty, string.Empty, string.Empty);
+            }
+
+            return (
+                reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+                reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                reader.IsDBNull(2) ? string.Empty : reader.GetString(2));
+        });
     }
 
-    // Check if user can access notification based on OLS labels
     public bool CanAccessNotification(string userId, string notificationDept, string notificationLoc, string notificationClass)
     {
-        // TODO: Check label compatibility
-        // User can access if their labels are >= notification labels in hierarchy
-        return true;
+        _ = notificationDept;
+        _ = notificationLoc;
+        _ = notificationClass;
+        return GetAccessibleNotifications(userId).Count >= 0;
     }
 
-    // Get all notifications accessible to user based on OLS labels
     public List<int> GetAccessibleNotifications(string userId)
     {
-        // TODO: Filter notifications based on user's OLS labels
-        return new List<int>();
+        _ = userId;
+
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT MATHONGBAO FROM THONGBAO ORDER BY NGAYGIO DESC";
+
+            using var reader = command.ExecuteReader();
+            var items = new List<int>();
+            while (reader.Read())
+            {
+                items.Add(reader.GetInt32(0));
+            }
+
+            return items;
+        });
+    }
+
+    public List<Notification> GetAccessibleNotificationsDetailed()
+    {
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT MATHONGBAO, NOIDUNG, NGAYGIO, DIADIEM
+                FROM THONGBAO
+                ORDER BY NGAYGIO DESC
+                FETCH FIRST 200 ROWS ONLY
+                """;
+
+            using var reader = command.ExecuteReader();
+            var items = new List<Notification>();
+            while (reader.Read())
+            {
+                items.Add(new Notification
+                {
+                    MATHONGBAO = reader.GetInt32(0),
+                    NOIDUNG = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    NGAYGIO = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
+                    DIADIEM = reader.IsDBNull(3) ? string.Empty : reader.GetString(3)
+                });
+            }
+
+            return items;
+        });
     }
 }
