@@ -1,48 +1,45 @@
-# Task 04: Subsystem 2 - Medical Data Management UI Forms
+# Task 04: Subsystem 2 - UI Polish
 
-**Assigned to:** Duyên  
-**Type:** Front-end Implementation  
-**Duration:** 25-30 hours  
-**Priority:** High  
-**Timeline:** Feb 18 - Feb 28, 2026
+**Suggested owner:** 1 developer  
+**Priority:** Medium  
+**Focus:** improve the medical desktop UI without changing the security design
 
----
+## Goal
 
-## 1. Objective
+Polish the WinForms UI in `subsystem2-medicalDataManagement` so the demo feels cleaner and easier to use.
 
-Implement 6 role-specific Windows Forms with automatic security filtering:
+## Current State
 
-* **LoginForm** — Authentication, role detection
-* **CoordinatorForm** — Patient/record management, full access
-* **DoctorForm** — VPD-filtered patient list showing only assigned patients
-* **TechnicianForm** — VPD-filtered service list showing only assigned services
-* **PatientForm** — Row-level security; own records/prescriptions read-only
-* **NotificationForm** — OLS label-based filtering
+The UI is functional again and should stay stable. This task is for refinement, not major redesign.
 
-## 2. Scope of Work
+## Good Targets
 
-* `LoginForm.cs` — User authentication, role determination
-* `CoordinatorForm.cs` — Patient/record management with RBAC control
-* `DoctorForm.cs` — VPD-filtered patient care (diagnoses, prescriptions)
-* `TechnicianForm.cs` — VPD-filtered service management with result entry
-* `PatientForm.cs` — Own records/prescriptions view with contact info edit
-* `NotificationForm.cs` — OLS-filtered role-specific notifications
+- login form layout
+- coordinator dashboard readability
+- doctor form readability
+- technician form readability
+- patient form readability
+- notifications form readability
+- labels, spacing, and button naming
 
-## 3. Requirements & Dependencies
+## Important Constraints
 
-* Windows Forms (C#) with role-based interfaces
-* Integrate security services (AuthenticationService, RBACService, VPDService, OLSService)
-* Automatic role detection and form redirection after login
-* DataGrids for patient/record/service lists with database-enforced filtering
-* Medical data read-only where appropriate (no patient editing of diagnoses)
-* Dependencies: Task 07-09 (database), Task 05 (security services), Task 06 (business services)
+- do not break the working login flow
+- keep `localhost:1521/XEPDB1` visible in instructions
+- do not replace Oracle-enforced behavior with UI-only checks
 
-## 4. Acceptance Criteria
+## Main Files
 
-* [ ] LoginForm authenticates correctly and determines role
-* [ ] Coordinator sees all patients; Doctor sees only assigned; Technician sees only assigned services
-* [ ] VPD filtering transparent (database enforced, no application changes needed)
-* [ ] OLS filtering on notifications by user labels
-* [ ] Row-level security enforced (patients see own records only)
-* [ ] Medical data read-only where required; contact info editable
-* [ ] Professional UI with clear status displays
+- `subsystem2-medicalDataManagement/source/medicalDataSystem/forms/LoginForm.cs`
+- `subsystem2-medicalDataManagement/source/medicalDataSystem/forms/CoordinatorForm.cs`
+- `subsystem2-medicalDataManagement/source/medicalDataSystem/forms/DoctorForm.cs`
+- `subsystem2-medicalDataManagement/source/medicalDataSystem/forms/TechnicianForm.cs`
+- `subsystem2-medicalDataManagement/source/medicalDataSystem/forms/PatientForm.cs`
+- `subsystem2-medicalDataManagement/source/medicalDataSystem/forms/NotificationForm.cs`
+
+## Acceptance Criteria
+
+- forms are easier to read and use
+- login still works for sample users
+- no security behavior is moved from Oracle into the UI
+- project builds cleanly

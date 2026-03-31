@@ -1,46 +1,30 @@
-# Task 09: Database Audit Setup
+# Task 09: Audit Setup And Demo Evidence
 
-**Assigned to:** Ngoc, Vu  
-**Priority:** High  
+**Suggested owner:** database maintainer or tester  
+**Priority:** Medium  
+**Focus:** verify Requirement 3 end to end
 
-## Objective
+## Goal
 
-Implement Requirement 3 using Oracle auditing features and prepare queries that read the resulting audit logs. No UI is required for this task.
+Make sure the audit scripts work and prepare the exact demo evidence for Requirement 3.
 
-## Required Audit Coverage
+## Main Files
 
-### Standard Audit
+- `database/Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql`
+- `database/Subsystem2-MedicalDB/audit/02_FGA_Setup.sql`
+- `database/Subsystem2-MedicalDB/audit/03_ReadAuditLogs.sql`
+- `database/Subsystem2-MedicalDB/Report.sql`
 
-Enable system auditing and choose five concrete audit scenarios involving:
+## What To Do
 
-- specific users
-- specific objects
-- success and failure cases
-- a mix of tables, views, procedures, or functions
-
-### FGA or Unified Audit
-
-Implement the required assignment scenarios:
-
-1. Updates on `DONTHUOC` attributes `MAHSBA`, `NGAYDT`, `TENTHUOC`, `LIEUDUNG` after the prescription already exists
-2. Successful doctor updates on `HSBA.CHANDOAN`, `HSBA.DIEUTRI`, `HSBA.KETLUAN`
-3. Illegal updates on `HSBA.CHANDOAN`, `HSBA.DIEUTRI`, `HSBA.KETLUAN`
-4. Illegal insert, update, or delete on `HSBA_DV`
-
-## Output Expectations
-
-Place finished scripts in `database/Subsystem2-MedicalDB/audit/`.
-
-Suggested outputs:
-
-- standard audit setup script
-- FGA or Unified Audit setup script
-- audit log reading/reporting script
+- rerun audit setup
+- perform valid and invalid business actions
+- confirm logs appear in the expected Oracle audit views
+- prepare short proof queries or screenshots for the demo
 
 ## Acceptance Criteria
 
-- Five standard-audit contexts are demonstrated and readable.
-- Required valid and invalid `HSBA` operations are captured.
-- Required `DONTHUOC` post-creation updates are captured.
-- Required illegal `HSBA_DV` operations are captured.
-- Log-reading queries clearly show who did what, when, and whether it succeeded.
+- Standard Audit works
+- FGA works
+- audit logs can be read back after demo actions
+- demo script steps are verified against real output

@@ -1,44 +1,50 @@
-# Task 10: Database Backup and Recovery
+# Task 10: Requirement 4 - Backup And Recovery
 
-**Assigned to:** Ngoc, Vu  
+**Suggested owner:** 1 developer  
 **Priority:** High  
+**Focus:** complete the unfinished Requirement 4 work
 
-## Objective
+## Goal
 
-Implement Requirement 4 using Oracle-native backup and recovery methods. No UI is required.
+Implement the backup and recovery part that is still missing from the repository.
 
-## Required Scope
+## Current State
 
-1. Research Oracle backup and recovery methods
-2. Implement manual backup
-3. Implement automatic backup
-4. Recover from a problem using information obtained from the audit logs in Requirement 3
-5. Evaluate advantages and disadvantages of the methods tested
-6. Write a short conclusion
+This is the biggest clearly unfinished requirement in the repo.
 
-## Recommended Oracle Methods to Compare
+The folder exists:
+
+- `database/Subsystem2-MedicalDB/recovery`
+
+But the final checked-in scripts and documentation are still incomplete.
+
+## Expected Deliverables
+
+- one manual backup flow
+- one automatic backup flow
+- one recovery walkthrough
+- tie the recovery scenario to audit timestamps from Requirement 3
+- short comparison of methods
+- short conclusion for the report
+
+## Good Oracle Options To Compare
 
 - RMAN full backup
 - RMAN incremental backup
 - Data Pump export/import
-- Flashback features where available
+- Flashback features if available in the local Oracle environment
 
-## Output Expectations
+## Suggested Output Files
 
-Place finished recovery assets in `database/Subsystem2-MedicalDB/recovery/`.
-
-Suggested contents:
-
-- backup strategy notes
-- manual backup commands
-- automatic backup scheduling scripts
-- recovery walkthrough scripts
+- backup notes
+- backup commands
+- scheduled backup script or instructions
+- recovery walkthrough
 - comparison summary
 
 ## Acceptance Criteria
 
-- At least one manual backup flow is demonstrated.
-- At least one automatic backup flow is demonstrated.
-- A recovery scenario is tied to an incident time visible in the audit logs.
-- The documentation clearly states the tradeoffs of each tested method.
-- The deliverables remain traceable to Requirement 4.
+- Requirement 4 has real checked-in assets under `database/Subsystem2-MedicalDB/recovery`
+- backup can be demonstrated
+- recovery can be explained and repeated
+- documentation is clear enough for the final report

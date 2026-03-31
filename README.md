@@ -1,93 +1,93 @@
 # Data Security in Information Systems
 
-Oracle security course project for CSC12001. The authoritative assignment text is [docs/designs/Requirements.md](docs/designs/Requirements.md).
+Course project for `CSC12001 - Data Security in Information Systems`.
 
-## Important Rule
+The authoritative assignment text is [docs/designs/Requirements.md](docs/designs/Requirements.md). If any note in this repository conflicts with that file, the assignment document wins.
 
-If this README conflicts with the assignment, use [docs/designs/Requirements.md](docs/designs/Requirements.md).
+## What This Repository Contains
 
-## Project Scope
+- `Subsystem1-OracleDBAdmin`
+  Oracle administration client for users, roles, and privileges.
+- `subsystem2-medicalDataManagement`
+  Medical-data client for coordinator, doctor, technician, and patient workflows.
+- `database/Subsystem2-MedicalDB`
+  Schema, security, audit, reset, and report scripts for the hospital scenario.
+- `docs/designs`
+  Setup and architecture guides.
 
-The project must deliver one application with two modules:
+## Quick Start
 
-- Subsystem 1: Oracle database administration
-- Subsystem 2: medical data management
+If your friend just cloned the repository and wants the project running, use this order:
 
-Security mechanisms required by the assignment:
+1. Read [docs/designs/SETUP_GUIDE.md](docs/designs/SETUP_GUIDE.md).
+2. Connect to the Oracle PDB service, usually `XEPDB1`, not `XE`.
+3. Run [database/Subsystem2-MedicalDB/Create_HOSPITAL_ADMIN.sql](database/Subsystem2-MedicalDB/Create_HOSPITAL_ADMIN.sql) as `SYS`.
+4. Reconnect as `HOSPITAL_ADMIN` and run the schema, RBAC, VPD, OLS, and audit scripts in the order shown in the setup guide.
+5. Build and run the WinForms apps.
+6. For the medical app, type `localhost:1521/XEPDB1` in the login form if the textbox still shows `XE`.
 
-- RBAC
-- VPD
-- OLS
-- Standard Audit plus FGA or Unified Audit
-- Backup and recovery
+## Working Oracle Flow
 
-## Current Repository State
+The setup that currently works in this repository is:
 
-What is currently checked in:
+- schema owner: `HOSPITAL_ADMIN`
+- schema owner password: `12345678`
+- generated employee and patient password: `123`
+- Oracle service for the project: `localhost:1521/XEPDB1`
+- OLS setup: two-pass flow
+  first run creates `THONGBAO_OLS`, then reconnect, then run the same script again
 
-- design documents in `docs/designs/`
-- task briefs in `docs/tasks/`
-- database folders in `database/`
-- application source for `subsystem2-medicalDataManagement`
-- application source for `Subsystem1-OracleDBAdmin`
-- database scripts for schema, security, audit, reset, and reporting under `database/Subsystem2-MedicalDB`
+## Sample Runtime Accounts
 
-## Repository Structure
+Use these for the medical app after setup:
 
-```text
-CSC12001_Data-Security-in-Information-Systems/
-|-- README.md
-|-- CONTRIBUTING.md
-|-- docs/
-|   |-- designs/
-|   |   |-- Requirements.md
-|   |   |-- ARCHITECTURE.md
-|   |   `-- SETUP_GUIDE.md
-|   `-- tasks/
-|-- database/
-|   |-- README.md
-|   |-- Subsystem1-AdminDB/
-|   |-- Subsystem2-MedicalDB/
-|   `-- audit/
-|-- Subsystem1-OracleDBAdmin/
-`-- subsystem2-medicalDataManagement/
-    |-- README.md
-    `-- source/
-```
+- coordinator: `NV000001 / 123`
+- doctor: `NV000021 / 123`
+- technician: `NV000121 / 123`
+- patient: `BN000000001 / 123`
 
-## Architecture Summary
-
-- Oracle remains the source of truth for users, roles, and privileges.
-- Subsystem 1 should operate on Oracle users, roles, privileges, and data dictionary views.
-- Subsystem 2 should preserve the required relations: `BENHNHAN`, `NHANVIEN`, `HSBA`, `HSBA_DV`, `DONTHUOC`, and `THONGBAO`.
-- The project should not replace Oracle account management with custom admin tables.
+Do not use `HOSPITAL_ADMIN` as an application user. It is the schema owner and setup account, not a mapped business user.
 
 ## Recommended Reading Order
 
-1. [docs/designs/Requirements.md](docs/designs/Requirements.md)
+1. [docs/designs/SETUP_GUIDE.md](docs/designs/SETUP_GUIDE.md)
 2. [docs/designs/ARCHITECTURE.md](docs/designs/ARCHITECTURE.md)
-3. [docs/designs/SETUP_GUIDE.md](docs/designs/SETUP_GUIDE.md)
-4. [database/README.md](database/README.md)
+3. [database/README.md](database/README.md)
+4. [subsystem2-medicalDataManagement/README.md](subsystem2-medicalDataManagement/README.md)
 
-## Build Status
+## Build
 
 Subsystem 2:
 
 ```powershell
-cd subsystem2-medicalDataManagement\source
-& "C:\Program Files\dotnet\dotnet.exe" restore
-& "C:\Program Files\dotnet\dotnet.exe" build MedicalDataSystem.csproj
+dotnet restore "subsystem2-medicalDataManagement/source/medicalDataSystem/MedicalDataSystem.csproj"
+dotnet build "subsystem2-medicalDataManagement/source/medicalDataSystem/MedicalDataSystem.csproj"
 ```
 
 Subsystem 1:
 
 ```powershell
-cd Subsystem1-OracleDBAdmin\Source\OracleDBAdmin
-& "C:\Program Files\dotnet\dotnet.exe" restore
-& "C:\Program Files\dotnet\dotnet.exe" build OracleDBAdmin.csproj
+dotnet restore "Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/OracleDBAdmin.csproj"
+dotnet build "Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/OracleDBAdmin.csproj"
 ```
+
+## Current Project Status
+
+What is ready in the repository:
+
+- schema scripts
+- RBAC setup
+- VPD setup
+- OLS setup
+- Standard Audit and FGA setup
+- reset and reporting scripts
+- both WinForms projects
+
+What is still incomplete and should be documented honestly in the final report:
+
+- Requirement 4 backup and recovery assets under `database/Subsystem2-MedicalDB/recovery`
 
 ## Notes
 
-- Some older files in the repository use historical names such as `Subsystem1-AdminDB`. Treat those as folder names, not proof that the final design must use a separate admin database.
-- `Reset.sql` and `Report.sql` under `database/Subsystem2-MedicalDB` now match the current VPD, OLS, FGA, and Oracle-user setup.
+- The medical app now relies on Oracle users and the schema owner `HOSPITAL_ADMIN` through `CURRENT_SCHEMA`, so role accounts such as `NV000021` and `BN000000001` can work against the shared objects.
+- Some older folder names remain for historical reasons. They are repository names, not design requirements.

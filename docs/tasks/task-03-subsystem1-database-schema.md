@@ -1,91 +1,38 @@
-# Task 03: Subsystem 1 - Oracle Catalog Queries and Admin Support SQL
+# Task 03: Subsystem 1 - Oracle Admin Support Queries
 
-**Assigned to:** Duyen, Triet  
-**Type:** Database Administration Support  
-**Priority:** High  
+**Suggested owner:** same developer as Task 01  
+**Priority:** Medium  
+**Focus:** verify the SQL support used by the admin app
 
-## Objective
+## Goal
 
-Prepare the Oracle-side support needed for the Subsystem 1 admin UI without inventing custom account-management tables.
+Keep the Oracle-side support for the admin app simple and requirement-aligned.
 
-This task exists to support the assignment requirements for:
+## Important Rule
 
-- create, edit, delete user or role
-- list users and roles
-- grant and revoke privileges
-- support `WITH GRANT OPTION`
-- inspect granted privileges
+- do not create replacement account tables
+- Oracle itself is the source of truth for users, roles, and privileges
 
-## Source-of-Truth Constraints
+## What To Verify
 
-- Oracle users and roles are managed by Oracle itself.
-- Do not create replacement tables such as `ADMIN_USERS` or `ADMIN_ROLES`.
-- Use Oracle data dictionary views for inspection.
-- Use real Oracle DDL and privilege statements for administration.
+- user queries use Oracle catalog views
+- role queries use Oracle catalog views
+- granted privilege queries are clear enough for the UI
+- any helper SQL still matches the current app behavior
 
-## Expected Deliverables
-
-### 1. Data Dictionary Query Set
-
-Queries or views for:
-
-- users
-- roles
-- system privileges
-- object privileges
-- column privileges
-- role grants
-- database objects eligible for permission assignment
-
-Typical sources:
+## Useful Oracle Views
 
 - `DBA_USERS`
 - `DBA_ROLES`
 - `DBA_SYS_PRIVS`
 - `DBA_TAB_PRIVS`
 - `DBA_COL_PRIVS`
-- `ROLE_ROLE_PRIVS`
+- `DBA_ROLE_PRIVS`
 - `DBA_OBJECTS`
 - `DBA_TAB_COLUMNS`
 
-### 2. Admin Operation SQL
-
-Reusable SQL or PL/SQL wrappers for:
-
-- create user
-- alter user
-- drop user
-- create role
-- drop role
-- grant role to user
-- grant object privilege
-- revoke object privilege
-- grant column-level `SELECT`
-- grant column-level `UPDATE`
-
-### 3. Demo Objects for Permission Testing
-
-Prepare representative objects so the admin UI can demonstrate grants on:
-
-- table
-- view
-- stored procedure
-- function
-
-### 4. Privilege-Inspection Output
-
-Support the UI screens that show:
-
-- what a user has
-- what a role has
-- who has privileges on a given object
-- whether `WITH GRANT OPTION` was used
-
 ## Acceptance Criteria
 
-- No custom table is used as the source of truth for Oracle accounts or roles.
-- User and role lists come from Oracle dictionary views.
-- Column-level grants are available only for `SELECT` and `UPDATE`.
-- Procedure and function permissions are handled as executable object permissions.
-- Revoke workflows can be demonstrated from the same Oracle-managed data.
-- The SQL support layer matches the assignment more closely than the older custom-admin-schema draft.
+- no fake account-management schema is introduced
+- admin UI data comes from real Oracle dictionary sources
+- support SQL matches the current app features

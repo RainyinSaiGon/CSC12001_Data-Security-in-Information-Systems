@@ -1,94 +1,69 @@
 # Subsystem 2: Medical Data Management
 
-This folder contains the checked-in source for the medical-data module of the CSC12001 project.
+This folder contains the medical WinForms client for the hospital scenario.
 
-## Scope
+## What This App Does
 
-Subsystem 2 supports the hospital scenario in the assignment:
+The app supports these business users:
 
-- patient records
-- medical records
-- diagnostic services
-- prescriptions
-- notifications
-- Oracle-enforced security
+- coordinator
+- doctor
+- technician
+- patient
 
-Required security mapping from the assignment:
+Security is intended to be enforced by Oracle:
 
 - RBAC for technician and patient cases
 - VPD for coordinator and doctor cases
 - OLS for `THONGBAO`
-- auditing for sensitive operations
-
-## Current Source Layout
-
-```text
-subsystem2-medicalDataManagement/source/medicalDataSystem/
-|-- forms/
-|-- models/
-|-- services/
-|-- Program.cs
-`-- MedicalDataSystem.csproj
-```
-
-## Important Notes
-
-- The assignment requires one integrated application with both subsystem modules.
-- The repository now also contains the Subsystem 1 administration client in `Subsystem1-OracleDBAdmin`.
-- Security must ultimately be enforced by Oracle, not only by UI logic.
-
-## Requirements-Aligned Data Model
-
-Keep the required assignment relations recognizable:
-
-- `BENHNHAN`
-- `NHANVIEN`
-- `HSBA`
-- `HSBA_DV`
-- `DONTHUOC`
-- `THONGBAO`
-
-Avoid drifting to renamed keys or replacement tables that no longer match the assignment text.
+- audit for sensitive operations
 
 ## Build
 
 ```powershell
-cd subsystem2-medicalDataManagement\source
-& "C:\Program Files\dotnet\dotnet.exe" restore
-& "C:\Program Files\dotnet\dotnet.exe" build MedicalDataSystem.csproj
+dotnet restore "subsystem2-medicalDataManagement/source/medicalDataSystem/MedicalDataSystem.csproj"
+dotnet build "subsystem2-medicalDataManagement/source/medicalDataSystem/MedicalDataSystem.csproj"
 ```
 
-## Database Setup
+Run:
 
-Use the scripts that currently exist under `database/Subsystem2-MedicalDB`:
-
-```sql
-sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
-
-@database/Subsystem2-MedicalDB/Reset.sql
-
-@database/Subsystem2-MedicalDB/schema/01_CreateTables.sql
-@database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
-@database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
-
-@database/Subsystem2-MedicalDB/security/01_RBAC_Setup.sql
-@database/Subsystem2-MedicalDB/security/02_VPD_Setup.sql
-@database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql
-
-@database/Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql
-@database/Subsystem2-MedicalDB/audit/02_FGA_Setup.sql
+```powershell
+dotnet run --project "subsystem2-medicalDataManagement/source/medicalDataSystem/MedicalDataSystem.csproj"
 ```
 
-Audit scripts for Requirement 3 are checked in under `database/Subsystem2-MedicalDB/audit/`. Recovery scripts for Requirement 4 are still pending.
+## Database Requirements
 
-## Implementation Reminder
+Before running the app, complete the Oracle setup from [docs/designs/SETUP_GUIDE.md](../docs/designs/SETUP_GUIDE.md).
 
-For final behavior, the application should authenticate and test permissions in a way that lets Oracle enforce:
+Minimum required scripts:
 
-- the active Oracle user identity
-- Oracle roles and grants
-- VPD predicates
-- OLS labels
-- audit policies
+- [Create_HOSPITAL_ADMIN.sql](../database/Subsystem2-MedicalDB/Create_HOSPITAL_ADMIN.sql)
+- [01_CreateTables.sql](../database/Subsystem2-MedicalDB/schema/01_CreateTables.sql)
+- [02_CreateIndexes.sql](../database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql)
+- [03_InsertSampleData.sql](../database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql)
+- [01_RBAC_Setup.sql](../database/Subsystem2-MedicalDB/security/01_RBAC_Setup.sql)
+- [02_VPD_Setup.sql](../database/Subsystem2-MedicalDB/security/02_VPD_Setup.sql)
+- [03_OLS_Setup.sql](../database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql)
 
-If the application always connects as one high-privilege account, the required Oracle security behavior will not be demonstrated correctly.
+## Login Notes
+
+Use:
+
+```text
+localhost:1521/XEPDB1
+```
+
+The current login textbox may still default to `localhost:1521/XE`. Replace it manually with `localhost:1521/XEPDB1`.
+
+Do not log in as `HOSPITAL_ADMIN`. Use the business accounts created by the RBAC script:
+
+- `NV000001 / 123`
+- `NV000021 / 123`
+- `NV000121 / 123`
+- `BN000000001 / 123`
+
+## Implementation Note
+
+The app resolves shared objects through the `HOSPITAL_ADMIN` schema at session level, so runtime Oracle users can work with the schema-owned tables, views, policies, and packages.
+
+That is why the medical app must connect with real Oracle user accounts instead of one shared admin account.

@@ -1,49 +1,43 @@
-# Task 02: Subsystem 1 - Business Logic Services
+# Task 02: Subsystem 1 - Service Layer Hardening
 
-**Assigned to:** Duyên, Triết  
-**Type:** Backend Services  
-**Duration:** 25-30 hours  
-**Priority:** Critical (blocks Task 01)  
-**Timeline:** Feb 10 - Feb 21, 2026
+**Suggested owner:** same developer as Task 01  
+**Priority:** High  
+**Focus:** make the admin app service layer match the final UI flow
 
----
+## Goal
 
-## 1. Overview & Deliverables
+Review and finish the backend services that support the Oracle admin app.
 
-Implement 6 foundational services for database user/role/permission management:
+## Current State
 
-* **OracleConnectionService** — Connection pooling, lifecycle management, error handling (implement FIRST)
-* **ValidationService** — Username/password/object validation with Oracle keyword checking
-* **UserService** — User CRUD (CreateUser, ModifyUser, DeleteUser, ListUsers, GrantRole)
-* **RoleService** — Role operations (CreateRole, DeleteRole, ListRoles, GetRolePrivileges)
-* **PermissionService** — Grant/revoke with column-level security (SupportsColumnGrant, ValidateColumnPermission)
-* **PrivilegeService** — Privilege queries (GetUserPrivileges, GetRolePrivileges, GetObjectPermissions)
+The repository already includes the main services, but they should be reviewed against the final Requirement 1 demo.
 
-## 2. Requirements & Dependencies
+Likely checks:
 
-* Use Oracle.ManagedDataAccess.Core; parameterized queries to prevent SQL injection
-* Exception handling, configuration-based connection strings, no hardcoded credentials
-* Dependencies: Task 03 (Oracle catalog queries and admin SQL support), Task 01 (UI forms consume these)
-* Models required: User.cs, Role.cs, Permission.cs, OracleObject.cs
+- role revoke support
+- privilege revoke support
+- object and column privilege coverage
+- clear validation and error messages
 
-## 3. Method Specifications
+## Main Files
 
-* **OracleConnectionService** — TestConnection(), GetConnection(), CloseConnection() with pooling support
-* **ValidationService** — ValidateUsername (3-30 chars, alphanumeric+underscore, no keywords), ValidatePassword (8+ chars, mixed case, 1+ number), CheckObjectExists()
-* **UserService** — CreateUser(), ModifyUser(), DeleteUser(), ListUsers(), GrantRole()
-* **RoleService** — CreateRole(), DeleteRole(), ListRoles(), GetRolePrivileges()
-* **PermissionService** — GrantPermission(), RevokePermission(), GrantColumnPermission() with validation that only SELECT/UPDATE allow column-level, SupportsColumnGrant(), ValidateColumnPermission(), GetObjectPermissions()
-* **PrivilegeService** — GetUserPrivileges(), GetRolePrivileges(), GetObjectPermissions(), HasPrivilege()
+- `Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/Services/OracleConnectionService.cs`
+- `Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/Services/ValidationService.cs`
+- `Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/Services/UserService.cs`
+- `Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/Services/RoleService.cs`
+- `Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/Services/PermissionService.cs`
+- `Subsystem1-OracleDBAdmin/Source/OracleDBAdmin/Services/PrivilegeService.cs`
 
----
+## Deliverables
 
-## 4. Acceptance Criteria
+- service methods aligned with the admin UI
+- no missing grant or revoke path needed by the demo
+- safe parameterized SQL wherever possible
+- updated error handling if any admin action is confusing
 
-* [ ] OracleConnectionService connects successfully with proper error handling
-* [ ] ValidationService enforces username (3-30 chars, alphanumeric+underscore, no keywords) and password (8+ chars, mixed case, 1+ number) rules
-* [ ] UserService successfully creates/modifies/deletes/lists users
-* [ ] RoleService creates/deletes roles and retrieves privileges
-* [ ] PermissionService validates column-level restrictions (SELECT/UPDATE only), rejects INSERT/DELETE on columns
-* [ ] PrivilegeService queries user/role/object permissions correctly
-* [ ] All queries parameterized; no hardcoded credentials
-* [ ] Services integrate seamlessly with Task 01 UI forms
+## Acceptance Criteria
+
+- services support the final admin UI without manual SQL workarounds
+- role and privilege revoke cases are covered
+- object privilege queries show correct results
+- code builds cleanly
