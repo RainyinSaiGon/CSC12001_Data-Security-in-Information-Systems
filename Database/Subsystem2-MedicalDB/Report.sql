@@ -260,6 +260,9 @@ BEGIN
         INTO v_current_count;
 
         DBMS_OUTPUT.PUT_LINE('DBA_AUDIT_TRAIL relevant rows     : ' || v_current_count);
+        IF v_current_count = 0 THEN
+            DBMS_OUTPUT.PUT_LINE('[INFO] No standard-audit rows yet. Run some demo actions first, then read the logs again.');
+        END IF;
     EXCEPTION
         WHEN OTHERS THEN
             DBMS_OUTPUT.PUT_LINE('[WARN] DBA_AUDIT_TRAIL is not accessible in this session.');
@@ -274,6 +277,9 @@ BEGIN
         INTO v_current_count;
 
         DBMS_OUTPUT.PUT_LINE('DBA_FGA_AUDIT_TRAIL relevant rows : ' || v_current_count);
+        IF v_current_count = 0 THEN
+            DBMS_OUTPUT.PUT_LINE('[INFO] No FGA rows yet. Run the audited doctor/technician actions first, then read the logs again.');
+        END IF;
     EXCEPTION
         WHEN OTHERS THEN
             DBMS_OUTPUT.PUT_LINE('[WARN] DBA_FGA_AUDIT_TRAIL is not accessible in this session.');
