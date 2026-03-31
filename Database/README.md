@@ -25,12 +25,14 @@ Currently checked in:
 - `security/01_RBAC_Setup.sql`
 - `security/02_VPD_Setup.sql`
 - `security/03_OLS_Setup.sql`
+- `audit/01_StandardAudit_Setup.sql`
+- `audit/02_FGA_Setup.sql`
+- `audit/03_ReadAuditLogs.sql`
 - `Reset.sql`
 - `Report.sql`
 
-Currently present but empty in this repo snapshot:
+Currently present but not yet implemented as complete project assets:
 
-- `audit/`
 - `recovery/`
 
 ### `Subsystem1-AdminDB`
@@ -71,6 +73,8 @@ For the scripts currently in the repo:
 ```sql
 sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
 
+@database/Subsystem2-MedicalDB/Reset.sql
+
 @database/Subsystem2-MedicalDB/schema/01_CreateTables.sql
 @database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
 @database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
@@ -78,9 +82,15 @@ sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
 @database/Subsystem2-MedicalDB/security/01_RBAC_Setup.sql
 @database/Subsystem2-MedicalDB/security/02_VPD_Setup.sql
 @database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql
+
+@database/Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql
+@database/Subsystem2-MedicalDB/audit/02_FGA_Setup.sql
+
+@database/Subsystem2-MedicalDB/Report.sql
+@database/Subsystem2-MedicalDB/audit/03_ReadAuditLogs.sql
 ```
 
-Audit and recovery scripts are still required by the project, but they are not yet checked in as complete assets in this repo snapshot.
+Audit scripts for Requirement 3 are checked in. Recovery scripts for Requirement 4 are still pending.
 
 ## Security Mapping
 
@@ -110,6 +120,5 @@ Use Oracle features according to the assignment:
 
 Not yet present as finished checked-in scripts:
 
-- completed audit scripts under `Subsystem2-MedicalDB/audit/`
 - completed recovery scripts under `Subsystem2-MedicalDB/recovery/`
 - finalized Subsystem 1 Oracle support scripts aligned with the assignment

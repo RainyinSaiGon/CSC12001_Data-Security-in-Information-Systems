@@ -311,5 +311,7 @@ This repository snapshot currently contains:
 - Design and task documentation
 - Database folders for both subsystem tracks
 - Checked-in application source for `subsystem2-medicalDataManagement`
+- Checked-in application source for `Subsystem1-OracleDBAdmin`
+- Checked-in audit, reset, and verification scripts under `database/Subsystem2-MedicalDB`
 
-It does not currently contain a checked-in Subsystem 1 WinForms client folder. The architecture above still reflects the required final project structure, but the present repo state should be described honestly in README and setup documents.
+Requirement 4 backup and recovery assets are still incomplete, so README and setup documents should continue to describe that gap honestly.

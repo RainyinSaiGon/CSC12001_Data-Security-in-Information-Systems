@@ -1,5 +1,4 @@
 SET SERVEROUTPUT ON;
-ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
 
 PROMPT === Requirement 1 / RBAC setup ===
 
@@ -16,23 +15,47 @@ BEGIN EXECUTE IMMEDIATE 'DROP VIEW V_PATIENT_DONTHUOC'; EXCEPTION WHEN OTHERS TH
 BEGIN EXECUTE IMMEDIATE 'DROP TRIGGER TRG_HSBADV_TECH_ONLY'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 
+DECLARE
+    PROCEDURE ensure_role(p_role_name IN VARCHAR2) IS
+        v_role_count NUMBER := 0;
+        v_user_count NUMBER := 0;
+    BEGIN
+        BEGIN
+            SELECT COUNT(*)
+            INTO v_role_count
+            FROM DBA_ROLES
+            WHERE ROLE = p_role_name;
+        EXCEPTION
+            WHEN OTHERS THEN
+                v_role_count := 0;
+        END;
+
+        BEGIN
+            SELECT COUNT(*)
+            INTO v_user_count
+            FROM DBA_USERS
+            WHERE USERNAME = p_role_name;
+        EXCEPTION
+            WHEN OTHERS THEN
+                v_user_count := 0;
+        END;
+
+        IF v_user_count > 0 THEN
+            RAISE_APPLICATION_ERROR(-20021, 'Name conflict: user ' || p_role_name || ' already exists.');
+        ELSIF v_role_count = 0 THEN
+            EXECUTE IMMEDIATE 'CREATE ROLE ' || p_role_name;
+            DBMS_OUTPUT.PUT_LINE('Created role ' || p_role_name || '.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Role ' || p_role_name || ' already exists. Reusing it.');
+        END IF;
+    END;
 BEGIN
-    FOR r IN (
-        SELECT role
-        FROM dba_roles
-        WHERE role IN ('DIEU_PHOI_VIEN', 'BAC_SI_Y_SI', 'KY_THUAT_VIEN', 'BENH_NHAN')
-    ) LOOP
-        EXECUTE IMMEDIATE 'DROP ROLE ' || r.role;
-    END LOOP;
-EXCEPTION
-    WHEN OTHERS THEN NULL;
+    ensure_role('DIEU_PHOI_VIEN');
+    ensure_role('BAC_SI_Y_SI');
+    ensure_role('KY_THUAT_VIEN');
+    ensure_role('BENH_NHAN');
 END;
 /
-
-CREATE ROLE DIEU_PHOI_VIEN;
-CREATE ROLE BAC_SI_Y_SI;
-CREATE ROLE KY_THUAT_VIEN;
-CREATE ROLE BENH_NHAN;
 
 CREATE OR REPLACE VIEW V_SELF_NHANVIEN AS
 SELECT MANV, HOTEN, PHAI, NGAYSINH, CMND, QUEQUAN, SODT, VAITRO, CHUYENKHOA, USERNAME
@@ -143,7 +166,9 @@ BEGIN
             EXECUTE IMMEDIATE 'CREATE USER ' || r.USERNAME || ' IDENTIFIED BY "123"';
         EXCEPTION
             WHEN OTHERS THEN
-                IF SQLCODE != -1920 THEN
+                IF SQLCODE = -1920 THEN
+                    EXECUTE IMMEDIATE 'ALTER USER ' || r.USERNAME || ' IDENTIFIED BY "123" ACCOUNT UNLOCK';
+                ELSE
                     RAISE;
                 END IF;
         END;
@@ -159,7 +184,9 @@ BEGIN
             EXECUTE IMMEDIATE 'CREATE USER ' || r.USERNAME || ' IDENTIFIED BY "123"';
         EXCEPTION
             WHEN OTHERS THEN
-                IF SQLCODE != -1920 THEN
+                IF SQLCODE = -1920 THEN
+                    EXECUTE IMMEDIATE 'ALTER USER ' || r.USERNAME || ' IDENTIFIED BY "123" ACCOUNT UNLOCK';
+                ELSE
                     RAISE;
                 END IF;
         END;

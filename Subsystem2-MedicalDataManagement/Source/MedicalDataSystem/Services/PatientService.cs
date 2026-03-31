@@ -55,7 +55,7 @@ public class PatientService
         {
             using var command = connection.CreateCommand();
             command.CommandText = """
-                UPDATE BENHNHAN
+                UPDATE V_SELF_BENHNHAN
                 SET SONHA = :sonha,
                     TENDUONG = :tenduong,
                     QUANHUYEN = :quanhuyen,
@@ -63,7 +63,6 @@ public class PatientService
                     TIENSUBENH = :tiensubenh,
                     TIENSUBENHGD = :tiensubenhgd,
                     DIUNGTHUOC = :diungthuoc
-                WHERE MABN = :mabn
                 """;
             command.Parameters.Add(new OracleParameter("sonha", patient.SONHA));
             command.Parameters.Add(new OracleParameter("tenduong", patient.TENDUONG));
@@ -72,7 +71,6 @@ public class PatientService
             command.Parameters.Add(new OracleParameter("tiensubenh", patient.TIENSUBENH));
             command.Parameters.Add(new OracleParameter("tiensubenhgd", patient.TIENSUBENHGD));
             command.Parameters.Add(new OracleParameter("diungthuoc", patient.DIUNGTHUOC));
-            command.Parameters.Add(new OracleParameter("mabn", patient.MABN));
             return command.ExecuteNonQuery() == 1;
         });
     }

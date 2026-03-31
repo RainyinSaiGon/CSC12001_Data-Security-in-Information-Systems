@@ -29,10 +29,8 @@ What is currently checked in:
 - task briefs in `docs/tasks/`
 - database folders in `database/`
 - application source for `subsystem2-medicalDataManagement`
-
-What is not currently checked in as a finished client:
-
-- Subsystem 1 WinForms application source
+- application source for `Subsystem1-OracleDBAdmin`
+- database scripts for schema, security, audit, reset, and reporting under `database/Subsystem2-MedicalDB`
 
 ## Repository Structure
 
@@ -51,6 +49,7 @@ CSC12001_Data-Security-in-Information-Systems/
 |   |-- Subsystem1-AdminDB/
 |   |-- Subsystem2-MedicalDB/
 |   `-- audit/
+|-- Subsystem1-OracleDBAdmin/
 `-- subsystem2-medicalDataManagement/
     |-- README.md
     `-- source/
@@ -72,7 +71,7 @@ CSC12001_Data-Security-in-Information-Systems/
 
 ## Build Status
 
-Current checked-in application source:
+Subsystem 2:
 
 ```powershell
 cd subsystem2-medicalDataManagement\source
@@ -80,7 +79,15 @@ cd subsystem2-medicalDataManagement\source
 & "C:\Program Files\dotnet\dotnet.exe" build MedicalDataSystem.csproj
 ```
 
+Subsystem 1:
+
+```powershell
+cd Subsystem1-OracleDBAdmin\Source\OracleDBAdmin
+& "C:\Program Files\dotnet\dotnet.exe" restore
+& "C:\Program Files\dotnet\dotnet.exe" build OracleDBAdmin.csproj
+```
+
 ## Notes
 
 - Some older files in the repository use historical names such as `Subsystem1-AdminDB`. Treat those as folder names, not proof that the final design must use a separate admin database.
-- Documentation has been updated to align to the assignment, but the implementation still needs to catch up in places.
+- `Reset.sql` and `Report.sql` under `database/Subsystem2-MedicalDB` now match the current VPD, OLS, FGA, and Oracle-user setup.

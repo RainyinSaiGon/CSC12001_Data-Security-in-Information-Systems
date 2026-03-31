@@ -4,6 +4,7 @@ using Oracle.ManagedDataAccess.Client;
 
 public class OracleConnectionService
 {
+    private const string AppSchema = "HOSPITAL_ADMIN";
     private readonly string _connectionString;
 
     public OracleConnectionService(string connectionString)
@@ -29,6 +30,13 @@ public class OracleConnectionService
     {
         var connection = new OracleConnection(_connectionString);
         connection.Open();
+
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"ALTER SESSION SET CURRENT_SCHEMA = {AppSchema}";
+            command.ExecuteNonQuery();
+        }
+
         return connection;
     }
 

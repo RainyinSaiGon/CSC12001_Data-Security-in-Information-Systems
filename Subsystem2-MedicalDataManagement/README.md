@@ -34,7 +34,7 @@ subsystem2-medicalDataManagement/source/medicalDataSystem/
 ## Important Notes
 
 - The assignment requires one integrated application with both subsystem modules.
-- This repo snapshot currently contains Subsystem 2 source only.
+- The repository now also contains the Subsystem 1 administration client in `Subsystem1-OracleDBAdmin`.
 - Security must ultimately be enforced by Oracle, not only by UI logic.
 
 ## Requirements-Aligned Data Model
@@ -65,6 +65,8 @@ Use the scripts that currently exist under `database/Subsystem2-MedicalDB`:
 ```sql
 sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
 
+@database/Subsystem2-MedicalDB/Reset.sql
+
 @database/Subsystem2-MedicalDB/schema/01_CreateTables.sql
 @database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
 @database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
@@ -72,9 +74,12 @@ sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
 @database/Subsystem2-MedicalDB/security/01_RBAC_Setup.sql
 @database/Subsystem2-MedicalDB/security/02_VPD_Setup.sql
 @database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql
+
+@database/Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql
+@database/Subsystem2-MedicalDB/audit/02_FGA_Setup.sql
 ```
 
-Audit and recovery scripts are still required by the assignment, but are not yet fully checked in here.
+Audit scripts for Requirement 3 are checked in under `database/Subsystem2-MedicalDB/audit/`. Recovery scripts for Requirement 4 are still pending.
 
 ## Implementation Reminder
 

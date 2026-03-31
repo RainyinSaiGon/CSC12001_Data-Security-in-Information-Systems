@@ -9,9 +9,10 @@ The repository currently contains:
 - `docs/designs/Requirements.md` as the authoritative assignment text
 - database scripts under `database/`
 - checked-in source for `subsystem2-medicalDataManagement`
+- checked-in source for `Subsystem1-OracleDBAdmin`
 - task briefs for both subsystems
 
-The Subsystem 1 WinForms client is not currently checked in, so this guide separates:
+This guide therefore separates:
 
 - required Oracle/database setup for the full project
 - what can already be built from the current repo snapshot
@@ -84,6 +85,8 @@ Run them in this order:
 ```sql
 sqlplus hospital_admin/<STRONG_PASSWORD>@localhost:1521/XE
 
+@database/Subsystem2-MedicalDB/Reset.sql
+
 @database/Subsystem2-MedicalDB/schema/01_CreateTables.sql
 @database/Subsystem2-MedicalDB/schema/02_CreateIndexes.sql
 @database/Subsystem2-MedicalDB/schema/03_InsertSampleData.sql
@@ -113,7 +116,16 @@ Required interpretation:
 - `02_VPD_Setup.sql` should implement coordinator and doctor policies.
 - `03_OLS_Setup.sql` should implement Requirement 2 on `THONGBAO`.
 
-The current repo does not contain checked-in audit or recovery scripts yet, even though the project still requires them.
+Audit scripts are now checked in under `database/Subsystem2-MedicalDB/audit/`. Recovery scripts are still pending for Requirement 4.
+
+For Requirement 3 setup and verification, run:
+
+```sql
+@database/Subsystem2-MedicalDB/audit/01_StandardAudit_Setup.sql
+@database/Subsystem2-MedicalDB/audit/02_FGA_Setup.sql
+@database/Subsystem2-MedicalDB/Report.sql
+@database/Subsystem2-MedicalDB/audit/03_ReadAuditLogs.sql
+```
 
 ## Step 5: Provision Runtime Oracle Accounts
 
@@ -132,9 +144,7 @@ Recommended pattern:
 
 Do not create a custom account-management table for this purpose.
 
-## Step 6: Build the Checked-In Application
-
-Only Subsystem 2 source is currently checked in.
+## Step 6: Build the Checked-In Applications
 
 ```powershell
 cd subsystem2-medicalDataManagement\source
@@ -142,7 +152,11 @@ cd subsystem2-medicalDataManagement\source
 & "C:\Program Files\dotnet\dotnet.exe" build MedicalDataSystem.csproj
 ```
 
-If you later add the Subsystem 1 client to the repo, document its build path separately instead of assuming it already exists.
+```powershell
+cd Subsystem1-OracleDBAdmin\Source\OracleDBAdmin
+& "C:\Program Files\dotnet\dotnet.exe" restore
+& "C:\Program Files\dotnet\dotnet.exe" build OracleDBAdmin.csproj
+```
 
 ## Step 7: Configure Application Secrets
 
@@ -224,8 +238,6 @@ If the Oracle environment used on your machine does not expose OLS features need
 
 The following items are still required by the assignment but are not fully checked in as finished assets in the current snapshot:
 
-- Subsystem 1 WinForms client source
-- audit scripts for Requirement 3
 - backup and recovery scripts for Requirement 4
 
 That is a project-status fact, not a requirements change.
