@@ -64,6 +64,10 @@ AS
     v_role NVARCHAR2(50);
     v_manv NUMBER;
 BEGIN
+    IF UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER')) = UPPER(USER) THEN
+        RETURN '1=1';
+    END IF;
+
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
 
@@ -83,6 +87,10 @@ AS
     v_role NVARCHAR2(50);
     v_manv NUMBER;
 BEGIN
+    IF UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER')) = UPPER(USER) THEN
+        RETURN '1=1';
+    END IF;
+
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
 
@@ -102,6 +110,10 @@ AS
     v_role NVARCHAR2(50);
     v_manv NUMBER;
 BEGIN
+    IF UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER')) = UPPER(USER) THEN
+        RETURN '1=1';
+    END IF;
+
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
 
@@ -121,6 +133,10 @@ AS
     v_role NVARCHAR2(50);
     v_manv NUMBER;
 BEGIN
+    IF UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER')) = UPPER(USER) THEN
+        RETURN '1=1';
+    END IF;
+
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
 
