@@ -9,10 +9,4 @@ public partial class MainForm : Form
     {
         InitializeComponent();
     }
-
-    // TODO: This form dispatches to role-specific forms
-    // - CoordinatorForm for Coordinator role
-    // - DoctorForm for Doctor/Nurse role
-    // - TechnicianForm for Technician role
-    // - PatientForm for Patient role
 }

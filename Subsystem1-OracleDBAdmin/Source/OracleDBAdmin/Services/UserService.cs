@@ -1,8 +1,8 @@
 namespace OracleDBAdmin.Services;
 
+using Oracle.ManagedDataAccess.Client;
 using OracleDBAdmin.Models;
 
-// Service for Oracle user management operations (CRUD)
 public class UserService
 {
     private readonly OracleConnectionService _connectionService;
@@ -14,46 +14,80 @@ public class UserService
         _validationService = validationService;
     }
 
-    // Create a new Oracle user
-    public bool CreateUser(User user)
-    {
-        if (!_validationService.ValidateUsername(user.Username))
-            throw new ArgumentException("Invalid username");
-        if (!_validationService.ValidatePassword(user.Password))
-            throw new ArgumentException("Invalid password");
-
-        // TODO: Execute CREATE USER statement in Oracle
-        return true;
-    }
-
-    // Modify an existing user
-    public bool ModifyUser(User user)
-    {
-        // TODO: Execute ALTER USER statement in Oracle
-        return true;
-    }
-
-    // Delete an Oracle user
-    public bool DeleteUser(string username)
-    {
-        if (!_validationService.ValidateUsername(username))
-            throw new ArgumentException("Invalid username");
-
-        // TODO: Execute DROP USER statement in Oracle
-        return true;
-    }
-
-    // Get all Oracle users
     public List<User> ListUsers()
     {
-        // TODO: Query DBA_USERS from Oracle
-        return new List<User>();
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT USERNAME, ACCOUNT_STATUS, CREATED, DEFAULT_TABLESPACE
+                FROM DBA_USERS
+                ORDER BY USERNAME
+                """;
+            using var reader = command.ExecuteReader();
+            var items = new List<User>();
+            while (reader.Read())
+            {
+                items.Add(new User
+                {
+                    Username = reader.GetString(0),
+                    AccountStatus = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    Created = reader.IsDBNull(2) ? null : reader.GetDateTime(2),
+                    DefaultTablespace = reader.IsDBNull(3) ? string.Empty : reader.GetString(3)
+                });
+            }
+
+            return items;
+        });
     }
 
-    // Grant a role to a user
-    public bool GrantRole(string username, string roleName)
+    public void CreateUser(string username, string password)
     {
-        // TODO: Execute GRANT role TO user statement
-        return true;
+        if (!_validationService.ValidateIdentifier(username) || !_validationService.ValidatePassword(password))
+        {
+            throw new InvalidOperationException("Invalid username or password.");
+        }
+
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            string safeUsername = _validationService.QuoteIdentifier(username);
+            command.CommandText = $"CREATE USER {safeUsername} IDENTIFIED BY \"{password}\"";
+            command.ExecuteNonQuery();
+
+            using var grantCommand = connection.CreateCommand();
+            grantCommand.CommandText = $"GRANT CREATE SESSION TO {safeUsername}";
+            grantCommand.ExecuteNonQuery();
+        });
+    }
+
+    public void ResetPassword(string username, string password)
+    {
+        if (!_validationService.ValidateIdentifier(username) || !_validationService.ValidatePassword(password))
+        {
+            throw new InvalidOperationException("Invalid username or password.");
+        }
+
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = $"ALTER USER {_validationService.QuoteIdentifier(username)} IDENTIFIED BY \"{password}\"";
+            command.ExecuteNonQuery();
+        });
+    }
+
+    public void DropUser(string username)
+    {
+        if (!_validationService.ValidateIdentifier(username))
+        {
+            throw new InvalidOperationException("Invalid username.");
+        }
+
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = $"DROP USER {_validationService.QuoteIdentifier(username)} CASCADE";
+            command.ExecuteNonQuery();
+        });
     }
 }

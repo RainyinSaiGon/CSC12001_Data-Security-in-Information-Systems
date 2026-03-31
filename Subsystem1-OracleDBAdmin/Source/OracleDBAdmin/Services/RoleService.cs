@@ -2,41 +2,69 @@ namespace OracleDBAdmin.Services;
 
 using OracleDBAdmin.Models;
 
-// Service for Oracle role management operations (CRUD)
 public class RoleService
 {
     private readonly OracleConnectionService _connectionService;
+    private readonly ValidationService _validationService;
 
-    public RoleService(OracleConnectionService connectionService)
+    public RoleService(OracleConnectionService connectionService, ValidationService validationService)
     {
         _connectionService = connectionService;
+        _validationService = validationService;
     }
 
-    // Create a new Oracle role
-    public bool CreateRole(Role role)
-    {
-        // TODO: Execute CREATE ROLE statement in Oracle
-        return true;
-    }
-
-    // Delete an Oracle role
-    public bool DeleteRole(string roleName)
-    {
-        // TODO: Execute DROP ROLE statement in Oracle
-        return true;
-    }
-
-    // Get all Oracle roles
     public List<Role> ListRoles()
     {
-        // TODO: Query DBA_ROLES from Oracle
-        return new List<Role>();
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT ROLE, AUTHENTICATION_TYPE
+                FROM DBA_ROLES
+                ORDER BY ROLE
+                """;
+            using var reader = command.ExecuteReader();
+            var items = new List<Role>();
+            while (reader.Read())
+            {
+                items.Add(new Role
+                {
+                    Name = reader.GetString(0),
+                    AuthenticationType = reader.IsDBNull(1) ? string.Empty : reader.GetString(1)
+                });
+            }
+
+            return items;
+        });
     }
 
-    // Get role privileges
-    public List<Permission> GetRolePrivileges(string roleName)
+    public void CreateRole(string roleName)
     {
-        // TODO: Query role_tab_privs and role_sys_privs
-        return new List<Permission>();
+        if (!_validationService.ValidateIdentifier(roleName))
+        {
+            throw new InvalidOperationException("Invalid role name.");
+        }
+
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = $"CREATE ROLE {_validationService.QuoteIdentifier(roleName)}";
+            command.ExecuteNonQuery();
+        });
+    }
+
+    public void DropRole(string roleName)
+    {
+        if (!_validationService.ValidateIdentifier(roleName))
+        {
+            throw new InvalidOperationException("Invalid role name.");
+        }
+
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = $"DROP ROLE {_validationService.QuoteIdentifier(roleName)}";
+            command.ExecuteNonQuery();
+        });
     }
 }

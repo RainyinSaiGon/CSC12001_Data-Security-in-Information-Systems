@@ -1,34 +1,21 @@
 namespace OracleDBAdmin.Services;
 
-// Service for input validation and error handling
+using System.Text.RegularExpressions;
+
 public class ValidationService
 {
-    // Validate Oracle username format (3-30 characters)
-    public bool ValidateUsername(string username)
+    public bool ValidateIdentifier(string value)
     {
-        if (string.IsNullOrWhiteSpace(username))
-            return false;
-        if (username.Length < 3 || username.Length > 30)
-            return false;
-        // TODO: Add Oracle naming convention validation
-        return true;
+        return !string.IsNullOrWhiteSpace(value) && Regex.IsMatch(value, "^[A-Za-z][A-Za-z0-9_$#]{0,29}$");
     }
 
-    // Validate password strength (minimum 8 characters)
-    public bool ValidatePassword(string password)
+    public bool ValidatePassword(string value)
     {
-        if (string.IsNullOrWhiteSpace(password))
-            return false;
-        if (password.Length < 8)
-            return false;
-        // TODO: Add password complexity requirements
-        return true;
+        return !string.IsNullOrWhiteSpace(value) && value.Length >= 3;
     }
 
-    // Check if an Oracle object exists in the database
-    public bool CheckObjectExists(string objectName)
+    public string QuoteIdentifier(string value)
     {
-        // TODO: Implement database query to check object existence
-        throw new NotImplementedException();
+        return value.Trim().ToUpperInvariant();
     }
 }

@@ -1,9 +1,17 @@
 namespace MedicalDataSystem.Services;
 
-// Service for Role-Based Access Control (RBAC)
-// Manages access control based on user roles
+using Oracle.ManagedDataAccess.Client;
+
 public class RBACService
 {
+    private static readonly Dictionary<string, List<string>> RoleActions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["COORDINATOR"] = new() { "ViewPatients", "AddPatient", "EditPatient", "CreateMedicalRecord", "AssignDoctor", "AssignTechnician" },
+        ["DOCTOR"] = new() { "ViewAssignedPatients", "UpdateMedicalRecord", "OrderDiagnosticService", "DeleteDiagnosticService", "ManagePrescription", "EditPatientHistory" },
+        ["TECHNICIAN"] = new() { "ViewAssignedServices", "UpdateServiceResult" },
+        ["PATIENT"] = new() { "ViewSelf", "EditSelf", "ViewNotifications" }
+    };
+
     private readonly OracleConnectionService _connectionService;
 
     public RBACService(OracleConnectionService connectionService)
@@ -11,26 +19,53 @@ public class RBACService
         _connectionService = connectionService;
     }
 
-    // Check user's current role
     public string? CheckUserRole(string username)
     {
-        // TODO: Query Oracle to get user's role
-        // Possible values: 'Điều phối viên', 'Bác sĩ/Y sĩ', 'Kỹ thuật viên', 'Bệnh nhân'
-        return null;
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT APP_ROLE FROM (
+                    SELECT CASE
+                        WHEN VAITRO = N'Điều phối viên' THEN 'COORDINATOR'
+                        WHEN VAITRO = N'Bác sĩ/Y sĩ' THEN 'DOCTOR'
+                        WHEN VAITRO = N'Kỹ thuật viên' THEN 'TECHNICIAN'
+                        WHEN VAITRO = N'Bệnh nhân' THEN 'PATIENT'
+                        ELSE 'STAFF'
+                    END AS APP_ROLE
+                    FROM NHANVIEN
+                    WHERE UPPER(USERNAME) = UPPER(:username)
+                    UNION ALL
+                    SELECT 'PATIENT'
+                    FROM BENHNHAN
+                    WHERE UPPER(USERNAME) = UPPER(:username)
+                )
+                FETCH FIRST 1 ROWS ONLY
+                """;
+            command.Parameters.Add(new OracleParameter("username", username));
+            return command.ExecuteScalar()?.ToString();
+        });
     }
 
-    // Check if user has permission for specific action
     public bool CheckPermission(string username, string action)
     {
-        // TODO: Verify if user's role has permission for action
-        // Examples: "ViewPatients", "EditPrescription", etc.
-        return true;
+        string? role = CheckUserRole(username);
+        if (role is null || !RoleActions.TryGetValue(role, out var actions))
+        {
+            return false;
+        }
+
+        return actions.Contains(action, StringComparer.OrdinalIgnoreCase);
     }
 
-    // Get all available actions for user's role
     public List<string> GetAvailableActions(string username)
     {
-        // TODO: Return list of actions available for user's role
-        return new List<string>();
+        string? role = CheckUserRole(username);
+        if (role is null || !RoleActions.TryGetValue(role, out var actions))
+        {
+            return new List<string>();
+        }
+
+        return actions.ToList();
     }
 }

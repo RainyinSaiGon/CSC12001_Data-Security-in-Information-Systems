@@ -1,8 +1,8 @@
 namespace MedicalDataSystem.Services;
 
 using MedicalDataSystem.Models;
+using Oracle.ManagedDataAccess.Client;
 
-// Service for patient-related operations
 public class PatientService
 {
     private readonly OracleConnectionService _connectionService;
@@ -12,32 +12,128 @@ public class PatientService
         _connectionService = connectionService;
     }
 
-    // Get patient details (row-level security applied)
     public Patient? GetPatient(string patientId)
     {
-        // TODO: Query patient from BENHNHAN table with row-level security
-        return null;
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT MABN, TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN,
+                       TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME
+                FROM V_SELF_BENHNHAN
+                """;
+            _ = patientId;
+
+            using var reader = command.ExecuteReader();
+            if (!reader.Read())
+            {
+                return null;
+            }
+
+            return new Patient
+            {
+                MABN = reader.GetInt32(0),
+                TENBN = reader.GetString(1),
+                PHAI = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                NGAYSINH = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
+                CCCD = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                SONHA = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                TENDUONG = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                QUANHUYEN = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                TINHTP = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                TIENSUBENH = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                TIENSUBENHGD = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                DIUNGTHUOC = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                USERNAME = reader.IsDBNull(12) ? string.Empty : reader.GetString(12)
+            };
+        });
     }
 
-    // Update patient contact information
     public bool UpdatePatientInfo(Patient patient)
     {
-        // TODO: Update patient record in Oracle
-        return true;
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                UPDATE V_SELF_BENHNHAN
+                SET SONHA = :sonha,
+                    TENDUONG = :tenduong,
+                    QUANHUYEN = :quanhuyen,
+                    TINHTP = :tinhtp,
+                    TIENSUBENH = :tiensubenh,
+                    TIENSUBENHGD = :tiensubenhgd,
+                    DIUNGTHUOC = :diungthuoc
+                """;
+            command.Parameters.Add(new OracleParameter("sonha", patient.SONHA));
+            command.Parameters.Add(new OracleParameter("tenduong", patient.TENDUONG));
+            command.Parameters.Add(new OracleParameter("quanhuyen", patient.QUANHUYEN));
+            command.Parameters.Add(new OracleParameter("tinhtp", patient.TINHTP));
+            command.Parameters.Add(new OracleParameter("tiensubenh", patient.TIENSUBENH));
+            command.Parameters.Add(new OracleParameter("tiensubenhgd", patient.TIENSUBENHGD));
+            command.Parameters.Add(new OracleParameter("diungthuoc", patient.DIUNGTHUOC));
+            return command.ExecuteNonQuery() == 1;
+        });
     }
 
-    // Get medical records for authenticated patient
     public List<MedicalRecord> GetMyMedicalRecords(string patientId)
     {
-        // TODO: Return only authenticated patient's records
-        // Row-level security ensures patient can only see own records
-        return new List<MedicalRecord>();
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT MAHSBA, MABN, NGAY, CHANDOAN, DIEUTRI, KETLUAN, MABS, MAKHOA
+                FROM V_PATIENT_HSBA
+                ORDER BY NGAY DESC, MAHSBA DESC
+                """;
+            _ = patientId;
+
+            using var reader = command.ExecuteReader();
+            var items = new List<MedicalRecord>();
+            while (reader.Read())
+            {
+                items.Add(new MedicalRecord
+                {
+                    MAHSBA = reader.GetInt32(0),
+                    MABN = reader.GetInt32(1),
+                    NGAY = reader.GetDateTime(2),
+                    CHANDOAN = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                    DIEUTRI = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    KETLUAN = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                    MABS = reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                    MAKHOA = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
+                });
+            }
+
+            return items;
+        });
     }
 
-    // Get prescriptions for authenticated patient
     public List<Prescription> GetMyPrescriptions(string patientId)
     {
-        // TODO: Return only authenticated patient's prescriptions
-        return new List<Prescription>();
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT d.MAHSBA, d.NGAYDT, d.TENTHUOC, d.LIEUDUNG
+                FROM V_PATIENT_DONTHUOC d
+                ORDER BY d.NGAYDT DESC, d.MAHSBA DESC
+                """;
+            _ = patientId;
+
+            using var reader = command.ExecuteReader();
+            var items = new List<Prescription>();
+            while (reader.Read())
+            {
+                items.Add(new Prescription
+                {
+                    MAHSBA = reader.GetInt32(0),
+                    NGAYDT = reader.GetDateTime(1),
+                    TENTHUOC = reader.GetString(2),
+                    LIEUDUNG = reader.IsDBNull(3) ? string.Empty : reader.GetString(3)
+                });
+            }
+
+            return items;
+        });
     }
 }

@@ -30,8 +30,8 @@ partial class Form1
     {
         components = new System.ComponentModel.Container();
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 450);
-        Text = "Form1";
+        ClientSize = new Size(1280, 820);
+        Text = "Oracle DB Admin";
     }
 
     #endregion

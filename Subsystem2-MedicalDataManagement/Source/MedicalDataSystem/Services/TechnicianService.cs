@@ -1,38 +1,79 @@
 namespace MedicalDataSystem.Services;
 
 using MedicalDataSystem.Models;
+using Oracle.ManagedDataAccess.Client;
 
-// Service for technician operations
-// Manage diagnostic services (VPD-based filtering)
 public class TechnicianService
 {
     private readonly OracleConnectionService _connectionService;
-    private readonly VPDService _vpdService;
 
     public TechnicianService(OracleConnectionService connectionService, VPDService vpdService)
     {
         _connectionService = connectionService;
-        _vpdService = vpdService;
+        _ = vpdService;
     }
 
-    // Get assigned services for technician (VPD filtered)
     public List<DiagnosticService> GetAssignedServices(string technicianId)
     {
-        // TODO: Apply VPD policy to return only assigned services
-        return new List<DiagnosticService>();
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT MAHSBA, LOAIDV, NGAYDV, KETQUA, MAKTV
+                FROM V_TECHNICIAN_HSBA_DV
+                ORDER BY NGAYDV DESC, MAHSBA DESC
+                """;
+            _ = technicianId;
+
+            using var reader = command.ExecuteReader();
+            var items = new List<DiagnosticService>();
+            while (reader.Read())
+            {
+                items.Add(new DiagnosticService
+                {
+                    MAHSBA = reader.GetInt32(0),
+                    LOAIDV = reader.GetString(1),
+                    NGAYDV = reader.GetDateTime(2),
+                    KETQUA = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                    MAKTV = reader.IsDBNull(4) ? 0 : reader.GetInt32(4)
+                });
+            }
+
+            return items;
+        });
     }
 
-    // Update service results after testing
     public bool UpdateServiceResult(string serviceId, string result)
     {
-        // TODO: Update KETQUA in HSBA_DV table with audit logging
-        return true;
+        string[] parts = serviceId.Split('|', StringSplitOptions.TrimEntries);
+        if (parts.Length != 3)
+        {
+            return false;
+        }
+
+        return UpdateServiceResult(int.Parse(parts[0]), parts[1], DateTime.Parse(parts[2]), result);
     }
 
-    // Mark service as complete
+    public bool UpdateServiceResult(int medicalRecordId, string serviceType, DateTime serviceDate, string result)
+    {
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                UPDATE HSBA_DV
+                SET KETQUA = :ketqua
+                WHERE MAHSBA = :mahsba AND LOAIDV = :loaidv AND NGAYDV = :ngaydv
+                """;
+            command.Parameters.Add(new OracleParameter("ketqua", result));
+            command.Parameters.Add(new OracleParameter("mahsba", medicalRecordId));
+            command.Parameters.Add(new OracleParameter("loaidv", serviceType));
+            command.Parameters.Add(new OracleParameter("ngaydv", serviceDate));
+            return command.ExecuteNonQuery() == 1;
+        });
+    }
+
     public bool CompleteService(string serviceId)
     {
-        // TODO: Update service completion status
-        return true;
+        return UpdateServiceResult(serviceId, "Completed");
     }
 }

@@ -1,8 +1,5 @@
 namespace OracleDBAdmin.Services;
 
-using OracleDBAdmin.Models;
-
-// Service for Oracle permission/privilege management (Grant/Revoke)
 public class PermissionService
 {
     private readonly OracleConnectionService _connectionService;
@@ -14,36 +11,64 @@ public class PermissionService
         _validationService = validationService;
     }
 
-    // Grant a permission to a user or role
-    public bool GrantPermission(Permission permission)
+    public void GrantRoleToUser(string roleName, string username)
     {
-        if (!_validationService.CheckObjectExists(permission.ObjectName))
-            throw new ArgumentException("Object does not exist");
+        if (!_validationService.ValidateIdentifier(roleName) || !_validationService.ValidateIdentifier(username))
+        {
+            throw new InvalidOperationException("Invalid role or user.");
+        }
 
-        // TODO: Execute GRANT statement in Oracle
-        // Handles: GRANT permission ON object TO user [WITH GRANT OPTION]
-        return true;
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = $"GRANT {_validationService.QuoteIdentifier(roleName)} TO {_validationService.QuoteIdentifier(username)}";
+            command.ExecuteNonQuery();
+        });
     }
 
-    // Revoke a permission from a user or role
-    public bool RevokePermission(Permission permission)
+    public void GrantObjectPrivilege(string grantee, string owner, string objectName, string privilege, string? columns, bool withGrantOption)
     {
-        // TODO: Execute REVOKE statement in Oracle
-        return true;
+        ExecuteObjectPrivilege(grantee, owner, objectName, privilege, columns, withGrantOption, grant: true);
     }
 
-    // Grant permission on specific columns (column-level security)
-    public bool GrantColumnPermission(string grantedTo, string tableName, List<string> columns, string permissionType)
+    public void RevokeObjectPrivilege(string grantee, string owner, string objectName, string privilege, string? columns)
     {
-        // TODO: Execute GRANT on specific columns in Oracle
-        // Example: GRANT SELECT(column1, column2) ON table TO user;
-        return true;
+        ExecuteObjectPrivilege(grantee, owner, objectName, privilege, columns, withGrantOption: false, grant: false);
     }
 
-    // Get all permissions granted on an object
-    public List<Permission> GetObjectPermissions(string objectName)
+    private void ExecuteObjectPrivilege(string grantee, string owner, string objectName, string privilege, string? columns, bool withGrantOption, bool grant)
     {
-        // TODO: Query table_privs for the object
-        return new List<Permission>();
+        if (!_validationService.ValidateIdentifier(grantee)
+            || !_validationService.ValidateIdentifier(owner)
+            || !_validationService.ValidateIdentifier(objectName)
+            || !_validationService.ValidateIdentifier(privilege))
+        {
+            throw new InvalidOperationException("Invalid privilege statement.");
+        }
+
+        string privilegeSql = privilege.Trim().ToUpperInvariant();
+        string objectSql = $"{_validationService.QuoteIdentifier(owner)}.{_validationService.QuoteIdentifier(objectName)}";
+        string columnSql = string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(columns))
+        {
+            string[] safeColumns = columns
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(_validationService.QuoteIdentifier)
+                .ToArray();
+
+            columnSql = $" ({string.Join(", ", safeColumns)})";
+        }
+
+        string sql = grant
+            ? $"GRANT {privilegeSql}{columnSql} ON {objectSql} TO {_validationService.QuoteIdentifier(grantee)}{(withGrantOption ? " WITH GRANT OPTION" : string.Empty)}"
+            : $"REVOKE {privilegeSql}{columnSql} ON {objectSql} FROM {_validationService.QuoteIdentifier(grantee)}";
+
+        _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        });
     }
 }

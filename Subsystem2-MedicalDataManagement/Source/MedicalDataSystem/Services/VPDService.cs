@@ -1,7 +1,5 @@
 namespace MedicalDataSystem.Services;
 
-// Service for Virtual Private Database (VPD) filtering
-// Implements row-level security based on user context
 public class VPDService
 {
     private readonly OracleConnectionService _connectionService;
@@ -11,26 +9,30 @@ public class VPDService
         _connectionService = connectionService;
     }
 
-    // Get patients visible to a doctor (VPD filtering)
     public List<string> GetVisiblePatients(string doctorId)
     {
-        // TODO: Apply VPD policy to return only assigned patients
-        // Doctors should only see their own patient assignments
-        return new List<string>();
+        var doctorService = new DoctorService(_connectionService, this);
+        return doctorService.GetAssignedPatients(doctorId).Select(patient => $"{patient.MABN} - {patient.TENBN}").ToList();
     }
 
-    // Get medical records visible to staff (VPD filtering)
     public List<string> GetVisibleRecords(string staffId, string role)
     {
-        // TODO: Apply VPD filtering based on role
-        // Coordinators see assigned records, Doctors see own patients' records, etc.
+        if (string.Equals(role, "DOCTOR", StringComparison.OrdinalIgnoreCase))
+        {
+            var doctorService = new DoctorService(_connectionService, this);
+            return doctorService.GetAssignedMedicalRecords(staffId)
+                .Select(record => $"{record.MAHSBA} - {record.CHANDOAN}")
+                .ToList();
+        }
+
         return new List<string>();
     }
 
-    // Get diagnostic services visible to technician (VPD filtering)
     public List<string> GetVisibleServices(string technicianId)
     {
-        // TODO: Apply VPD policy to return only assigned services
-        return new List<string>();
+        var technicianService = new TechnicianService(_connectionService, this);
+        return technicianService.GetAssignedServices(technicianId)
+            .Select(service => $"{service.MAHSBA} | {service.LOAIDV} | {service.NGAYDV:yyyy-MM-dd}")
+            .ToList();
     }
 }

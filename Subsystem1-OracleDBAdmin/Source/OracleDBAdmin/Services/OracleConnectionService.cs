@@ -1,6 +1,7 @@
 namespace OracleDBAdmin.Services;
 
-// Service for managing Oracle database connections
+using Oracle.ManagedDataAccess.Client;
+
 public class OracleConnectionService
 {
     private readonly string _connectionString;
@@ -10,25 +11,33 @@ public class OracleConnectionService
         _connectionString = connectionString;
     }
 
-    // Test the Oracle database connection
-    public bool TestConnection()
+    public static string BuildConnectionString(string dataSource, string userId, string password)
     {
-        try
-        {
-            // TODO: Implement connection test using ODP.NET
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Connection failed: {ex.Message}");
-            return false;
-        }
+        return $"Data Source={dataSource};User Id={userId};Password={password};Pooling=true;";
     }
 
-    // Get a new database connection
-    public object GetConnection()
+    public OracleConnection GetConnection()
     {
-        // TODO: Implement connection pooling and return OracleConnection
-        throw new NotImplementedException();
+        var connection = new OracleConnection(_connectionString);
+        connection.Open();
+        return connection;
+    }
+
+    public bool TestConnection()
+    {
+        using var connection = GetConnection();
+        return connection.State == System.Data.ConnectionState.Open;
+    }
+
+    public T Execute<T>(Func<OracleConnection, T> action)
+    {
+        using var connection = GetConnection();
+        return action(connection);
+    }
+
+    public void Execute(Action<OracleConnection> action)
+    {
+        using var connection = GetConnection();
+        action(connection);
     }
 }

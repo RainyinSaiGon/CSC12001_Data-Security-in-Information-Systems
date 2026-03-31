@@ -2,41 +2,59 @@ namespace OracleDBAdmin.Services;
 
 using OracleDBAdmin.Models;
 
-// Service for querying and viewing Oracle privileges
 public class PrivilegeService
 {
     private readonly OracleConnectionService _connectionService;
+    private readonly ValidationService _validationService;
 
-    public PrivilegeService(OracleConnectionService connectionService)
+    public PrivilegeService(OracleConnectionService connectionService, ValidationService validationService)
     {
         _connectionService = connectionService;
+        _validationService = validationService;
     }
 
-    // Get all privileges granted to a user
-    public List<Permission> GetUserPrivileges(string username)
+    public List<Permission> GetPrivileges(string grantee)
     {
-        // TODO: Query user_tab_privs and user_sys_privs for the user
-        return new List<Permission>();
-    }
+        if (!_validationService.ValidateIdentifier(grantee))
+        {
+            throw new InvalidOperationException("Invalid grantee.");
+        }
 
-    // Get all privileges granted to a role
-    public List<Permission> GetRolePrivileges(string roleName)
-    {
-        // TODO: Query role_tab_privs and role_sys_privs
-        return new List<Permission>();
-    }
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT GRANTEE, PRIVILEGE, OWNER, TABLE_NAME, COLUMN_NAME, GRANTABLE
+                FROM DBA_COL_PRIVS
+                WHERE GRANTEE = :grantee
+                UNION ALL
+                SELECT GRANTEE, PRIVILEGE, OWNER, TABLE_NAME, CAST(NULL AS VARCHAR2(30)), GRANTABLE
+                FROM DBA_TAB_PRIVS
+                WHERE GRANTEE = :grantee
+                UNION ALL
+                SELECT GRANTEE, GRANTED_ROLE, CAST(NULL AS VARCHAR2(30)), CAST(NULL AS VARCHAR2(30)), CAST(NULL AS VARCHAR2(30)), ADMIN_OPTION
+                FROM DBA_ROLE_PRIVS
+                WHERE GRANTEE = :grantee
+                ORDER BY 1, 2, 3, 4, 5
+                """;
+            command.Parameters.Add(new Oracle.ManagedDataAccess.Client.OracleParameter("grantee", grantee.Trim().ToUpperInvariant()));
 
-    // Get all permissions on a specific object
-    public List<Permission> GetObjectPermissions(string objectName)
-    {
-        // TODO: Query all_tab_privs where table_name = objectName
-        return new List<Permission>();
-    }
+            using var reader = command.ExecuteReader();
+            var items = new List<Permission>();
+            while (reader.Read())
+            {
+                items.Add(new Permission
+                {
+                    Grantee = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+                    PrivilegeType = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    ObjectOwner = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                    ObjectName = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                    ColumnName = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    Grantable = reader.IsDBNull(5) ? string.Empty : reader.GetString(5)
+                });
+            }
 
-    // Check if a user has a specific privilege
-    public bool HasPrivilege(string username, string objectName, string privilegeType)
-    {
-        // TODO: Query Oracle data dictionary to verify privilege
-        return true;
+            return items;
+        });
     }
 }
