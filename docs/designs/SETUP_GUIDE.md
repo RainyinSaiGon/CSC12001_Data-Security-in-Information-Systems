@@ -310,6 +310,28 @@ unless your Oracle installation truly uses `XE` as the working PDB service.
 
 That is expected. Reconnect and run [03_OLS_Setup.sql](../../database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql) again.
 
+### OLS shows ORA-12458
+
+That is not the normal two-pass stop.
+
+It means Oracle Label Security is not enabled in that database or PDB yet.
+
+Connect as `SYSDBA` to the project PDB such as `XEPDB1`, then enable OLS:
+
+```sql
+EXEC LBACSYS.CONFIGURE_OLS;
+EXEC LBACSYS.OLS_ENFORCEMENT.ENABLE_OLS;
+```
+
+After that:
+
+- restart the Oracle database
+- rerun [Create_HOSPITAL_ADMIN.sql](../../database/Subsystem2-MedicalDB/Create_HOSPITAL_ADMIN.sql) as `SYS`
+- reconnect as `HOSPITAL_ADMIN`
+- rerun [03_OLS_Setup.sql](../../database/Subsystem2-MedicalDB/security/03_OLS_Setup.sql)
+
+If those `LBACSYS` calls do not exist, that Oracle installation does not currently have OLS available, so Requirement 2 cannot run there as-is.
+
 ### Medical app shows ORA-00942
 
 Usually one of these:

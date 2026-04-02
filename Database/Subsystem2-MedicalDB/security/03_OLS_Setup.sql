@@ -89,6 +89,15 @@ BEGIN
             'THONGBAO_OLS_DBA is not enabled in this session. Reconnect and rerun 03_OLS_Setup.sql.'
         );
     END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -12458 THEN
+            RAISE_APPLICATION_ERROR(
+                -20034,
+                'Oracle Label Security is not enabled in this database. Connect as SYSDBA to the project PDB, run LBACSYS.CONFIGURE_OLS and LBACSYS.OLS_ENFORCEMENT.ENABLE_OLS, restart the database, rerun Create_HOSPITAL_ADMIN.sql, reconnect as HOSPITAL_ADMIN, then rerun 03_OLS_Setup.sql.'
+            );
+        END IF;
+        RAISE;
 END;
 /
 
