@@ -212,7 +212,10 @@ BEGIN
             table_options => 'READ_CONTROL'
         );
     END IF;
+END;
+/
 
+BEGIN
     UPDATE THONGBAO
     SET OLS_LABEL = CHAR_TO_LABEL('THONGBAO_OLS', 'L1_NV')
     WHERE OLS_LABEL IS NULL;
