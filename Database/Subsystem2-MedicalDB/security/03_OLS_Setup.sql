@@ -3,8 +3,8 @@ SET SERVEROUTPUT ON;
 WHENEVER SQLERROR EXIT SQL.SQLCODE;
 
 PROMPT === Requirement 2 / OLS setup ===
-PROMPT Pass 1: create THONGBAO_OLS if it does not exist, then reconnect.
-PROMPT Pass 2: reconnect as the same user and rerun this script to finish labels/data setup.
+PROMPT Pass 1 - create THONGBAO_OLS if it does not exist, then reconnect.
+PROMPT Pass 2 - reconnect as the same user and rerun this script to finish labels/data setup.
 
 DECLARE
     v_role_enabled NUMBER := 0;
