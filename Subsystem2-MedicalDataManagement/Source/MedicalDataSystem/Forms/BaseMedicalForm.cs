@@ -18,8 +18,8 @@ namespace MedicalDataSystem.Forms
             {
                 Text = "Đăng xuất",
                 Size = new Size(100, 30),
-                Location = new Point(this.ClientSize.Width - 110, 10),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(this.ClientSize.Width - 110, this.ClientSize.Height - 40),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 BackColor = Color.LightCoral
             };
             btnLogout.Click += (s, e) => {
