@@ -3,7 +3,7 @@ namespace MedicalDataSystem.Forms;
 using MedicalDataSystem.Models;
 using MedicalDataSystem.Services;
 
-public partial class PatientForm : Form
+public partial class PatientForm : BaseMedicalForm
 {
     private readonly UserSession _session;
     private readonly PatientService _patientService;

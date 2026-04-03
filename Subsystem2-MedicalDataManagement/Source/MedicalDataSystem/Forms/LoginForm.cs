@@ -2,6 +2,8 @@ namespace MedicalDataSystem.Forms;
 
 using MedicalDataSystem.Models;
 using MedicalDataSystem.Services;
+using System.ComponentModel;
+
 
 public partial class LoginForm : Form
 {
@@ -12,6 +14,9 @@ public partial class LoginForm : Form
     private readonly TextBox _dataSourceTextBox = new();
     private readonly Button _loginButton = new() { Text = "Login" };
     private readonly Label _statusLabel = new() { AutoSize = true };
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public Form? TargetForm { get; private set; }
+
 
     public LoginForm()
     {
@@ -277,9 +282,9 @@ public partial class LoginForm : Form
                 _ => throw new InvalidOperationException($"Unsupported role: {session.Role}")
             };
 
-            Hide();
-            nextForm.FormClosed += (_, _) => Close();
-            nextForm.Show();
+            TargetForm = nextForm;
+            DialogResult = DialogResult.OK;
+            Close();
         }
         catch (Exception ex)
         {

@@ -3,7 +3,7 @@ namespace MedicalDataSystem.Forms;
 using MedicalDataSystem.Models;
 using MedicalDataSystem.Services;
 
-public partial class CoordinatorForm : Form
+public partial class CoordinatorForm : BaseMedicalForm
 {
     private readonly UserSession _session;
     private readonly CoordinatorService _coordinatorService;
