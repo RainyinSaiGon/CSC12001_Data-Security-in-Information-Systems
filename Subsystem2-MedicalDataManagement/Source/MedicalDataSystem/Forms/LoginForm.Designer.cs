@@ -28,10 +28,16 @@ partial class LoginForm
     /// </summary>
     private void InitializeComponent()
     {
-        components = new System.ComponentModel.Container();
+        SuspendLayout();
+        // 
+        // LoginForm
+        // 
+        AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(400, 250);
+        ClientSize = new Size(568, 435);
+        Name = "LoginForm";
         Text = "Medical Data Management - Login";
+        ResumeLayout(false);
     }
 
     #endregion
