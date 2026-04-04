@@ -7,6 +7,7 @@ public sealed class UserService
 {
     private readonly OracleConnectionService _connectionService;
     public string LastErrorMessage { get; private set; } = string.Empty;
+    public string LastRoleOperation { get; private set; } = string.Empty;
 
     public UserService(OracleConnectionService connectionService)
     {
@@ -347,6 +348,7 @@ public sealed class UserService
     public bool GrantRoleToStaff(string username, string roleName)
     {
         LastErrorMessage = string.Empty;
+        LastRoleOperation = string.Empty;
 
         string safeUsername;
         try
@@ -378,7 +380,72 @@ public sealed class UserService
                 return false;
             }
 
+            bool alreadyGranted = HasRoleGrant(connection, transaction, safeUsername, normalizedRole);
+            if (alreadyGranted)
+            {
+                LastErrorMessage = $"Role {normalizedRole} is already granted to {safeUsername}.";
+                transaction.Rollback();
+                return false;
+            }
+
             ExecuteNonQuery(connection, transaction, $"GRANT {normalizedRole} TO {safeUsername}");
+            LastRoleOperation = "GRANTED";
+
+            transaction.Commit();
+            return true;
+        }
+        catch (OracleException ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+    }
+
+    public bool RevokeRoleFromUser(string username, string roleName)
+    {
+        LastErrorMessage = string.Empty;
+        LastRoleOperation = string.Empty;
+
+        string safeUsername;
+        try
+        {
+            safeUsername = NormalizeAndValidateOracleUsername(username);
+        }
+        catch (ArgumentException ex)
+        {
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+
+        string normalizedRole = NormalizeAndValidateGrantRole(roleName);
+        if (string.IsNullOrWhiteSpace(normalizedRole))
+        {
+            LastErrorMessage = "Unsupported role for revoke.";
+            return false;
+        }
+
+        using var connection = _connectionService.GetConnection();
+        using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            bool alreadyGranted = HasRoleGrant(connection, transaction, safeUsername, normalizedRole);
+            if (!alreadyGranted)
+            {
+                LastErrorMessage = $"Role {normalizedRole} is not granted to {safeUsername}.";
+                transaction.Rollback();
+                return false;
+            }
+
+            ExecuteNonQuery(connection, transaction, $"REVOKE {normalizedRole} FROM {safeUsername}");
+            LastRoleOperation = "REVOKED";
             transaction.Commit();
             return true;
         }
@@ -553,6 +620,24 @@ public sealed class UserService
         command.Transaction = transaction;
         command.CommandText = sql;
         command.Parameters.Add(new OracleParameter("username", username));
+        int count = Convert.ToInt32(command.ExecuteScalar());
+        return count > 0;
+    }
+
+    private static bool HasRoleGrant(OracleConnection connection, OracleTransaction transaction, string username, string roleName)
+    {
+        const string sql = """
+            SELECT COUNT(*)
+            FROM DBA_ROLE_PRIVS rp
+            WHERE rp.GRANTEE = :grantee
+              AND rp.GRANTED_ROLE = :roleName
+            """;
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("grantee", username.Trim().ToUpperInvariant()));
+        command.Parameters.Add(new OracleParameter("roleName", roleName.Trim().ToUpperInvariant()));
         int count = Convert.ToInt32(command.ExecuteScalar());
         return count > 0;
     }

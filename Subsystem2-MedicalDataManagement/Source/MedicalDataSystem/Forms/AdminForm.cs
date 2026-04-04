@@ -9,6 +9,9 @@ public class AdminForm : Form
     private readonly UserSession _session;
     private readonly OracleConnectionService _connectionService;
     private readonly UserService _userService;
+    private readonly TabControl _mainTabControl = new() { Dock = DockStyle.Fill };
+    private readonly TabControl _usersSubTabs = new() { Dock = DockStyle.Fill };
+    private readonly Label _footerStatusLabel = new() { Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft };
 
     private readonly DataGridView _patientUsersGrid = new()
     {
@@ -51,6 +54,19 @@ public class AdminForm : Form
     private readonly ComboBox _grantRoleCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly Button _grantRoleButton = new() { Text = "Grant Role", Width = 110, Height = 30, Enabled = false };
     private readonly Label _grantRoleHintLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0), Text = "Chon nhan vien de grant role." };
+    private readonly DataGridView _roleGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+    };
     private readonly TextBox _securityProfileTextBox = new()
     {
         Multiline = true,
@@ -96,33 +112,32 @@ public class AdminForm : Form
         _session = session;
         _connectionService = new OracleConnectionService(session.ConnectionString);
         _userService = new UserService(_connectionService);
-        BuildUi();
+        InitializeComponent();
         SetSearchHints();
     }
 
-    private void BuildUi()
+    private void InitializeComponent()
     {
         Text = $"Hospital Admin Dashboard — {_session.FullName}";
         Width = 1000;
         Height = 700;
         StartPosition = FormStartPosition.CenterScreen;
+        Padding = new Padding(8);
 
-        var tabControl = new TabControl
+        _mainTabControl.TabPages.Clear();
+        _mainTabControl.TabPages.Add(BuildUsersTab());
+        _mainTabControl.TabPages.Add(new TabPage("VPD Policies"));
+        _mainTabControl.TabPages.Add(new TabPage("OLS Labels"));
+        _mainTabControl.TabPages.Add(new TabPage("Audit Log"));
+
+        _mainTabControl.SelectedIndexChanged += (_, _) =>
         {
-            Dock = DockStyle.Fill
-        };
-
-        tabControl.TabPages.Add(BuildUsersTab());
-        tabControl.TabPages.Add(new TabPage("VPD Policies"));
-        tabControl.TabPages.Add(new TabPage("OLS Labels"));
-        tabControl.TabPages.Add(new TabPage("Audit Log"));
-
-        tabControl.SelectedIndexChanged += (_, _) =>
-        {
-            if (tabControl.SelectedIndex == 0)
+            if (_mainTabControl.SelectedIndex == 0)
             {
                 SetSearchHints();
             }
+
+            UpdateFooterStatus("Ready");
         };
 
         var statusLabel = new Label
@@ -137,32 +152,62 @@ public class AdminForm : Form
         {
             Text = "Log out",
             AutoSize = true,
-            Margin = new Padding(0, 6, 0, 0)
+            Margin = new Padding(0),
+            Anchor = AnchorStyles.Right | AnchorStyles.Top
         };
         logoutButton.Click += (_, _) => Logout();
 
-        var headerActions = new FlowLayoutPanel
+        var headerLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Right,
-            Width = 130,
-            FlowDirection = FlowDirection.RightToLeft,
-            WrapContents = false,
-            Padding = new Padding(8, 0, 8, 0)
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Padding = new Padding(8, 8, 8, 8)
         };
-        headerActions.Controls.Add(logoutButton);
+        headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        headerLayout.Controls.Add(statusLabel, 0, 0);
+        headerLayout.Controls.Add(logoutButton, 1, 0);
 
         var headerPanel = new Panel
         {
-            Dock = DockStyle.Top,
-            Height = 42
+            Dock = DockStyle.Fill
         };
-        headerPanel.Controls.Add(statusLabel);
-        headerPanel.Controls.Add(headerActions);
+        headerPanel.Controls.Add(headerLayout);
 
-        Controls.Add(tabControl);
-        Controls.Add(headerPanel);
+        var footerLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 1,
+            Padding = new Padding(8, 6, 8, 6)
+        };
+        footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footerLayout.Controls.Add(_footerStatusLabel, 0, 0);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
+        rootLayout.Controls.Add(headerPanel, 0, 0);
+        rootLayout.Controls.Add(_mainTabControl, 0, 1);
+        rootLayout.Controls.Add(footerLayout, 0, 2);
+
+        Controls.Clear();
+        Controls.Add(rootLayout);
+        UpdateFooterStatus("Ready");
 
         _ = _connectionService;
+    }
+
+    private void UpdateFooterStatus(string message)
+    {
+        _footerStatusLabel.Text = message;
     }
 
     private void Logout()
@@ -180,21 +225,17 @@ public class AdminForm : Form
     {
         var tab = new TabPage("Users");
 
-        var usersSubTabs = new TabControl
+        _usersSubTabs.TabPages.Clear();
+        _usersSubTabs.TabPages.Add(BuildPatientUsersSubTab());
+        _usersSubTabs.TabPages.Add(BuildStaffUsersSubTab());
+        _usersSubTabs.TabPages.Add(BuildCreateUserSubTab());
+        _usersSubTabs.SelectedIndexChanged += (_, _) =>
         {
-            Dock = DockStyle.Fill
-        };
-
-        usersSubTabs.TabPages.Add(BuildPatientUsersSubTab());
-        usersSubTabs.TabPages.Add(BuildStaffUsersSubTab());
-        usersSubTabs.TabPages.Add(BuildCreateUserSubTab());
-        usersSubTabs.SelectedIndexChanged += (_, _) =>
-        {
-            if (usersSubTabs.SelectedIndex == 0)
+            if (_usersSubTabs.SelectedIndex == 0)
             {
                 RefreshPatientUsersPage();
             }
-            else if (usersSubTabs.SelectedIndex == 1)
+            else if (_usersSubTabs.SelectedIndex == 1)
             {
                 RefreshStaffUsersPage();
             }
@@ -236,12 +277,34 @@ public class AdminForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 2
+            RowCount = 3
         };
         profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
-        profileLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
         profileLayout.Controls.Add(grantPanel, 0, 0);
         profileLayout.Controls.Add(_securityProfileTextBox, 0, 1);
+        profileLayout.Controls.Add(_roleGrid, 0, 2);
+
+        if (_roleGrid.Columns.Count == 0)
+        {
+            _roleGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "RoleName",
+                HeaderText = "Role"
+            });
+
+            _roleGrid.Columns.Add(new DataGridViewButtonColumn
+            {
+                Name = "RevokeRole",
+                HeaderText = "Action",
+                Text = "Revoke",
+                UseColumnTextForButtonValue = true
+            });
+
+            _roleGrid.CellContentClick -= HandleRoleGridCellContentClick;
+            _roleGrid.CellContentClick += HandleRoleGridCellContentClick;
+        }
 
         profileGroup.Controls.Add(profileLayout);
 
@@ -251,9 +314,9 @@ public class AdminForm : Form
             ColumnCount = 1,
             RowCount = 2
         };
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
-        rootLayout.Controls.Add(usersSubTabs, 0, 0);
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 55));
+        rootLayout.Controls.Add(_usersSubTabs, 0, 0);
         rootLayout.Controls.Add(profileGroup, 0, 1);
 
         tab.Controls.Add(rootLayout);
@@ -427,34 +490,67 @@ public class AdminForm : Form
         _createUserButton.Click -= HandleCreateUserClick;
         _createUserButton.Click += HandleCreateUserClick;
 
-        var formPanel = new FlowLayoutPanel
+        var commonLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            AutoScroll = true,
-            Padding = new Padding(12),
-            WrapContents = true,
-            FlowDirection = FlowDirection.LeftToRight
+            ColumnCount = 4,
+            RowCount = 3,
+            Padding = new Padding(8),
+            AutoSize = true
         };
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
-        formPanel.Controls.Add(new Label { Text = "UserType", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        formPanel.Controls.Add(_createUserTypeCombo);
-        formPanel.Controls.Add(new Label { Text = "Username", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        formPanel.Controls.Add(_createUsernameTextBox);
-        formPanel.Controls.Add(new Label { Text = "FullName", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        formPanel.Controls.Add(_createFullNameTextBox);
-        formPanel.Controls.Add(new Label { Text = "Gender", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        formPanel.Controls.Add(_createGenderCombo);
-        formPanel.Controls.Add(new Label { Text = "BirthDate", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        formPanel.Controls.Add(_createBirthDatePicker);
-        formPanel.Controls.Add(new Label { Text = "IDNumber", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        formPanel.Controls.Add(_createIdNumberTextBox);
+        commonLayout.Controls.Add(new Label { Text = "UserType", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
+        commonLayout.Controls.Add(_createUserTypeCombo, 1, 0);
+        commonLayout.Controls.Add(new Label { Text = "Username", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 0);
+        commonLayout.Controls.Add(_createUsernameTextBox, 3, 0);
 
-        formPanel.SetFlowBreak(_createIdNumberTextBox, true);
-        formPanel.Controls.Add(_createStaffPanel);
-        formPanel.SetFlowBreak(_createStaffPanel, true);
-        formPanel.Controls.Add(_createPatientPanel);
-        formPanel.SetFlowBreak(_createPatientPanel, true);
-        formPanel.Controls.Add(_createUserButton);
+        commonLayout.Controls.Add(new Label { Text = "FullName", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 1);
+        commonLayout.Controls.Add(_createFullNameTextBox, 1, 1);
+        commonLayout.Controls.Add(new Label { Text = "Gender", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 1);
+        commonLayout.Controls.Add(_createGenderCombo, 3, 1);
+
+        commonLayout.Controls.Add(new Label { Text = "BirthDate", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 2);
+        commonLayout.Controls.Add(_createBirthDatePicker, 1, 2);
+        commonLayout.Controls.Add(new Label { Text = "IDNumber", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 2);
+        commonLayout.Controls.Add(_createIdNumberTextBox, 3, 2);
+
+        var commonGroup = new GroupBox
+        {
+            Text = "Common Information",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        commonGroup.Controls.Add(commonLayout);
+
+        var staffGroup = new GroupBox
+        {
+            Text = "Staff Details",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        _createStaffPanel.Dock = DockStyle.Fill;
+        staffGroup.Controls.Add(_createStaffPanel);
+
+        var patientGroup = new GroupBox
+        {
+            Text = "Patient Details",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        _createPatientPanel.Dock = DockStyle.Fill;
+        patientGroup.Controls.Add(_createPatientPanel);
+
+        var actionPanel = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        _createUserButton.Anchor = AnchorStyles.Left;
+        actionPanel.Controls.Add(_createUserButton);
 
         var flowGroup = new GroupBox
         {
@@ -468,12 +564,19 @@ public class AdminForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 2
+            RowCount = 5,
+            Padding = new Padding(8)
         };
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 65));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 35));
-        rootLayout.Controls.Add(formPanel, 0, 0);
-        rootLayout.Controls.Add(flowGroup, 0, 1);
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.Controls.Add(commonGroup, 0, 0);
+        rootLayout.Controls.Add(staffGroup, 0, 1);
+        rootLayout.Controls.Add(patientGroup, 0, 2);
+        rootLayout.Controls.Add(actionPanel, 0, 3);
+        rootLayout.Controls.Add(flowGroup, 0, 4);
 
         tab.Controls.Add(rootLayout);
 
@@ -506,6 +609,7 @@ public class AdminForm : Form
             {
                 _patientUsersGrid.DataSource = new List<object>();
                 _patientPageInfoLabel.Text = "BN: Nhap CCCD de tim";
+                UpdateFooterStatus("BN: Nhap CCCD de tim.");
                 ShowProfileResult(null, "Chua co CCCD de tra cuu.");
                 return;
             }
@@ -514,6 +618,7 @@ public class AdminForm : Form
             {
                 _patientUsersGrid.DataSource = new List<object>();
                 _patientPageInfoLabel.Text = "BN: CCCD phai dung 12 so";
+                UpdateFooterStatus("BN: CCCD phai dung 12 so.");
                 ShowProfileResult(null, "CCCD phai dung 12 so moi xem duoc profile + role.");
                 return;
             }
@@ -543,6 +648,7 @@ public class AdminForm : Form
                 .ToList();
 
             _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan (toi da 100 dong)";
+            UpdateFooterStatus($"BN: Tim thay {users.Count} tai khoan.");
 
             UserSecurityProfileItem? profile = _userService.GetPatientProfileWithRolesByCccd(cccdKeyword);
             ShowProfileResult(profile, $"Tra cuu theo CCCD: {cccdKeyword}");
@@ -550,11 +656,13 @@ public class AdminForm : Form
         catch (OracleException ex)
         {
             MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "Users - BN", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus($"BN: Loi Oracle {ex.Number}.");
             ShowProfileResult(null, $"Loi Oracle khi tra cuu BN: {ex.Number}");
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, ex.Message, "Users - BN", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus("BN: Loi tra cuu.");
             ShowProfileResult(null, "Loi khi tra cuu BN.");
         }
     }
@@ -568,6 +676,7 @@ public class AdminForm : Form
             {
                 _staffUsersGrid.DataSource = new List<object>();
                 _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+                UpdateFooterStatus("NV: Nhap CMND de tim.");
                 ShowProfileResult(null, "Chua co CMND de tra cuu.");
                 return;
             }
@@ -587,6 +696,7 @@ public class AdminForm : Form
                 .ToList();
 
             _staffPageInfoLabel.Text = $"NV: Tim thay {users.Count} tai khoan";
+            UpdateFooterStatus($"NV: Tim thay {users.Count} tai khoan.");
 
             string normalizedCmnd = new string(cmndKeyword.Where(char.IsDigit).ToArray());
             if (normalizedCmnd.Length == 12)
@@ -602,11 +712,13 @@ public class AdminForm : Form
         catch (OracleException ex)
         {
             MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus($"NV: Loi Oracle {ex.Number}.");
             ShowProfileResult(null, $"Loi Oracle khi tra cuu NV: {ex.Number}");
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, ex.Message, "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus("NV: Loi tra cuu.");
             ShowProfileResult(null, "Loi khi tra cuu NV.");
         }
     }
@@ -622,9 +734,12 @@ public class AdminForm : Form
 
         if (profile is null)
         {
+            RefreshRoleGrid(null);
             _securityProfileTextBox.Text = $"{note}{Environment.NewLine}{Environment.NewLine}Khong tim thay profile hoac chua du dieu kien tra cuu.";
             return;
         }
+
+        RefreshRoleGrid(profile);
 
         string[] roleLines = profile.CurrentOracleRoles.Count == 0
             ? new[] { "(Khong co role)" }
@@ -695,16 +810,90 @@ public class AdminForm : Form
         }
 
         MessageBox.Show(this, $"Granted {roleName} to {_selectedProfile.Username}.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        ReloadSelectedProfile($"Cap nhat role cho user: {_selectedProfile.Username} (GRANTED)");
+    }
 
-        if (!string.IsNullOrWhiteSpace(_selectedProfile.IdNumber))
+    private void HandleRoleGridCellContentClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        _ = sender;
+        if (e.RowIndex < 0)
         {
-            UserSecurityProfileItem? refreshed = _userService.GetStaffProfileWithRolesByCmnd(_selectedProfile.IdNumber);
-            ShowProfileResult(refreshed, $"Cap nhat role cho user: {_selectedProfile.Username}");
+            return;
         }
-        else
+
+        if (_selectedProfile is null || string.IsNullOrWhiteSpace(_selectedProfile.Username))
         {
-            ShowProfileResult(_selectedProfile, $"Da grant role {roleName}.");
+            return;
         }
+
+        if (!string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(this, "Chi cho phep revoke role voi profile STAFF.", "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        DataGridViewColumn? revokeColumn = _roleGrid.Columns["RevokeRole"];
+        if (revokeColumn is null)
+        {
+            return;
+        }
+
+        int revokeColumnIndex = revokeColumn.Index;
+        if (e.ColumnIndex != revokeColumnIndex)
+        {
+            return;
+        }
+
+        string roleName = _roleGrid.Rows[e.RowIndex].Cells["RoleName"].Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(roleName))
+        {
+            return;
+        }
+
+        if (MessageBox.Show(this, $"Revoke role {roleName} from {_selectedProfile.Username}?", "Revoke Role", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        bool revoked = _userService.RevokeRoleFromUser(_selectedProfile.Username, roleName);
+        if (!revoked)
+        {
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Revoke role failed." : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        MessageBox.Show(this, $"Revoked {roleName} from {_selectedProfile.Username}.", "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        ReloadSelectedProfile($"Cap nhat role cho user: {_selectedProfile.Username} (REVOKED)");
+    }
+
+    private void RefreshRoleGrid(UserSecurityProfileItem? profile)
+    {
+        _roleGrid.Rows.Clear();
+
+        if (profile is null)
+        {
+            return;
+        }
+
+        foreach (string role in profile.CurrentOracleRoles)
+        {
+            _roleGrid.Rows.Add(role);
+        }
+    }
+
+    private void ReloadSelectedProfile(string note)
+    {
+        if (_selectedProfile is null || string.IsNullOrWhiteSpace(_selectedProfile.IdNumber))
+        {
+            return;
+        }
+
+        UserSecurityProfileItem? refreshed = string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase)
+            ? _userService.GetStaffProfileWithRolesByCmnd(_selectedProfile.IdNumber)
+            : _userService.GetPatientProfileWithRolesByCccd(_selectedProfile.IdNumber);
+
+        ShowProfileResult(refreshed, note);
     }
 
     private void ToggleCreateUserPanels()
