@@ -48,6 +48,17 @@ public class AdminForm : Form
 
     private readonly Label _staffPageInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
     private readonly Button _staffRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
+    private readonly ComboBox _grantRoleCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly Button _grantRoleButton = new() { Text = "Grant Role", Width = 110, Height = 30, Enabled = false };
+    private readonly Label _grantRoleHintLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0), Text = "Chon nhan vien de grant role." };
+    private readonly TextBox _securityProfileTextBox = new()
+    {
+        Multiline = true,
+        ReadOnly = true,
+        Dock = DockStyle.Fill,
+        ScrollBars = ScrollBars.Vertical
+    };
+    private UserSecurityProfileItem? _selectedProfile;
 
     private readonly ComboBox _createUserTypeCombo = new() { Width = 140, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly TextBox _createUsernameTextBox = new() { Width = 180 };
@@ -102,7 +113,6 @@ public class AdminForm : Form
         };
 
         tabControl.TabPages.Add(BuildUsersTab());
-        tabControl.TabPages.Add(new TabPage("RBAC"));
         tabControl.TabPages.Add(new TabPage("VPD Policies"));
         tabControl.TabPages.Add(new TabPage("OLS Labels"));
         tabControl.TabPages.Add(new TabPage("Audit Log"));
@@ -190,7 +200,64 @@ public class AdminForm : Form
             }
         };
 
-        tab.Controls.Add(usersSubTabs);
+        var profileGroup = new GroupBox
+        {
+            Text = "Thong tin nguoi dung va quyen hien tai",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+
+        _grantRoleCombo.Items.Clear();
+        _grantRoleCombo.Items.AddRange(new object[]
+        {
+            "DIEU_PHOI_VIEN",
+            "BAC_SI_Y_SI",
+            "KY_THUAT_VIEN",
+            "BENH_NHAN"
+        });
+        _grantRoleCombo.SelectedIndex = 0;
+
+        _grantRoleButton.Click -= HandleGrantRoleClick;
+        _grantRoleButton.Click += HandleGrantRoleClick;
+
+        var grantPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 42,
+            WrapContents = false,
+            Padding = new Padding(0)
+        };
+        grantPanel.Controls.Add(new Label { Text = "Grant role:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        grantPanel.Controls.Add(_grantRoleCombo);
+        grantPanel.Controls.Add(_grantRoleButton);
+        grantPanel.Controls.Add(_grantRoleHintLabel);
+
+        var profileLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        profileLayout.Controls.Add(grantPanel, 0, 0);
+        profileLayout.Controls.Add(_securityProfileTextBox, 0, 1);
+
+        profileGroup.Controls.Add(profileLayout);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
+        rootLayout.Controls.Add(usersSubTabs, 0, 0);
+        rootLayout.Controls.Add(profileGroup, 0, 1);
+
+        tab.Controls.Add(rootLayout);
+        ShowProfileResult(null, "Nhap CCCD/CMND va bam Tim de hien thong tin + RBAC role.");
         return tab;
     }
 
@@ -322,7 +389,7 @@ public class AdminForm : Form
         _createUserTypeCombo.SelectedIndexChanged += (_, _) => ToggleCreateUserPanels();
 
         _createGenderCombo.Items.Clear();
-        _createGenderCombo.Items.AddRange(new object[] { "Nam", "Nu" });
+        _createGenderCombo.Items.AddRange(new object[] { "Nam", "Nữ" });
         _createGenderCombo.SelectedIndex = 0;
 
         _createStaffRoleCombo.Items.Clear();
@@ -439,6 +506,7 @@ public class AdminForm : Form
             {
                 _patientUsersGrid.DataSource = new List<object>();
                 _patientPageInfoLabel.Text = "BN: Nhap CCCD de tim";
+                ShowProfileResult(null, "Chua co CCCD de tra cuu.");
                 return;
             }
 
@@ -446,6 +514,7 @@ public class AdminForm : Form
             {
                 _patientUsersGrid.DataSource = new List<object>();
                 _patientPageInfoLabel.Text = "BN: CCCD phai dung 12 so";
+                ShowProfileResult(null, "CCCD phai dung 12 so moi xem duoc profile + role.");
                 return;
             }
 
@@ -474,14 +543,19 @@ public class AdminForm : Form
                 .ToList();
 
             _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan (toi da 100 dong)";
+
+            UserSecurityProfileItem? profile = _userService.GetPatientProfileWithRolesByCccd(cccdKeyword);
+            ShowProfileResult(profile, $"Tra cuu theo CCCD: {cccdKeyword}");
         }
         catch (OracleException ex)
         {
             MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "Users - BN", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            ShowProfileResult(null, $"Loi Oracle khi tra cuu BN: {ex.Number}");
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, ex.Message, "Users - BN", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            ShowProfileResult(null, "Loi khi tra cuu BN.");
         }
     }
 
@@ -494,6 +568,7 @@ public class AdminForm : Form
             {
                 _staffUsersGrid.DataSource = new List<object>();
                 _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+                ShowProfileResult(null, "Chua co CMND de tra cuu.");
                 return;
             }
 
@@ -512,14 +587,123 @@ public class AdminForm : Form
                 .ToList();
 
             _staffPageInfoLabel.Text = $"NV: Tim thay {users.Count} tai khoan";
+
+            string normalizedCmnd = new string(cmndKeyword.Where(char.IsDigit).ToArray());
+            if (normalizedCmnd.Length == 12)
+            {
+                UserSecurityProfileItem? profile = _userService.GetStaffProfileWithRolesByCmnd(normalizedCmnd);
+                ShowProfileResult(profile, $"Tra cuu theo CMND: {normalizedCmnd}");
+            }
+            else
+            {
+                ShowProfileResult(null, "CMND chua du 12 so, chi hien danh sach tim gan dung.");
+            }
         }
         catch (OracleException ex)
         {
             MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            ShowProfileResult(null, $"Loi Oracle khi tra cuu NV: {ex.Number}");
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, ex.Message, "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            ShowProfileResult(null, "Loi khi tra cuu NV.");
+        }
+    }
+
+    private void ShowProfileResult(UserSecurityProfileItem? profile, string note)
+    {
+        _selectedProfile = profile;
+        bool canGrant = profile is not null && string.Equals(profile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(profile.Username);
+        _grantRoleButton.Enabled = canGrant;
+        _grantRoleHintLabel.Text = canGrant
+            ? $"Dang chon: {profile!.Username}"
+            : "Chi grant role khi dang hien profile STAFF.";
+
+        if (profile is null)
+        {
+            _securityProfileTextBox.Text = $"{note}{Environment.NewLine}{Environment.NewLine}Khong tim thay profile hoac chua du dieu kien tra cuu.";
+            return;
+        }
+
+        string[] roleLines = profile.CurrentOracleRoles.Count == 0
+            ? new[] { "(Khong co role)" }
+            : profile.CurrentOracleRoles.ToArray();
+
+        if (string.Equals(profile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            _securityProfileTextBox.Text = string.Join(Environment.NewLine,
+                note,
+                string.Empty,
+                $"Loai: {profile.UserType}",
+                $"ID: {profile.UserId}",
+                $"Ho ten: {profile.FullName}",
+                $"Gioi tinh: {profile.Gender}",
+                $"Ngay sinh: {profile.BirthDate:dd/MM/yyyy}",
+                $"CMND: {profile.IdNumber}",
+                $"Username: {profile.Username}",
+                $"Que quan: {profile.Address}",
+                $"So DT: {profile.Phone}",
+                $"Vai tro nghiep vu: {profile.BusinessRole}",
+                $"Khoa: {profile.Department}",
+                "Role Oracle hien tai:",
+                string.Join(Environment.NewLine, roleLines.Select(r => $"- {r}")));
+            return;
+        }
+
+        _securityProfileTextBox.Text = string.Join(Environment.NewLine,
+            note,
+            string.Empty,
+            $"Loai: {profile.UserType}",
+            $"ID: {profile.UserId}",
+            $"Ho ten: {profile.FullName}",
+            $"Gioi tinh: {profile.Gender}",
+            $"Ngay sinh: {profile.BirthDate:dd/MM/yyyy}",
+            $"CCCD: {profile.IdNumber}",
+            $"Username: {profile.Username}",
+            $"Dia chi: {profile.SoNha}, {profile.TenDuong}, {profile.QuanHuyen}, {profile.TinhTp}",
+            $"Tien su benh: {profile.TienSuBenh}",
+            $"Tien su benh GD: {profile.TienSuBenhGiaDinh}",
+            $"Di ung thuoc: {profile.DiUngThuoc}",
+            "Role Oracle hien tai:",
+            string.Join(Environment.NewLine, roleLines.Select(r => $"- {r}")));
+    }
+
+    private void HandleGrantRoleClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+
+        if (_selectedProfile is null || !string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(this, "Hay tim nhan vien truoc khi grant role.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        string roleName = _grantRoleCombo.SelectedItem?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(roleName))
+        {
+            MessageBox.Show(this, "Role khong hop le.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        bool granted = _userService.GrantRoleToStaff(_selectedProfile.Username, roleName);
+        if (!granted)
+        {
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Grant role failed." : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        MessageBox.Show(this, $"Granted {roleName} to {_selectedProfile.Username}.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        if (!string.IsNullOrWhiteSpace(_selectedProfile.IdNumber))
+        {
+            UserSecurityProfileItem? refreshed = _userService.GetStaffProfileWithRolesByCmnd(_selectedProfile.IdNumber);
+            ShowProfileResult(refreshed, $"Cap nhat role cho user: {_selectedProfile.Username}");
+        }
+        else
+        {
+            ShowProfileResult(_selectedProfile, $"Da grant role {roleName}.");
         }
     }
 

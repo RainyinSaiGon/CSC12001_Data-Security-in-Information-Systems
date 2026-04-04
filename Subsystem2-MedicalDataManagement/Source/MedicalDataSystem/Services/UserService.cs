@@ -222,6 +222,180 @@ public sealed class UserService
             """);
     }
 
+    public UserSecurityProfileItem? GetStaffProfileWithRolesByCmnd(string cmndKeyword)
+    {
+        string normalizedKeyword = NormalizeIdKeyword(cmndKeyword);
+        if (normalizedKeyword.Length != 12)
+        {
+            return null;
+        }
+
+        const string sql = """
+            SELECT
+                n.MANV,
+                n.HOTEN,
+                n.PHAI,
+                n.NGAYSINH,
+                n.CMND,
+                n.USERNAME,
+                n.QUEQUAN,
+                n.SODT,
+                n.VAITRO,
+                n.CHUYENKHOA
+            FROM NHANVIEN n
+            WHERE n.CMND = :idNumber
+            FETCH FIRST 1 ROWS ONLY
+            """;
+
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.Add(new OracleParameter("idNumber", normalizedKeyword));
+
+            using var reader = command.ExecuteReader();
+            if (!reader.Read())
+            {
+                return null;
+            }
+
+            string username = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
+            var roles = GetCurrentRolesByUsername(connection, username);
+
+            return new UserSecurityProfileItem
+            {
+                UserType = "STAFF",
+                UserId = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                FullName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                Gender = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                BirthDate = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
+                IdNumber = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                Username = username,
+                Address = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                Phone = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                BusinessRole = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                Department = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                CurrentOracleRoles = roles
+            };
+        });
+    }
+
+    public UserSecurityProfileItem? GetPatientProfileWithRolesByCccd(string cccdKeyword)
+    {
+        string normalizedKeyword = NormalizeIdKeyword(cccdKeyword);
+        if (normalizedKeyword.Length != 12)
+        {
+            return null;
+        }
+
+        const string sql = """
+            SELECT
+                b.MABN,
+                b.TENBN,
+                b.PHAI,
+                b.NGAYSINH,
+                b.CCCD,
+                b.USERNAME,
+                b.SONHA,
+                b.TENDUONG,
+                b.QUANHUYEN,
+                b.TINHTP,
+                b.TIENSUBENH,
+                b.TIENSUBENHGD,
+                b.DIUNGTHUOC
+            FROM BENHNHAN b
+            WHERE b.CCCD = :idNumber
+            FETCH FIRST 1 ROWS ONLY
+            """;
+
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.Add(new OracleParameter("idNumber", normalizedKeyword));
+
+            using var reader = command.ExecuteReader();
+            if (!reader.Read())
+            {
+                return null;
+            }
+
+            string username = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
+            var roles = GetCurrentRolesByUsername(connection, username);
+
+            return new UserSecurityProfileItem
+            {
+                UserType = "PATIENT",
+                UserId = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                FullName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                Gender = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                BirthDate = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
+                IdNumber = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                Username = username,
+                SoNha = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                TenDuong = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                QuanHuyen = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                TinhTp = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                TienSuBenh = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                TienSuBenhGiaDinh = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                DiUngThuoc = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
+                CurrentOracleRoles = roles
+            };
+        });
+    }
+
+    public bool GrantRoleToStaff(string username, string roleName)
+    {
+        LastErrorMessage = string.Empty;
+
+        string safeUsername;
+        try
+        {
+            safeUsername = NormalizeAndValidateOracleUsername(username);
+        }
+        catch (ArgumentException ex)
+        {
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+
+        string normalizedRole = NormalizeAndValidateGrantRole(roleName);
+        if (string.IsNullOrWhiteSpace(normalizedRole))
+        {
+            LastErrorMessage = "Unsupported role for staff grant.";
+            return false;
+        }
+
+        using var connection = _connectionService.GetConnection();
+        using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            if (!IsStaffUsername(connection, transaction, safeUsername))
+            {
+                LastErrorMessage = "Selected account is not mapped to NHANVIEN.";
+                transaction.Rollback();
+                return false;
+            }
+
+            ExecuteNonQuery(connection, transaction, $"GRANT {normalizedRole} TO {safeUsername}");
+            transaction.Commit();
+            return true;
+        }
+        catch (OracleException ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+    }
+
     private List<UserAccountItem> SearchUsers(string searchText, string sql)
     {
         string normalizedKeyword = NormalizeIdKeyword(searchText);
@@ -260,6 +434,34 @@ public sealed class UserService
     private static string NormalizeIdKeyword(string searchText)
     {
         return new string((searchText ?? string.Empty).Where(char.IsDigit).ToArray());
+    }
+
+    private static List<string> GetCurrentRolesByUsername(OracleConnection connection, string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return new List<string>();
+        }
+
+        const string sql = """
+            SELECT rp.GRANTED_ROLE
+            FROM DBA_ROLE_PRIVS rp
+            WHERE rp.GRANTEE = :grantee
+            ORDER BY rp.GRANTED_ROLE
+            """;
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("grantee", username.Trim().ToUpperInvariant()));
+
+        using var reader = command.ExecuteReader();
+        var roles = new List<string>();
+        while (reader.Read())
+        {
+            roles.Add(reader.IsDBNull(0) ? string.Empty : reader.GetString(0));
+        }
+
+        return roles.Where(r => !string.IsNullOrWhiteSpace(r)).ToList();
     }
 
     private static bool ValidateCreateUserRequest(CreateUserRequest request, out string message)
@@ -324,6 +526,35 @@ public sealed class UserService
         }
 
         return true;
+    }
+
+    private static string NormalizeAndValidateGrantRole(string roleName)
+    {
+        string normalized = (roleName ?? string.Empty).Trim().ToUpperInvariant();
+        return normalized switch
+        {
+            "DIEU_PHOI_VIEN" => "DIEU_PHOI_VIEN",
+            "BAC_SI_Y_SI" => "BAC_SI_Y_SI",
+            "KY_THUAT_VIEN" => "KY_THUAT_VIEN",
+            "BENH_NHAN" => "BENH_NHAN",
+            _ => string.Empty
+        };
+    }
+
+    private static bool IsStaffUsername(OracleConnection connection, OracleTransaction transaction, string username)
+    {
+        const string sql = """
+            SELECT COUNT(*)
+            FROM NHANVIEN n
+            WHERE UPPER(n.USERNAME) = :username
+            """;
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("username", username));
+        int count = Convert.ToInt32(command.ExecuteScalar());
+        return count > 0;
     }
 
     private static string NormalizeAndValidateOracleUsername(string username)
@@ -523,4 +754,32 @@ public sealed class DepartmentOption
     {
         return DisplayText;
     }
+}
+
+public sealed class UserSecurityProfileItem
+{
+    public string UserType { get; set; } = string.Empty;
+    public int UserId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Gender { get; set; } = string.Empty;
+    public DateTime? BirthDate { get; set; }
+    public string IdNumber { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+
+    // Staff info
+    public string Address { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string BusinessRole { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+
+    // Patient info
+    public string SoNha { get; set; } = string.Empty;
+    public string TenDuong { get; set; } = string.Empty;
+    public string QuanHuyen { get; set; } = string.Empty;
+    public string TinhTp { get; set; } = string.Empty;
+    public string TienSuBenh { get; set; } = string.Empty;
+    public string TienSuBenhGiaDinh { get; set; } = string.Empty;
+    public string DiUngThuoc { get; set; } = string.Empty;
+
+    public List<string> CurrentOracleRoles { get; set; } = new();
 }
