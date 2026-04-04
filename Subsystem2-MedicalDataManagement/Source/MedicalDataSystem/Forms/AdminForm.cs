@@ -16,8 +16,13 @@ public class AdminForm : Form
         ReadOnly = true,
         AllowUserToAddRows = false,
         AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
         SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
     };
     private readonly DataGridView _staffUsersGrid = new()
     {
@@ -25,28 +30,24 @@ public class AdminForm : Form
         ReadOnly = true,
         AllowUserToAddRows = false,
         AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
         SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
     };
+    private readonly TextBox _patientSearchBox = new() { Width = 240, PlaceholderText = "Nhap CCCD benh nhan" };
+    private readonly TextBox _staffSearchBox = new() { Width = 240, PlaceholderText = "Nhap CMND nhan vien" };
+    private readonly Button _patientSearchButton = new() { Text = "Tim", Width = 70, Height = 30 };
+    private readonly Button _staffSearchButton = new() { Text = "Tim", Width = 70, Height = 30 };
 
     private readonly Label _patientPageInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
-    private readonly Button _patientPrevButton = new() { Text = "Trang trước", Width = 110, Height = 30 };
-    private readonly Button _patientNextButton = new() { Text = "Trang sau", Width = 100, Height = 30 };
-    private readonly Button _patientRefreshButton = new() { Text = "Làm mới", Width = 90, Height = 30 };
+    private readonly Button _patientRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
 
     private readonly Label _staffPageInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
-    private readonly Button _staffPrevButton = new() { Text = "Trang trước", Width = 110, Height = 30 };
-    private readonly Button _staffNextButton = new() { Text = "Trang sau", Width = 100, Height = 30 };
-    private readonly Button _staffRefreshButton = new() { Text = "Làm mới", Width = 90, Height = 30 };
-
-    private const int PageSize = 20;
-    private int _patientCurrentPage = 1;
-    private int _patientTotalPages = 1;
-    private int _patientTotalUsers;
-
-    private int _staffCurrentPage = 1;
-    private int _staffTotalPages = 1;
-    private int _staffTotalUsers;
+    private readonly Button _staffRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
 
     public AdminForm(UserSession session)
     {
@@ -54,8 +55,7 @@ public class AdminForm : Form
         _connectionService = new OracleConnectionService(session.ConnectionString);
         _userService = new UserService(_connectionService);
         BuildUi();
-        RefreshPatientUsersPage();
-        RefreshStaffUsersPage();
+        SetSearchHints();
     }
 
     private void BuildUi()
@@ -80,8 +80,7 @@ public class AdminForm : Form
         {
             if (tabControl.SelectedIndex == 0)
             {
-                RefreshPatientUsersPage();
-                RefreshStaffUsersPage();
+                SetSearchHints();
             }
         };
 
@@ -131,45 +130,58 @@ public class AdminForm : Form
     {
         var tab = new TabPage("BN");
 
-        var pagingPanel = new FlowLayoutPanel
+        var rootLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Bottom,
-            Height = 44,
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+
+        var searchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
             Padding = new Padding(8, 4, 8, 4),
             WrapContents = false
         };
 
-        _patientPrevButton.Click += (_, _) =>
-        {
-            if (_patientCurrentPage <= 1)
-            {
-                return;
-            }
+        searchPanel.Controls.Add(new Label { Text = "CCCD:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        searchPanel.Controls.Add(_patientSearchBox);
+        searchPanel.Controls.Add(_patientSearchButton);
 
-            _patientCurrentPage--;
+        var pagingPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+
+        _patientSearchButton.Click += (_, _) =>
+        {
             RefreshPatientUsersPage();
         };
 
-        _patientNextButton.Click += (_, _) =>
+        _patientSearchBox.KeyDown += (_, e) =>
         {
-            if (_patientCurrentPage >= _patientTotalPages)
+            if (e.KeyCode == Keys.Enter)
             {
-                return;
+                RefreshPatientUsersPage();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
             }
-
-            _patientCurrentPage++;
-            RefreshPatientUsersPage();
         };
 
         _patientRefreshButton.Click += (_, _) => RefreshPatientUsersPage();
 
-        pagingPanel.Controls.Add(_patientPrevButton);
-        pagingPanel.Controls.Add(_patientNextButton);
         pagingPanel.Controls.Add(_patientRefreshButton);
         pagingPanel.Controls.Add(_patientPageInfoLabel);
 
-        tab.Controls.Add(_patientUsersGrid);
-        tab.Controls.Add(pagingPanel);
+        rootLayout.Controls.Add(searchPanel, 0, 0);
+        rootLayout.Controls.Add(_patientUsersGrid, 0, 1);
+        rootLayout.Controls.Add(pagingPanel, 0, 2);
+        tab.Controls.Add(rootLayout);
         return tab;
     }
 
@@ -177,62 +189,89 @@ public class AdminForm : Form
     {
         var tab = new TabPage("NV");
 
-        var pagingPanel = new FlowLayoutPanel
+        var rootLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Bottom,
-            Height = 44,
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+
+        var searchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
             Padding = new Padding(8, 4, 8, 4),
             WrapContents = false
         };
 
-        _staffPrevButton.Click += (_, _) =>
-        {
-            if (_staffCurrentPage <= 1)
-            {
-                return;
-            }
+        searchPanel.Controls.Add(new Label { Text = "CMND:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        searchPanel.Controls.Add(_staffSearchBox);
+        searchPanel.Controls.Add(_staffSearchButton);
 
-            _staffCurrentPage--;
+        var pagingPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+
+        _staffSearchButton.Click += (_, _) =>
+        {
             RefreshStaffUsersPage();
         };
 
-        _staffNextButton.Click += (_, _) =>
+        _staffSearchBox.KeyDown += (_, e) =>
         {
-            if (_staffCurrentPage >= _staffTotalPages)
+            if (e.KeyCode == Keys.Enter)
             {
-                return;
+                RefreshStaffUsersPage();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
             }
-
-            _staffCurrentPage++;
-            RefreshStaffUsersPage();
         };
 
         _staffRefreshButton.Click += (_, _) => RefreshStaffUsersPage();
 
-        pagingPanel.Controls.Add(_staffPrevButton);
-        pagingPanel.Controls.Add(_staffNextButton);
         pagingPanel.Controls.Add(_staffRefreshButton);
         pagingPanel.Controls.Add(_staffPageInfoLabel);
 
-        tab.Controls.Add(_staffUsersGrid);
-        tab.Controls.Add(pagingPanel);
+        rootLayout.Controls.Add(searchPanel, 0, 0);
+        rootLayout.Controls.Add(_staffUsersGrid, 0, 1);
+        rootLayout.Controls.Add(pagingPanel, 0, 2);
+        tab.Controls.Add(rootLayout);
         return tab;
+    }
+
+    private void SetSearchHints()
+    {
+        if (string.IsNullOrWhiteSpace(_patientSearchBox.Text))
+        {
+            _patientUsersGrid.DataSource = new List<object>();
+            _patientPageInfoLabel.Text = "BN: Nhap CCCD de tim";
+        }
+
+        if (string.IsNullOrWhiteSpace(_staffSearchBox.Text))
+        {
+            _staffUsersGrid.DataSource = new List<object>();
+            _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+        }
     }
 
     private void RefreshPatientUsersPage()
     {
         try
         {
-            (List<UserAccountItem> users, int totalCount) = _userService.GetPatientUsersPage(_patientCurrentPage, PageSize);
-            _patientTotalUsers = totalCount;
-            _patientTotalPages = Math.Max(1, (int)Math.Ceiling(_patientTotalUsers / (double)PageSize));
-
-            if (_patientCurrentPage > _patientTotalPages)
+            string cccdKeyword = _patientSearchBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(cccdKeyword))
             {
-                _patientCurrentPage = _patientTotalPages;
-                (users, totalCount) = _userService.GetPatientUsersPage(_patientCurrentPage, PageSize);
-                _patientTotalUsers = totalCount;
+                _patientUsersGrid.DataSource = new List<object>();
+                _patientPageInfoLabel.Text = "BN: Nhap CCCD de tim";
+                return;
             }
+
+            List<UserAccountItem> users = _userService.GetPatientUsersByCccd(cccdKeyword);
 
             _patientUsersGrid.DataSource = users
                 .Select(u => new
@@ -246,9 +285,7 @@ public class AdminForm : Form
                 })
                 .ToList();
 
-            _patientPageInfoLabel.Text = $"BN: Trang {_patientCurrentPage}/{_patientTotalPages} - Tổng: {_patientTotalUsers} tài khoản";
-            _patientPrevButton.Enabled = _patientCurrentPage > 1;
-            _patientNextButton.Enabled = _patientCurrentPage < _patientTotalPages;
+            _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan";
         }
         catch (OracleException ex)
         {
@@ -264,16 +301,15 @@ public class AdminForm : Form
     {
         try
         {
-            (List<UserAccountItem> users, int totalCount) = _userService.GetStaffUsersPage(_staffCurrentPage, PageSize);
-            _staffTotalUsers = totalCount;
-            _staffTotalPages = Math.Max(1, (int)Math.Ceiling(_staffTotalUsers / (double)PageSize));
-
-            if (_staffCurrentPage > _staffTotalPages)
+            string cmndKeyword = _staffSearchBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(cmndKeyword))
             {
-                _staffCurrentPage = _staffTotalPages;
-                (users, totalCount) = _userService.GetStaffUsersPage(_staffCurrentPage, PageSize);
-                _staffTotalUsers = totalCount;
+                _staffUsersGrid.DataSource = new List<object>();
+                _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+                return;
             }
+
+            List<UserAccountItem> users = _userService.GetStaffUsersByCmnd(cmndKeyword);
 
             _staffUsersGrid.DataSource = users
                 .Select(u => new
@@ -287,9 +323,7 @@ public class AdminForm : Form
                 })
                 .ToList();
 
-            _staffPageInfoLabel.Text = $"NV: Trang {_staffCurrentPage}/{_staffTotalPages} - Tổng: {_staffTotalUsers} tài khoản";
-            _staffPrevButton.Enabled = _staffCurrentPage > 1;
-            _staffNextButton.Enabled = _staffCurrentPage < _staffTotalPages;
+            _staffPageInfoLabel.Text = $"NV: Tim thay {users.Count} tai khoan";
         }
         catch (OracleException ex)
         {

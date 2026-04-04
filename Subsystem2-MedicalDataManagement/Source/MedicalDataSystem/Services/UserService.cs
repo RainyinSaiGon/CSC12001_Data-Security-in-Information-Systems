@@ -11,102 +11,69 @@ public sealed class UserService
         _connectionService = connectionService;
     }
 
-    public (List<UserAccountItem> Users, int TotalCount) GetPatientUsersPage(int pageNumber, int pageSize)
+    public List<UserAccountItem> GetPatientUsersByCccd(string cccdKeyword)
     {
-        return GetUsersPageInternal(
-            pageNumber,
-            pageSize,
-            countSql: """
-                SELECT COUNT(*)
-                FROM (
-                    SELECT DISTINCT rp.GRANTEE
-                    FROM DBA_ROLE_PRIVS rp
-                    WHERE rp.GRANTED_ROLE = 'BENH_NHAN'
-                ) u
-                """,
-            dataSql: """
-                SELECT
-                    NVL(b.MABN, 0) AS USER_ID,
-                    NVL(b.TENBN, '(Khong tim thay benh nhan)') AS FULL_NAME,
-                    u.USERNAME,
-                    NVL(d.ACCOUNT_STATUS, 'N/A') AS ACCOUNT_STATUS,
-                    d.CREATED,
-                    d.EXPIRY_DATE
-                FROM (
-                    SELECT DISTINCT rp.GRANTEE AS USERNAME
-                    FROM DBA_ROLE_PRIVS rp
-                    WHERE rp.GRANTED_ROLE = 'BENH_NHAN'
-                ) u
-                LEFT JOIN BENHNHAN b ON UPPER(b.USERNAME) = UPPER(u.USERNAME)
-                LEFT JOIN DBA_USERS d ON UPPER(d.USERNAME) = UPPER(u.USERNAME)
-                ORDER BY u.USERNAME
-                OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
-                """);
+        return SearchUsers(
+            cccdKeyword,
+            """
+            SELECT
+                NVL(b.MABN, 0) AS USER_ID,
+                NVL(b.TENBN, '(Khong tim thay benh nhan)') AS FULL_NAME,
+                u.USERNAME,
+                NVL(d.ACCOUNT_STATUS, 'N/A') AS ACCOUNT_STATUS,
+                d.CREATED,
+                d.EXPIRY_DATE
+            FROM (
+                SELECT DISTINCT rp.GRANTEE AS USERNAME
+                FROM DBA_ROLE_PRIVS rp
+                WHERE rp.GRANTED_ROLE = 'BENH_NHAN'
+            ) u
+            LEFT JOIN BENHNHAN b ON UPPER(b.USERNAME) = UPPER(u.USERNAME)
+            LEFT JOIN DBA_USERS d ON UPPER(d.USERNAME) = UPPER(u.USERNAME)
+            WHERE REPLACE(NVL(TRIM(b.CCCD), ''), ' ', '') LIKE :searchTerm
+            ORDER BY u.USERNAME
+            """);
     }
 
-    public (List<UserAccountItem> Users, int TotalCount) GetStaffUsersPage(int pageNumber, int pageSize)
+    public List<UserAccountItem> GetStaffUsersByCmnd(string cmndKeyword)
     {
-        return GetUsersPageInternal(
-            pageNumber,
-            pageSize,
-            countSql: """
-                SELECT COUNT(*)
-                FROM (
-                    SELECT DISTINCT rp.GRANTEE
-                    FROM DBA_ROLE_PRIVS rp
-                    WHERE rp.GRANTED_ROLE IN ('DIEU_PHOI_VIEN', 'BAC_SI_Y_SI', 'KY_THUAT_VIEN')
-                ) u
-                """,
-            dataSql: """
-                SELECT
-                    NVL(n.MANV, 0) AS USER_ID,
-                    NVL(n.HOTEN, '(Khong tim thay nhan vien)') AS FULL_NAME,
-                    u.USERNAME,
-                    NVL(d.ACCOUNT_STATUS, 'N/A') AS ACCOUNT_STATUS,
-                    d.CREATED,
-                    d.EXPIRY_DATE
-                FROM (
-                    SELECT DISTINCT rp.GRANTEE AS USERNAME
-                    FROM DBA_ROLE_PRIVS rp
-                    WHERE rp.GRANTED_ROLE IN ('DIEU_PHOI_VIEN', 'BAC_SI_Y_SI', 'KY_THUAT_VIEN')
-                ) u
-                LEFT JOIN NHANVIEN n ON UPPER(n.USERNAME) = UPPER(u.USERNAME)
-                LEFT JOIN DBA_USERS d ON UPPER(d.USERNAME) = UPPER(u.USERNAME)
-                ORDER BY u.USERNAME
-                OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
-                """);
+        return SearchUsers(
+            cmndKeyword,
+            """
+            SELECT
+                NVL(n.MANV, 0) AS USER_ID,
+                NVL(n.HOTEN, '(Khong tim thay nhan vien)') AS FULL_NAME,
+                u.USERNAME,
+                NVL(d.ACCOUNT_STATUS, 'N/A') AS ACCOUNT_STATUS,
+                d.CREATED,
+                d.EXPIRY_DATE
+            FROM (
+                SELECT DISTINCT rp.GRANTEE AS USERNAME
+                FROM DBA_ROLE_PRIVS rp
+                WHERE rp.GRANTED_ROLE IN ('DIEU_PHOI_VIEN', 'BAC_SI_Y_SI', 'KY_THUAT_VIEN')
+            ) u
+            LEFT JOIN NHANVIEN n ON UPPER(n.USERNAME) = UPPER(u.USERNAME)
+            LEFT JOIN DBA_USERS d ON UPPER(d.USERNAME) = UPPER(u.USERNAME)
+            WHERE REPLACE(NVL(TRIM(n.CMND), ''), ' ', '') LIKE :searchTerm
+            ORDER BY u.USERNAME
+            """);
     }
 
-    private (List<UserAccountItem> Users, int TotalCount) GetUsersPageInternal(
-        int pageNumber,
-        int pageSize,
-        string countSql,
-        string dataSql)
+    private List<UserAccountItem> SearchUsers(string searchText, string sql)
     {
-        if (pageNumber < 1)
+        string normalizedKeyword = new string(searchText.Where(char.IsLetterOrDigit).ToArray());
+        if (string.IsNullOrWhiteSpace(normalizedKeyword))
         {
-            pageNumber = 1;
+            return new List<UserAccountItem>();
         }
 
-        if (pageSize < 1)
-        {
-            pageSize = 20;
-        }
+        string searchPattern = $"%{normalizedKeyword}%";
 
         return _connectionService.Execute(connection =>
         {
-            int totalCount;
-            using (var countCommand = connection.CreateCommand())
-            {
-                countCommand.CommandText = countSql;
-                totalCount = Convert.ToInt32(countCommand.ExecuteScalar());
-            }
-
-            int offset = (pageNumber - 1) * pageSize;
             using var dataCommand = connection.CreateCommand();
-            dataCommand.CommandText = dataSql;
-            dataCommand.Parameters.Add(new OracleParameter("offset", offset));
-            dataCommand.Parameters.Add(new OracleParameter("pageSize", pageSize));
+            dataCommand.CommandText = sql;
+            dataCommand.Parameters.Add(new OracleParameter("searchTerm", searchPattern));
 
             using var reader = dataCommand.ExecuteReader();
             var users = new List<UserAccountItem>();
@@ -123,7 +90,7 @@ public sealed class UserService
                 });
             }
 
-            return (users, totalCount);
+            return users;
         });
     }
 }
