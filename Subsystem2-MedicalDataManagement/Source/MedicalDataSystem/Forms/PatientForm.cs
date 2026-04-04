@@ -59,8 +59,11 @@ public partial class PatientForm : Form
         saveButton.Click += (_, _) => SaveProfile();
         var notificationsButton = new Button { Text = "Notifications", AutoSize = true };
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
         profileLayout.Controls.Add(saveButton);
         profileLayout.Controls.Add(notificationsButton);
+        profileLayout.Controls.Add(logoutButton);
 
         var tabs = new TabControl { Dock = DockStyle.Fill };
         tabs.TabPages.Add(new TabPage("Medical Records") { Controls = { _recordsGrid } });
@@ -125,5 +128,16 @@ public partial class PatientForm : Form
         {
             MessageBox.Show(this, ex.Message, "Patient", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }

@@ -47,8 +47,11 @@ public partial class TechnicianForm : Form
         saveButton.Click += (_, _) => SaveResult();
         var notificationsButton = new Button { Text = "Notifications", AutoSize = true };
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
         topPanel.Controls.Add(saveButton);
         topPanel.Controls.Add(notificationsButton);
+        topPanel.Controls.Add(logoutButton);
 
         Controls.Add(_servicesGrid);
         Controls.Add(topPanel);
@@ -80,5 +83,16 @@ public partial class TechnicianForm : Form
         {
             MessageBox.Show(this, ex.Message, "Technician", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }

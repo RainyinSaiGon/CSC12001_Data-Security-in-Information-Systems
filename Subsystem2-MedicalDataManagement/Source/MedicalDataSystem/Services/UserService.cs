@@ -103,7 +103,7 @@ public sealed class UserService
             ) u
             LEFT JOIN NHANVIEN n ON UPPER(n.USERNAME) = UPPER(u.USERNAME)
             LEFT JOIN DBA_USERS d ON UPPER(d.USERNAME) = UPPER(u.USERNAME)
-            WHERE REPLACE(NVL(TRIM(n.CMND), ''), ' ', '') LIKE :searchTerm
+            WHERE n.CMND LIKE :searchTerm
             ORDER BY u.USERNAME
             """);
     }

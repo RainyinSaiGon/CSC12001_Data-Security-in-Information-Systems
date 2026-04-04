@@ -62,9 +62,12 @@ public partial class CoordinatorForm : Form
         refreshButton.Click += (_, _) => RefreshPatients();
         var notificationsButton = new Button { Text = "Notifications", AutoSize = true };
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
         topPanel.Controls.Add(addButton);
         topPanel.Controls.Add(refreshButton);
         topPanel.Controls.Add(notificationsButton);
+        topPanel.Controls.Add(logoutButton);
 
         var assignmentPanel = new FlowLayoutPanel
         {
@@ -172,5 +175,16 @@ public partial class CoordinatorForm : Form
         {
             MessageBox.Show(this, ex.Message, "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }

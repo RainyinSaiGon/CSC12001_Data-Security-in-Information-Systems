@@ -86,17 +86,53 @@ public class AdminForm : Form
 
         var statusLabel = new Label
         {
-            Dock = DockStyle.Bottom,
-            Height = 32,
+            Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(10, 0, 0, 0),
             Text = $"Logged in as: {_session.Username}"
         };
 
+        var logoutButton = new Button
+        {
+            Text = "Log out",
+            AutoSize = true,
+            Margin = new Padding(0, 6, 0, 0)
+        };
+        logoutButton.Click += (_, _) => Logout();
+
+        var headerActions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Right,
+            Width = 130,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
+            Padding = new Padding(8, 0, 8, 0)
+        };
+        headerActions.Controls.Add(logoutButton);
+
+        var headerPanel = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 42
+        };
+        headerPanel.Controls.Add(statusLabel);
+        headerPanel.Controls.Add(headerActions);
+
         Controls.Add(tabControl);
-        Controls.Add(statusLabel);
+        Controls.Add(headerPanel);
 
         _ = _connectionService;
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 
     private TabPage BuildUsersTab()

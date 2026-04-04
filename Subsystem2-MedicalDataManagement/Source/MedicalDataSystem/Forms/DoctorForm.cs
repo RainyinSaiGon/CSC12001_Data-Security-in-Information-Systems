@@ -74,6 +74,10 @@ public partial class DoctorForm : Form
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
         topPanel.Controls.Add(notificationsButton);
 
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
+        topPanel.Controls.Add(logoutButton);
+
         var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
         split.Panel1.Controls.Add(_patientsGrid);
         split.Panel2.Controls.Add(_recordsGrid);
@@ -154,5 +158,16 @@ public partial class DoctorForm : Form
         {
             MessageBox.Show(this, ex.Message, "Doctor", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }

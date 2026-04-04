@@ -79,8 +79,18 @@ public partial class LoginForm : Form
             };
 
             Hide();
-            nextForm.FormClosed += (_, _) => Close();
-            nextForm.Show();
+            nextForm.ShowDialog(this);
+
+            if (nextForm.DialogResult == DialogResult.Retry)
+            {
+                _passwordTextBox.Clear();
+                _passwordTextBox.Focus();
+                ShowStatus("You have been logged out.");
+                Show();
+                return;
+            }
+
+            Close();
         }
         catch (Exception ex)
         {
