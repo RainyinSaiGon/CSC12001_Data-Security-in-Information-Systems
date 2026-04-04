@@ -1,14 +1,97 @@
 namespace MedicalDataSystem.Services;
 
+using MedicalDataSystem.Models;
 using Oracle.ManagedDataAccess.Client;
 
 public sealed class UserService
 {
     private readonly OracleConnectionService _connectionService;
+    public string LastErrorMessage { get; private set; } = string.Empty;
 
     public UserService(OracleConnectionService connectionService)
     {
         _connectionService = connectionService;
+    }
+
+    public bool CreateUser(CreateUserRequest request)
+    {
+        LastErrorMessage = string.Empty;
+
+        if (!ValidateCreateUserRequest(request, out string validationMessage))
+        {
+            LastErrorMessage = validationMessage;
+            return false;
+        }
+
+        string safeUsername;
+        try
+        {
+            safeUsername = NormalizeAndValidateOracleUsername(request.Username);
+        }
+        catch (ArgumentException ex)
+        {
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+
+        using var connection = _connectionService.GetConnection();
+        using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            if (UsernameExists(connection, transaction, safeUsername))
+            {
+                LastErrorMessage = $"Username {safeUsername} already exists.";
+                transaction.Rollback();
+                return false;
+            }
+
+            if (string.Equals(request.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+            {
+                InsertStaff(connection, transaction, request, safeUsername);
+            }
+            else
+            {
+                InsertPatient(connection, transaction, request, safeUsername);
+            }
+
+            EnsureOracleUser(connection, transaction, safeUsername);
+            ExecuteNonQuery(connection, transaction, $"GRANT CREATE SESSION TO {safeUsername}");
+
+            if (string.Equals(request.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+            {
+                string roleName = MapStaffRoleToDbRole(request.Role);
+                if (string.IsNullOrWhiteSpace(roleName))
+                {
+                    LastErrorMessage = "Unsupported staff role.";
+                    transaction.Rollback();
+                    return false;
+                }
+
+                ExecuteNonQuery(connection, transaction, $"GRANT {roleName} TO {safeUsername}");
+            }
+            else
+            {
+                ExecuteNonQuery(connection, transaction, $"GRANT BENH_NHAN TO {safeUsername}");
+            }
+
+            transaction.Commit();
+            return true;
+        }
+        catch (OracleException ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = ex.Number == -1920
+                ? $"Oracle user {safeUsername} already exists and could not be updated."
+                : $"Oracle error {ex.Number}: {ex.Message}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = ex.Message;
+            return false;
+        }
     }
 
     public List<PatientAccountItem> GetPatientUsersByCccd(string cccdKeyword)
@@ -84,6 +167,37 @@ public sealed class UserService
         });
     }
 
+    public List<DepartmentOption> GetDepartments()
+    {
+        const string sql = """
+            SELECT MAKHOA, TENKHOA
+            FROM KHOA
+            ORDER BY MAKHOA
+            """;
+
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+
+            using var reader = command.ExecuteReader();
+            var departments = new List<DepartmentOption>();
+            while (reader.Read())
+            {
+                string maKhoa = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+                string tenKhoa = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+
+                departments.Add(new DepartmentOption
+                {
+                    MAKHOA = maKhoa,
+                    TENKHOA = tenKhoa
+                });
+            }
+
+            return departments;
+        });
+    }
+
     public List<UserAccountItem> GetStaffUsersByCmnd(string cmndKeyword)
     {
         return SearchUsers(
@@ -147,6 +261,226 @@ public sealed class UserService
     {
         return new string((searchText ?? string.Empty).Where(char.IsDigit).ToArray());
     }
+
+    private static bool ValidateCreateUserRequest(CreateUserRequest request, out string message)
+    {
+        message = string.Empty;
+
+        if (request is null)
+        {
+            message = "Request is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.UserType) ||
+            (!string.Equals(request.UserType, "STAFF", StringComparison.OrdinalIgnoreCase) &&
+             !string.Equals(request.UserType, "PATIENT", StringComparison.OrdinalIgnoreCase)))
+        {
+            message = "UserType must be STAFF or PATIENT.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Username))
+        {
+            message = "Username is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FullName) ||
+            string.IsNullOrWhiteSpace(request.Gender) ||
+            string.IsNullOrWhiteSpace(request.IDNumber))
+        {
+            message = "FullName, Gender, and IDNumber are required.";
+            return false;
+        }
+
+        if (request.BirthDate == default)
+        {
+            message = "BirthDate is required.";
+            return false;
+        }
+
+        if (string.Equals(request.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(request.Address) ||
+                string.IsNullOrWhiteSpace(request.Phone) ||
+                string.IsNullOrWhiteSpace(request.Role) ||
+                string.IsNullOrWhiteSpace(request.Department))
+            {
+                message = "Address, Phone, Role, and Department are required for STAFF.";
+                return false;
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(request.SONHA) ||
+                string.IsNullOrWhiteSpace(request.TENDUONG) ||
+                string.IsNullOrWhiteSpace(request.QUANHUYEN) ||
+                string.IsNullOrWhiteSpace(request.TINHTP))
+            {
+                message = "SONHA, TENDUONG, QUANHUYEN, and TINHTP are required for PATIENT.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string NormalizeAndValidateOracleUsername(string username)
+    {
+        string normalized = (username ?? string.Empty).Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            throw new ArgumentException("Username is required.");
+        }
+
+        if (normalized.Length > 30)
+        {
+            throw new ArgumentException("Username must be 30 characters or fewer.");
+        }
+
+        bool isValid = normalized.All(ch =>
+            (ch >= 'A' && ch <= 'Z') ||
+            (ch >= '0' && ch <= '9') ||
+            ch == '_' || ch == '$' || ch == '#');
+
+        if (!isValid || !(normalized[0] >= 'A' && normalized[0] <= 'Z'))
+        {
+            throw new ArgumentException("Username contains invalid Oracle identifier characters.");
+        }
+
+        return normalized;
+    }
+
+    private static bool UsernameExists(OracleConnection connection, OracleTransaction transaction, string username)
+    {
+        const string sql = """
+            SELECT COUNT(*)
+            FROM (
+                SELECT UPPER(USERNAME) AS USERNAME FROM NHANVIEN WHERE USERNAME IS NOT NULL
+                UNION ALL
+                SELECT UPPER(USERNAME) AS USERNAME FROM BENHNHAN WHERE USERNAME IS NOT NULL
+                UNION ALL
+                SELECT USERNAME FROM ALL_USERS
+            ) u
+            WHERE u.USERNAME = :username
+            """;
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("username", username));
+        int count = Convert.ToInt32(command.ExecuteScalar());
+        return count > 0;
+    }
+
+    private static void InsertStaff(OracleConnection connection, OracleTransaction transaction, CreateUserRequest request, string username)
+    {
+        const string sql = """
+            INSERT INTO NHANVIEN (
+                HOTEN, PHAI, NGAYSINH, CMND,
+                QUEQUAN, SODT, VAITRO, CHUYENKHOA, USERNAME
+            )
+            VALUES (
+                :fullName, :gender, :birthDate, :idNumber,
+                :address, :phone, :role, :department, :username
+            )
+            """;
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("fullName", request.FullName.Trim()));
+        command.Parameters.Add(new OracleParameter("gender", request.Gender.Trim()));
+        command.Parameters.Add(new OracleParameter("birthDate", request.BirthDate));
+        command.Parameters.Add(new OracleParameter("idNumber", request.IDNumber.Trim()));
+        command.Parameters.Add(new OracleParameter("address", request.Address.Trim()));
+        command.Parameters.Add(new OracleParameter("phone", request.Phone.Trim()));
+        command.Parameters.Add(new OracleParameter("role", request.Role.Trim()));
+        command.Parameters.Add(new OracleParameter("department", request.Department.Trim()));
+        command.Parameters.Add(new OracleParameter("username", username));
+        command.ExecuteNonQuery();
+    }
+
+    private static void InsertPatient(OracleConnection connection, OracleTransaction transaction, CreateUserRequest request, string username)
+    {
+        const string sql = """
+            INSERT INTO BENHNHAN (
+                TENBN, PHAI, NGAYSINH, CCCD,
+                SONHA, TENDUONG, QUANHUYEN, TINHTP,
+                TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME
+            )
+            VALUES (
+                :fullName, :gender, :birthDate, :idNumber,
+                :sonha, :tenduong, :quanhuyen, :tinhtp,
+                :tiensuBenh, :tiensuBenhGd, :diungThuoc, :username
+            )
+            """;
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("fullName", request.FullName.Trim()));
+        command.Parameters.Add(new OracleParameter("gender", request.Gender.Trim()));
+        command.Parameters.Add(new OracleParameter("birthDate", request.BirthDate));
+        command.Parameters.Add(new OracleParameter("idNumber", request.IDNumber.Trim()));
+        command.Parameters.Add(new OracleParameter("sonha", request.SONHA.Trim()));
+        command.Parameters.Add(new OracleParameter("tenduong", request.TENDUONG.Trim()));
+        command.Parameters.Add(new OracleParameter("quanhuyen", request.QUANHUYEN.Trim()));
+        command.Parameters.Add(new OracleParameter("tinhtp", request.TINHTP.Trim()));
+        command.Parameters.Add(new OracleParameter("tiensuBenh", request.TIENSUBENH.Trim()));
+        command.Parameters.Add(new OracleParameter("tiensuBenhGd", request.TIENSUBENHGD.Trim()));
+        command.Parameters.Add(new OracleParameter("diungThuoc", request.DIUNGTHUOC.Trim()));
+        command.Parameters.Add(new OracleParameter("username", username));
+        command.ExecuteNonQuery();
+    }
+
+    private static void EnsureOracleUser(OracleConnection connection, OracleTransaction transaction, string username)
+    {
+        try
+        {
+            ExecuteNonQuery(connection, transaction, $"CREATE USER {username} IDENTIFIED BY \"123\"");
+        }
+        catch (OracleException ex) when (ex.Number == -1920)
+        {
+            ExecuteNonQuery(connection, transaction, $"ALTER USER {username} IDENTIFIED BY \"123\" ACCOUNT UNLOCK");
+        }
+    }
+
+    private static void ExecuteNonQuery(OracleConnection connection, OracleTransaction transaction, string sql)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.ExecuteNonQuery();
+    }
+
+    private static string MapStaffRoleToDbRole(string role)
+    {
+        string normalizedRole = (role ?? string.Empty).Trim();
+        return normalizedRole switch
+        {
+            "Điều phối viên" => "DIEU_PHOI_VIEN",
+            "Dieu phoi vien" => "DIEU_PHOI_VIEN",
+            "Bác sĩ/Y sĩ" => "BAC_SI_Y_SI",
+            "Bac si/Y si" => "BAC_SI_Y_SI",
+            "Kỹ thuật viên" => "KY_THUAT_VIEN",
+            "Ky thuat vien" => "KY_THUAT_VIEN",
+            _ => string.Empty
+        };
+    }
+
+    private void TryRollback(OracleTransaction transaction)
+    {
+        try
+        {
+            transaction.Rollback();
+        }
+        catch
+        {
+            // Ignore rollback failures to preserve original error.
+        }
+    }
 }
 
 public sealed class UserAccountItem
@@ -177,4 +511,16 @@ public sealed class PatientAccountItem
     public string AccountStatus { get; set; } = string.Empty;
     public DateTime? CreatedDate { get; set; }
     public DateTime? ExpiryDate { get; set; }
+}
+
+public sealed class DepartmentOption
+{
+    public string MAKHOA { get; set; } = string.Empty;
+    public string TENKHOA { get; set; } = string.Empty;
+    public string DisplayText => string.IsNullOrWhiteSpace(TENKHOA) ? MAKHOA : $"{MAKHOA} - {TENKHOA}";
+
+    public override string ToString()
+    {
+        return DisplayText;
+    }
 }

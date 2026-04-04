@@ -49,6 +49,37 @@ public class AdminForm : Form
     private readonly Label _staffPageInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
     private readonly Button _staffRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
 
+    private readonly ComboBox _createUserTypeCombo = new() { Width = 140, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly TextBox _createUsernameTextBox = new() { Width = 180 };
+    private readonly TextBox _createFullNameTextBox = new() { Width = 220 };
+    private readonly ComboBox _createGenderCombo = new() { Width = 110, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly DateTimePicker _createBirthDatePicker = new() { Width = 150, Format = DateTimePickerFormat.Short };
+    private readonly TextBox _createIdNumberTextBox = new() { Width = 180 };
+
+    private readonly TextBox _createStaffAddressTextBox = new() { Width = 220 };
+    private readonly TextBox _createStaffPhoneTextBox = new() { Width = 140 };
+    private readonly ComboBox _createStaffRoleCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _createStaffDepartmentCombo = new() { Width = 260, DropDownStyle = ComboBoxStyle.DropDownList };
+
+    private readonly TextBox _createPatientSoNhaTextBox = new() { Width = 120 };
+    private readonly TextBox _createPatientTenDuongTextBox = new() { Width = 180 };
+    private readonly TextBox _createPatientQuanHuyenTextBox = new() { Width = 160 };
+    private readonly TextBox _createPatientTinhTpTextBox = new() { Width = 160 };
+    private readonly TextBox _createPatientTienSuBenhTextBox = new() { Width = 220 };
+    private readonly TextBox _createPatientTienSuGdTextBox = new() { Width = 220 };
+    private readonly TextBox _createPatientDiUngTextBox = new() { Width = 220 };
+
+    private readonly FlowLayoutPanel _createStaffPanel = new() { AutoSize = true, WrapContents = true, Dock = DockStyle.Top };
+    private readonly FlowLayoutPanel _createPatientPanel = new() { AutoSize = true, WrapContents = true, Dock = DockStyle.Top };
+    private readonly Button _createUserButton = new() { Text = "Create User", Width = 120, Height = 32 };
+    private readonly TextBox _createFlowTextBox = new()
+    {
+        Multiline = true,
+        ReadOnly = true,
+        Dock = DockStyle.Fill,
+        ScrollBars = ScrollBars.Vertical
+    };
+
     public AdminForm(UserSession session)
     {
         _session = session;
@@ -146,6 +177,7 @@ public class AdminForm : Form
 
         usersSubTabs.TabPages.Add(BuildPatientUsersSubTab());
         usersSubTabs.TabPages.Add(BuildStaffUsersSubTab());
+        usersSubTabs.TabPages.Add(BuildCreateUserSubTab());
         usersSubTabs.SelectedIndexChanged += (_, _) =>
         {
             if (usersSubTabs.SelectedIndex == 0)
@@ -280,6 +312,109 @@ public class AdminForm : Form
         return tab;
     }
 
+    private TabPage BuildCreateUserSubTab()
+    {
+        var tab = new TabPage("Create User");
+
+        _createUserTypeCombo.Items.Clear();
+        _createUserTypeCombo.Items.AddRange(new object[] { "STAFF", "PATIENT" });
+        _createUserTypeCombo.SelectedIndex = 0;
+        _createUserTypeCombo.SelectedIndexChanged += (_, _) => ToggleCreateUserPanels();
+
+        _createGenderCombo.Items.Clear();
+        _createGenderCombo.Items.AddRange(new object[] { "Nam", "Nu" });
+        _createGenderCombo.SelectedIndex = 0;
+
+        _createStaffRoleCombo.Items.Clear();
+        _createStaffRoleCombo.Items.AddRange(new object[] { "Điều phối viên", "Bác sĩ/Y sĩ", "Kỹ thuật viên" });
+        _createStaffRoleCombo.SelectedIndex = 0;
+
+        _createStaffPanel.Controls.Clear();
+        _createStaffPanel.Controls.Add(new Label { Text = "Address (QUEQUAN)", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffAddressTextBox);
+        _createStaffPanel.Controls.Add(new Label { Text = "Phone", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffPhoneTextBox);
+        _createStaffPanel.Controls.Add(new Label { Text = "Role", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffRoleCombo);
+        _createStaffPanel.Controls.Add(new Label { Text = "Department", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffDepartmentCombo);
+
+        LoadDepartmentOptions();
+
+        _createPatientPanel.Controls.Clear();
+        _createPatientPanel.Controls.Add(new Label { Text = "So nha", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientSoNhaTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Ten duong", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTenDuongTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Quan/Huyen", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientQuanHuyenTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Tinh/TP", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTinhTpTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Tien su benh", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTienSuBenhTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Tien su benh GD", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTienSuGdTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Di ung thuoc", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientDiUngTextBox);
+
+        _createUserButton.Click -= HandleCreateUserClick;
+        _createUserButton.Click += HandleCreateUserClick;
+
+        var formPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoScroll = true,
+            Padding = new Padding(12),
+            WrapContents = true,
+            FlowDirection = FlowDirection.LeftToRight
+        };
+
+        formPanel.Controls.Add(new Label { Text = "UserType", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        formPanel.Controls.Add(_createUserTypeCombo);
+        formPanel.Controls.Add(new Label { Text = "Username", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        formPanel.Controls.Add(_createUsernameTextBox);
+        formPanel.Controls.Add(new Label { Text = "FullName", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        formPanel.Controls.Add(_createFullNameTextBox);
+        formPanel.Controls.Add(new Label { Text = "Gender", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        formPanel.Controls.Add(_createGenderCombo);
+        formPanel.Controls.Add(new Label { Text = "BirthDate", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        formPanel.Controls.Add(_createBirthDatePicker);
+        formPanel.Controls.Add(new Label { Text = "IDNumber", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        formPanel.Controls.Add(_createIdNumberTextBox);
+
+        formPanel.SetFlowBreak(_createIdNumberTextBox, true);
+        formPanel.Controls.Add(_createStaffPanel);
+        formPanel.SetFlowBreak(_createStaffPanel, true);
+        formPanel.Controls.Add(_createPatientPanel);
+        formPanel.SetFlowBreak(_createPatientPanel, true);
+        formPanel.Controls.Add(_createUserButton);
+
+        var flowGroup = new GroupBox
+        {
+            Text = "Create User Flow",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(10)
+        };
+        flowGroup.Controls.Add(_createFlowTextBox);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 65));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 35));
+        rootLayout.Controls.Add(formPanel, 0, 0);
+        rootLayout.Controls.Add(flowGroup, 0, 1);
+
+        tab.Controls.Add(rootLayout);
+
+        ToggleCreateUserPanels();
+        SetCreateFlowStep(1);
+        return tab;
+    }
+
     private void SetSearchHints()
     {
         if (string.IsNullOrWhiteSpace(_patientSearchBox.Text))
@@ -386,5 +521,172 @@ public class AdminForm : Form
         {
             MessageBox.Show(this, ex.Message, "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void ToggleCreateUserPanels()
+    {
+        bool isStaff = string.Equals(_createUserTypeCombo.SelectedItem?.ToString(), "STAFF", StringComparison.OrdinalIgnoreCase);
+        _createStaffPanel.Visible = isStaff;
+        _createPatientPanel.Visible = !isStaff;
+    }
+
+    private void HandleCreateUserClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        SetCreateFlowStep(1);
+
+        if (!TryBuildCreateUserRequest(out CreateUserRequest? request, out string validationMessage) || request is null)
+        {
+            MessageBox.Show(this, validationMessage, "Create User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        SetCreateFlowStep(2);
+        Application.DoEvents();
+        SetCreateFlowStep(3);
+        Application.DoEvents();
+
+        bool created = _userService.CreateUser(request);
+        if (!created)
+        {
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Create user failed." : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Create User", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        SetCreateFlowStep(4);
+        Application.DoEvents();
+        SetCreateFlowStep(5);
+
+        MessageBox.Show(this, "User created successfully.", "Create User", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        if (string.Equals(request.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            _staffSearchBox.Text = request.IDNumber;
+            RefreshStaffUsersPage();
+        }
+        else
+        {
+            _patientSearchBox.Text = request.IDNumber;
+            RefreshPatientUsersPage();
+        }
+    }
+
+    private bool TryBuildCreateUserRequest(out CreateUserRequest? request, out string message)
+    {
+        request = null;
+        message = string.Empty;
+
+        string userType = _createUserTypeCombo.SelectedItem?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(userType))
+        {
+            message = "UserType is required.";
+            return false;
+        }
+
+        string idNumber = new string((_createIdNumberTextBox.Text ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (string.IsNullOrWhiteSpace(_createUsernameTextBox.Text) ||
+            string.IsNullOrWhiteSpace(_createFullNameTextBox.Text) ||
+            string.IsNullOrWhiteSpace(idNumber))
+        {
+            message = "Username, FullName, and IDNumber are required.";
+            return false;
+        }
+
+        var built = new CreateUserRequest
+        {
+            UserType = userType,
+            Username = _createUsernameTextBox.Text.Trim(),
+            FullName = _createFullNameTextBox.Text.Trim(),
+            Gender = _createGenderCombo.SelectedItem?.ToString() ?? "Nam",
+            BirthDate = _createBirthDatePicker.Value.Date,
+            IDNumber = idNumber,
+            Address = _createStaffAddressTextBox.Text.Trim(),
+            Phone = _createStaffPhoneTextBox.Text.Trim(),
+            Role = _createStaffRoleCombo.SelectedItem?.ToString() ?? string.Empty,
+            Department = (_createStaffDepartmentCombo.SelectedItem as DepartmentOption)?.MAKHOA ?? string.Empty,
+            SONHA = _createPatientSoNhaTextBox.Text.Trim(),
+            TENDUONG = _createPatientTenDuongTextBox.Text.Trim(),
+            QUANHUYEN = _createPatientQuanHuyenTextBox.Text.Trim(),
+            TINHTP = _createPatientTinhTpTextBox.Text.Trim(),
+            TIENSUBENH = _createPatientTienSuBenhTextBox.Text.Trim(),
+            TIENSUBENHGD = _createPatientTienSuGdTextBox.Text.Trim(),
+            DIUNGTHUOC = _createPatientDiUngTextBox.Text.Trim()
+        };
+
+        if (string.Equals(userType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(built.Address) ||
+                string.IsNullOrWhiteSpace(built.Phone) ||
+                string.IsNullOrWhiteSpace(built.Role) ||
+                string.IsNullOrWhiteSpace(built.Department))
+            {
+                message = "Address, Phone, Role, and Department are required for STAFF.";
+                return false;
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(built.SONHA) ||
+                string.IsNullOrWhiteSpace(built.TENDUONG) ||
+                string.IsNullOrWhiteSpace(built.QUANHUYEN) ||
+                string.IsNullOrWhiteSpace(built.TINHTP))
+            {
+                message = "SONHA, TENDUONG, QUANHUYEN, and TINHTP are required for PATIENT.";
+                return false;
+            }
+        }
+
+        request = built;
+        return true;
+    }
+
+    private void LoadDepartmentOptions()
+    {
+        _createStaffDepartmentCombo.BeginUpdate();
+        try
+        {
+            List<DepartmentOption> departments = _userService.GetDepartments();
+            _createStaffDepartmentCombo.Items.Clear();
+            foreach (DepartmentOption department in departments)
+            {
+                _createStaffDepartmentCombo.Items.Add(department);
+            }
+
+            if (_createStaffDepartmentCombo.Items.Count > 0)
+            {
+                _createStaffDepartmentCombo.SelectedIndex = 0;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _createStaffDepartmentCombo.Items.Clear();
+            MessageBox.Show(this, $"Unable to load KHOA list: {ex.Message}", "Create User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        finally
+        {
+            _createStaffDepartmentCombo.EndUpdate();
+        }
+    }
+
+    private void SetCreateFlowStep(int currentStep)
+    {
+        string[] steps =
+        {
+            "Step 1: Admin nhap thong tin",
+            "Step 2: Insert vao NHANVIEN / BENHNHAN",
+            "Step 3: CREATE USER trong Oracle",
+            "Step 4: GRANT ROLE",
+            "Step 5: Hoan tat"
+        };
+
+        for (int i = 0; i < steps.Length; i++)
+        {
+            bool isCurrent = (i + 1) == currentStep;
+            steps[i] = isCurrent ? $">> {steps[i]}" : $"   {steps[i]}";
+        }
+
+        _createFlowTextBox.Text = string.Join(Environment.NewLine, steps);
     }
 }
