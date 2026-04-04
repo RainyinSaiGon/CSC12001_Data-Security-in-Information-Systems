@@ -70,6 +70,7 @@ public partial class LoginForm : Form
             UserSession session = _authenticationService.Authenticate(username, password, dataSource);
             Form nextForm = session.Role switch
             {
+                "ADMIN" => new AdminForm(session),
                 "COORDINATOR" => new CoordinatorForm(session),
                 "DOCTOR" => new DoctorForm(session),
                 "TECHNICIAN" => new TechnicianForm(session),
