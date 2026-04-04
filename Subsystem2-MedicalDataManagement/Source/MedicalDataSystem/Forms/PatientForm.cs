@@ -30,44 +30,164 @@ public partial class PatientForm : BaseMedicalForm
     private void BuildUi()
     {
         Text = $"Patient Portal - {_session.FullName}";
+        BackColor = Color.FromArgb(241, 244, 249);
+        MinimumSize = new Size(980, 680);
 
-        var profileLayout = new FlowLayoutPanel
+        _sonhaTextBox.Dock = DockStyle.Fill;
+        _sonhaTextBox.PlaceholderText = "Số nhà";
+        _tenduongTextBox.Dock = DockStyle.Fill;
+        _tenduongTextBox.PlaceholderText = "Tên đường";
+        _quanhuyenTextBox.Dock = DockStyle.Fill;
+        _quanhuyenTextBox.PlaceholderText = "Quận/Huyện";
+        _tinhtpTextBox.Dock = DockStyle.Fill;
+        _tinhtpTextBox.PlaceholderText = "Tỉnh/TP";
+        _tiensuTextBox.Dock = DockStyle.Fill;
+        _tiensuTextBox.PlaceholderText = "Tiền sử bệnh";
+        _tiensuGiaDinhTextBox.Dock = DockStyle.Fill;
+        _tiensuGiaDinhTextBox.PlaceholderText = "Tiền sử bệnh gia đình";
+        _diungTextBox.Dock = DockStyle.Fill;
+        _diungTextBox.PlaceholderText = "Dị ứng thuốc";
+
+        ConfigureGrid(_recordsGrid);
+        ConfigureGrid(_prescriptionsGrid);
+
+        var saveButton = new Button
         {
-            Dock = DockStyle.Top,
-            Height = 160,
+            Text = "Save profile",
+            Dock = DockStyle.Fill,
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(37, 99, 235),
+            ForeColor = Color.White,
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+        };
+        saveButton.FlatAppearance.BorderSize = 0;
+        saveButton.Click += (_, _) => SaveProfile();
+
+        var notificationsButton = new Button
+        {
+            Text = "Notifications",
+            Dock = DockStyle.Fill,
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(248, 250, 252),
+            Font = new Font("Segoe UI", 8f)
+        };
+        notificationsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
+
+        _identityLabel.AutoSize = true;
+        _identityLabel.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+        _identityLabel.ForeColor = Color.FromArgb(15, 23, 42);
+
+        var scrollHost = new Panel
+        {
+            Dock = DockStyle.Fill,
             AutoScroll = true,
-            Padding = new Padding(12)
+            AutoScrollMinSize = new Size(0, 700),
+            BackColor = Color.FromArgb(241, 244, 249)
         };
 
-        profileLayout.Controls.Add(_identityLabel);
-        profileLayout.Controls.Add(new Label { Text = "So nha", AutoSize = true });
-        profileLayout.Controls.Add(_sonhaTextBox);
-        profileLayout.Controls.Add(new Label { Text = "Ten duong", AutoSize = true });
-        profileLayout.Controls.Add(_tenduongTextBox);
-        profileLayout.Controls.Add(new Label { Text = "Quan/Huyen", AutoSize = true });
-        profileLayout.Controls.Add(_quanhuyenTextBox);
-        profileLayout.Controls.Add(new Label { Text = "Tinh/TP", AutoSize = true });
-        profileLayout.Controls.Add(_tinhtpTextBox);
-        profileLayout.Controls.Add(new Label { Text = "Tien su benh", AutoSize = true });
-        profileLayout.Controls.Add(_tiensuTextBox);
-        profileLayout.Controls.Add(new Label { Text = "Tien su benh GD", AutoSize = true });
-        profileLayout.Controls.Add(_tiensuGiaDinhTextBox);
-        profileLayout.Controls.Add(new Label { Text = "Di ung thuoc", AutoSize = true });
-        profileLayout.Controls.Add(_diungTextBox);
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(12, 12, 12, 56),
+            BackColor = Color.FromArgb(241, 244, 249)
+        };
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-        var saveButton = new Button { Text = "Save profile", AutoSize = true };
-        saveButton.Click += (_, _) => SaveProfile();
-        var notificationsButton = new Button { Text = "Notifications", AutoSize = true };
-        notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
-        profileLayout.Controls.Add(saveButton);
-        profileLayout.Controls.Add(notificationsButton);
+        var profileCard = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 190,
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(12),
+            Margin = new Padding(0, 0, 0, 10)
+        };
 
-        var tabs = new TabControl { Dock = DockStyle.Fill };
+        var profileLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 6,
+            RowCount = 5,
+            Margin = Padding.Empty
+        };
+        for (int i = 0; i < 6; i++)
+        {
+            profileLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.66f));
+        }
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+
+        profileLayout.Controls.Add(_identityLabel, 0, 0);
+        profileLayout.SetColumnSpan(_identityLabel, 6);
+
+        profileLayout.Controls.Add(new Label { Text = "Số nhà", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 1);
+        profileLayout.Controls.Add(new Label { Text = "Tên đường", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 1);
+        profileLayout.Controls.Add(new Label { Text = "Quận/Huyện", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 1);
+        profileLayout.Controls.Add(new Label { Text = "Tỉnh/TP", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 1);
+        profileLayout.Controls.Add(new Label { Text = "Tiền sử bệnh", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 1);
+
+        profileLayout.Controls.Add(_sonhaTextBox, 0, 2);
+        profileLayout.Controls.Add(_tenduongTextBox, 1, 2);
+        profileLayout.Controls.Add(_quanhuyenTextBox, 2, 2);
+        profileLayout.Controls.Add(_tinhtpTextBox, 3, 2);
+        profileLayout.Controls.Add(_tiensuTextBox, 4, 2);
+
+        profileLayout.Controls.Add(new Label { Text = "Tiền sử bệnh GD", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 3);
+        profileLayout.Controls.Add(new Label { Text = "Dị ứng thuốc", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 3);
+
+        profileLayout.Controls.Add(_tiensuGiaDinhTextBox, 0, 4);
+        profileLayout.Controls.Add(_diungTextBox, 1, 4);
+        profileLayout.Controls.Add(saveButton, 4, 4);
+        profileLayout.Controls.Add(notificationsButton, 5, 4);
+
+        profileCard.Controls.Add(profileLayout);
+
+        var dataCard = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 360,
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(10),
+            Margin = Padding.Empty
+        };
+
+        var tabs = new TabControl
+        {
+            Dock = DockStyle.Fill,
+            Font = new Font("Segoe UI", 9)
+        };
         tabs.TabPages.Add(new TabPage("Medical Records") { Controls = { _recordsGrid } });
         tabs.TabPages.Add(new TabPage("Prescriptions") { Controls = { _prescriptionsGrid } });
 
-        Controls.Add(tabs);
-        Controls.Add(profileLayout);
+        dataCard.Controls.Add(tabs);
+
+        root.Controls.Add(profileCard, 0, 0);
+        root.Controls.Add(dataCard, 0, 1);
+
+        scrollHost.Controls.Add(root);
+        Controls.Add(scrollHost);
+    }
+
+    private static void ConfigureGrid(DataGridView grid)
+    {
+        grid.BackgroundColor = Color.White;
+        grid.BorderStyle = BorderStyle.None;
+        grid.EnableHeadersVisualStyles = false;
+        grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 247, 250);
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(15, 23, 42);
+        grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8, FontStyle.Bold);
+        grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 234, 255);
+        grid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
+        grid.RowTemplate.Height = 26;
     }
 
     private void LoadData()

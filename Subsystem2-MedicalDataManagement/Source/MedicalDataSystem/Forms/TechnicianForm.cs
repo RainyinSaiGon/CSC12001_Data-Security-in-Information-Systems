@@ -28,12 +28,22 @@ public partial class TechnicianForm : BaseMedicalForm
         BackColor = Color.FromArgb(241, 244, 249);
         MinimumSize = new Size(920, 620);
 
-        var root = new TableLayoutPanel
+        var scrollHost = new Panel
         {
             Dock = DockStyle.Fill,
+            AutoScroll = true,
+            AutoScrollMinSize = new Size(0, 640),
+            BackColor = Color.FromArgb(241, 244, 249)
+        };
+
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             ColumnCount = 1,
             RowCount = 3,
-            Padding = new Padding(12),
+            Padding = new Padding(12, 12, 12, 56),
             BackColor = Color.FromArgb(241, 244, 249)
         };
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 78));
@@ -72,7 +82,7 @@ public partial class TechnicianForm : BaseMedicalForm
         {
             Text = "Technician Dashboard",
             AutoSize = true,
-            Font = new Font("Segoe UI", 15, FontStyle.Bold),
+            Font = new Font("Segoe UI", 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42),
             Margin = Padding.Empty
         });
@@ -81,7 +91,7 @@ public partial class TechnicianForm : BaseMedicalForm
         {
             Text = $"Welcome back, {_session.FullName}. Manage assigned services and update results",
             AutoSize = true,
-            Font = new Font("Segoe UI", 9),
+            Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139),
             Margin = new Padding(0, 2, 0, 0)
         });
@@ -127,13 +137,13 @@ public partial class TechnicianForm : BaseMedicalForm
         actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
         actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
 
-        actionLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }, 0, 0);
-        actionLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }, 1, 0);
-        actionLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }, 2, 0);
+        actionLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
+        actionLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
+        actionLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
         actionLayout.Controls.Add(_recordIdTextBox, 0, 1);
         actionLayout.Controls.Add(_serviceTypeTextBox, 1, 1);
         actionLayout.Controls.Add(_serviceDatePicker, 2, 1);
-        actionLayout.Controls.Add(new Label { Text = "Result", AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }, 0, 2);
+        actionLayout.Controls.Add(new Label { Text = "Result", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
 
         _recordIdTextBox.Dock = DockStyle.Fill;
         _recordIdTextBox.Margin = new Padding(0, 0, 10, 0);
@@ -155,7 +165,7 @@ public partial class TechnicianForm : BaseMedicalForm
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
         };
         saveButton.FlatAppearance.BorderSize = 0;
         saveButton.Click += (_, _) => SaveResult();
@@ -190,7 +200,7 @@ public partial class TechnicianForm : BaseMedicalForm
         {
             Text = "Assigned Services",
             AutoSize = true,
-            Font = new Font("Segoe UI", 11, FontStyle.Bold),
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42)
         }, 0, 0);
 
@@ -198,7 +208,7 @@ public partial class TechnicianForm : BaseMedicalForm
         {
             Text = "View and manage all services assigned to you",
             AutoSize = true,
-            Font = new Font("Segoe UI", 8.5f),
+            Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139)
         }, 0, 1);
 
@@ -207,10 +217,10 @@ public partial class TechnicianForm : BaseMedicalForm
         _servicesGrid.EnableHeadersVisualStyles = false;
         _servicesGrid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 247, 250);
         _servicesGrid.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(15, 23, 42);
-        _servicesGrid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+        _servicesGrid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8, FontStyle.Bold);
         _servicesGrid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 234, 255);
         _servicesGrid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
-        _servicesGrid.RowTemplate.Height = 28;
+        _servicesGrid.RowTemplate.Height = 26;
 
         gridCardLayout.Controls.Add(_servicesGrid, 0, 2);
         gridCard.Controls.Add(gridCardLayout);
@@ -219,7 +229,8 @@ public partial class TechnicianForm : BaseMedicalForm
         root.Controls.Add(actionCard, 0, 1);
         root.Controls.Add(gridCard, 0, 2);
 
-        Controls.Add(root);
+        scrollHost.Controls.Add(root);
+        Controls.Add(scrollHost);
     }
 
     private void RefreshData()

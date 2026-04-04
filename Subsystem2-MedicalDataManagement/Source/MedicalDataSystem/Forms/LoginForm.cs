@@ -180,6 +180,7 @@ public partial class LoginForm : Form
         _dataSourceTextBox.Dock = DockStyle.Fill;
         _dataSourceTextBox.Font = new Font("Segoe UI", 11);
         _dataSourceTextBox.Margin = Padding.Empty;
+        _dataSourceTextBox.PlaceholderText = "localhost:11521/xepdb1";
 
         _loginButton.Dock = DockStyle.Fill;
         _loginButton.Height = 44;

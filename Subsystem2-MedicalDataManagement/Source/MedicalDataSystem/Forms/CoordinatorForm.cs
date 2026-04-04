@@ -56,7 +56,7 @@ public partial class CoordinatorForm : BaseMedicalForm
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
         };
         addButton.FlatAppearance.BorderSize = 0;
         addButton.Click += (_, _) => AddPatient();
@@ -68,7 +68,7 @@ public partial class CoordinatorForm : BaseMedicalForm
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(225, 233, 251),
             ForeColor = Color.FromArgb(35, 65, 130),
-            Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
         };
         refreshButton.FlatAppearance.BorderSize = 0;
         refreshButton.Click += (_, _) => RefreshPatients();
@@ -80,7 +80,7 @@ public partial class CoordinatorForm : BaseMedicalForm
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
         };
         assignDoctorButton.FlatAppearance.BorderSize = 0;
         assignDoctorButton.Click += (_, _) => CreateRecord();
@@ -92,20 +92,29 @@ public partial class CoordinatorForm : BaseMedicalForm
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
         };
         assignTechnicianButton.FlatAppearance.BorderSize = 0;
         assignTechnicianButton.Click += (_, _) => AssignTechnician();
 
         _nameTextBox.Dock = DockStyle.Fill;
+        _nameTextBox.PlaceholderText = "Enter full name";
         _cccdTextBox.Dock = DockStyle.Fill;
+        _cccdTextBox.PlaceholderText = "Enter CCCD";
         _addressTextBox.Dock = DockStyle.Fill;
+        _addressTextBox.PlaceholderText = "House, Street, District, City";
         _medicalHistoryTextBox.Dock = DockStyle.Fill;
+        _medicalHistoryTextBox.PlaceholderText = "Medical history";
         _familyHistoryTextBox.Dock = DockStyle.Fill;
+        _familyHistoryTextBox.PlaceholderText = "Family medical history";
         _allergyTextBox.Dock = DockStyle.Fill;
+        _allergyTextBox.PlaceholderText = "Drug allergy";
         _patientIdTextBox.Dock = DockStyle.Fill;
+        _patientIdTextBox.PlaceholderText = "Patient ID";
         _recordIdTextBox.Dock = DockStyle.Fill;
+        _recordIdTextBox.PlaceholderText = "Record ID";
         _serviceTypeTextBox.Dock = DockStyle.Fill;
+        _serviceTypeTextBox.PlaceholderText = "Service type";
         _doctorComboBox.Dock = DockStyle.Fill;
         _technicianComboBox.Dock = DockStyle.Fill;
         _serviceDatePicker.Dock = DockStyle.Fill;
@@ -116,10 +125,10 @@ public partial class CoordinatorForm : BaseMedicalForm
         _patientsGrid.EnableHeadersVisualStyles = false;
         _patientsGrid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 247, 250);
         _patientsGrid.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(15, 23, 42);
-        _patientsGrid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+        _patientsGrid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8, FontStyle.Bold);
         _patientsGrid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 234, 255);
         _patientsGrid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
-        _patientsGrid.RowTemplate.Height = 28;
+        _patientsGrid.RowTemplate.Height = 26;
 
         var scrollHost = new Panel
         {
@@ -174,7 +183,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         {
             Text = "Coordinator Dashboard",
             AutoSize = true,
-            Font = new Font("Segoe UI", 15, FontStyle.Bold),
+            Font = new Font("Segoe UI", 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42),
             Margin = Padding.Empty
         });
@@ -183,7 +192,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         {
             Text = "Manage patient intake and staff assignments",
             AutoSize = true,
-            Font = new Font("Segoe UI", 8.5f),
+            Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139),
             Margin = new Padding(0, 2, 0, 0)
         });
@@ -261,7 +270,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         {
             Text = "Patient List",
             AutoSize = true,
-            Font = new Font("Segoe UI", 11, FontStyle.Bold),
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42)
         }, 0, 0);
 
@@ -269,7 +278,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         {
             Text = "View and manage all registered patients",
             AutoSize = true,
-            Font = new Font("Segoe UI", 8.5f),
+            Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139)
         }, 0, 1);
 
@@ -304,18 +313,18 @@ public partial class CoordinatorForm : BaseMedicalForm
         assignmentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
         assignmentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
-        assignmentLayout.Controls.Add(new Label { Text = "Patient ID", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 0, 0);
-        assignmentLayout.Controls.Add(new Label { Text = "Doctor", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 1, 0);
-        assignmentLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 3, 0);
-        assignmentLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 4, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Patient ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Doctor", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 0);
         assignmentLayout.Controls.Add(_patientIdTextBox, 0, 1);
         assignmentLayout.Controls.Add(_doctorComboBox, 1, 1);
         assignmentLayout.Controls.Add(_recordIdTextBox, 3, 1);
         assignmentLayout.Controls.Add(_serviceTypeTextBox, 4, 1);
         assignmentLayout.Controls.Add(assignDoctorButton, 5, 1);
 
-        assignmentLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 0, 2);
-        assignmentLayout.Controls.Add(new Label { Text = "Technician", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 1, 2);
+        assignmentLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
+        assignmentLayout.Controls.Add(new Label { Text = "Technician", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
         assignmentLayout.Controls.Add(_serviceDatePicker, 0, 3);
         assignmentLayout.Controls.Add(_technicianComboBox, 1, 3);
         assignmentLayout.Controls.Add(assignTechnicianButton, 5, 3);

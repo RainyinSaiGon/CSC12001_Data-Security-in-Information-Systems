@@ -35,14 +35,21 @@ public partial class DoctorForm : BaseMedicalForm
         MinimumSize = new Size(1040, 700);
 
         _recordIdTextBox.Dock = DockStyle.Fill;
+        _recordIdTextBox.PlaceholderText = "Record ID";
         _diagnosisTextBox.Dock = DockStyle.Fill;
+        _diagnosisTextBox.PlaceholderText = "Diagnosis";
         _treatmentTextBox.Dock = DockStyle.Fill;
+        _treatmentTextBox.PlaceholderText = "Treatment plan";
         _conclusionTextBox.Dock = DockStyle.Fill;
+        _conclusionTextBox.PlaceholderText = "Conclusion";
         _serviceTypeTextBox.Dock = DockStyle.Fill;
+        _serviceTypeTextBox.PlaceholderText = "Service type";
         _serviceDatePicker.Dock = DockStyle.Fill;
         _serviceDatePicker.Format = DateTimePickerFormat.Short;
         _prescriptionNameTextBox.Dock = DockStyle.Fill;
+        _prescriptionNameTextBox.PlaceholderText = "Drug name";
         _prescriptionDoseTextBox.Dock = DockStyle.Fill;
+        _prescriptionDoseTextBox.PlaceholderText = "Dose instructions";
         _prescriptionDatePicker.Dock = DockStyle.Fill;
         _prescriptionDatePicker.Format = DateTimePickerFormat.Short;
 
@@ -147,25 +154,25 @@ public partial class DoctorForm : BaseMedicalForm
         actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
 
-        actionLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 0, 0);
-        actionLayout.Controls.Add(new Label { Text = "Diagnosis", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 1, 0);
-        actionLayout.Controls.Add(new Label { Text = "Treatment", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 2, 0);
-        actionLayout.Controls.Add(new Label { Text = "Conclusion", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 3, 0);
+        actionLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
+        actionLayout.Controls.Add(new Label { Text = "Diagnosis", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
+        actionLayout.Controls.Add(new Label { Text = "Treatment", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
+        actionLayout.Controls.Add(new Label { Text = "Conclusion", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
         actionLayout.Controls.Add(_recordIdTextBox, 0, 1);
         actionLayout.Controls.Add(_diagnosisTextBox, 1, 1);
         actionLayout.Controls.Add(_treatmentTextBox, 2, 1);
         actionLayout.Controls.Add(_conclusionTextBox, 3, 1);
         actionLayout.Controls.Add(updateRecordButton, 4, 1);
 
-        actionLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 0, 2);
-        actionLayout.Controls.Add(new Label { Text = "Service date", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 1, 2);
+        actionLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
+        actionLayout.Controls.Add(new Label { Text = "Service date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
         actionLayout.Controls.Add(_serviceTypeTextBox, 0, 3);
         actionLayout.Controls.Add(_serviceDatePicker, 1, 3);
         actionLayout.Controls.Add(addServiceButton, 4, 3);
 
-        actionLayout.Controls.Add(new Label { Text = "Drug", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 0, 4);
-        actionLayout.Controls.Add(new Label { Text = "Dose", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 1, 4);
-        actionLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold) }, 2, 4);
+        actionLayout.Controls.Add(new Label { Text = "Drug", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 4);
+        actionLayout.Controls.Add(new Label { Text = "Dose", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 4);
+        actionLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 4);
         actionLayout.Controls.Add(_prescriptionNameTextBox, 0, 5);
         actionLayout.Controls.Add(_prescriptionDoseTextBox, 1, 5);
         actionLayout.Controls.Add(_prescriptionDatePicker, 2, 5);
@@ -242,7 +249,7 @@ public partial class DoctorForm : BaseMedicalForm
         {
             Text = subtitle,
             AutoSize = true,
-            Font = new Font("Segoe UI", 7.5f),
+            Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139)
         }, 0, 1);
 
