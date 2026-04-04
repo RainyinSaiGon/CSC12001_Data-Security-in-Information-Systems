@@ -18,8 +18,8 @@ public class AdminForm : Form
         AllowUserToDeleteRows = false,
         AllowUserToResizeRows = false,
         SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
         RowTemplate = { Height = 28 },
         ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
         ScrollBars = ScrollBars.Both
@@ -263,7 +263,7 @@ public class AdminForm : Form
     {
         try
         {
-            string cccdKeyword = _patientSearchBox.Text.Trim();
+            string cccdKeyword = new string(_patientSearchBox.Text.Where(char.IsDigit).ToArray());
             if (string.IsNullOrWhiteSpace(cccdKeyword))
             {
                 _patientUsersGrid.DataSource = new List<object>();
@@ -271,21 +271,38 @@ public class AdminForm : Form
                 return;
             }
 
-            List<UserAccountItem> users = _userService.GetPatientUsersByCccd(cccdKeyword);
+            if (cccdKeyword.Length != 12)
+            {
+                _patientUsersGrid.DataSource = new List<object>();
+                _patientPageInfoLabel.Text = "BN: CCCD phai dung 12 so";
+                return;
+            }
+
+            List<PatientAccountItem> users = _userService.GetPatientUsersByCccd(cccdKeyword);
 
             _patientUsersGrid.DataSource = users
                 .Select(u => new
                 {
-                    Id = u.UserId,
-                    FullName = u.FullName,
+                    MaBN = u.MABN,
+                    HoTen = u.TENBN,
+                    GioiTinh = u.PHAI,
+                    NgaySinh = u.NGAYSINH?.ToString("dd/MM/yyyy") ?? "—",
+                    CCCD = u.CCCD,
+                    SoNha = u.SONHA,
+                    TenDuong = u.TENDUONG,
+                    QuanHuyen = u.QUANHUYEN,
+                    TinhTP = u.TINHTP,
+                    TienSuBenh = u.TIENSUBENH,
+                    TienSuBenhGiaDinh = u.TIENSUBENHGD,
+                    DiUngThuoc = u.DIUNGTHUOC,
                     Username = u.Username,
-                    AccountStatus = u.AccountStatus,
-                    Created = u.CreatedDate?.ToString("dd/MM/yyyy") ?? "—",
-                    Expiry = u.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—"
+                    TrangThaiTaiKhoan = u.AccountStatus,
+                    TaoLuc = u.CreatedDate?.ToString("dd/MM/yyyy") ?? "—",
+                    HetHan = u.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—"
                 })
                 .ToList();
 
-            _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan";
+            _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan (toi da 100 dong)";
         }
         catch (OracleException ex)
         {
