@@ -12,6 +12,22 @@ public class AdminForm : Form
     private readonly TabControl _mainTabControl = new() { Dock = DockStyle.Fill };
     private readonly TabControl _usersSubTabs = new() { Dock = DockStyle.Fill };
     private readonly Label _footerStatusLabel = new() { Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft };
+    private readonly DataGridView _vpdPoliciesGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly Label _vpdPoliciesInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
+    private readonly Button _vpdRefreshButton = new() { Text = "Refresh VPD", Width = 110, Height = 30 };
 
     private readonly DataGridView _patientUsersGrid = new()
     {
@@ -126,7 +142,7 @@ public class AdminForm : Form
 
         _mainTabControl.TabPages.Clear();
         _mainTabControl.TabPages.Add(BuildUsersTab());
-        _mainTabControl.TabPages.Add(new TabPage("VPD Policies"));
+        _mainTabControl.TabPages.Add(BuildVpdPoliciesTab());
         _mainTabControl.TabPages.Add(new TabPage("OLS Labels"));
         _mainTabControl.TabPages.Add(new TabPage("Audit Log"));
 
@@ -135,6 +151,10 @@ public class AdminForm : Form
             if (_mainTabControl.SelectedIndex == 0)
             {
                 SetSearchHints();
+            }
+            else if (_mainTabControl.SelectedIndex == 1)
+            {
+                RefreshVpdPolicies();
             }
 
             UpdateFooterStatus("Ready");
@@ -314,8 +334,8 @@ public class AdminForm : Form
             ColumnCount = 1,
             RowCount = 2
         };
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 55));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
         rootLayout.Controls.Add(_usersSubTabs, 0, 0);
         rootLayout.Controls.Add(profileGroup, 0, 1);
 
@@ -585,6 +605,38 @@ public class AdminForm : Form
         return tab;
     }
 
+    private TabPage BuildVpdPoliciesTab()
+    {
+        var tab = new TabPage("VPD Policies");
+
+        _vpdRefreshButton.Click -= HandleVpdRefreshClick;
+        _vpdRefreshButton.Click += HandleVpdRefreshClick;
+
+        var topPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+        topPanel.Controls.Add(_vpdRefreshButton);
+        topPanel.Controls.Add(_vpdPoliciesInfoLabel);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.Controls.Add(topPanel, 0, 0);
+        rootLayout.Controls.Add(_vpdPoliciesGrid, 0, 1);
+
+        tab.Controls.Add(rootLayout);
+        RefreshVpdPolicies();
+        return tab;
+    }
+
     private void SetSearchHints()
     {
         if (string.IsNullOrWhiteSpace(_patientSearchBox.Text))
@@ -597,6 +649,78 @@ public class AdminForm : Form
         {
             _staffUsersGrid.DataSource = new List<object>();
             _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+        }
+    }
+
+    private void HandleVpdRefreshClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        RefreshVpdPolicies();
+    }
+
+    private void RefreshVpdPolicies()
+    {
+        try
+        {
+            List<VpdPolicyViewItem> policies = _connectionService.Execute(connection =>
+            {
+                const string sql = """
+                    SELECT
+                        OBJECT_NAME,
+                        POLICY_NAME,
+                        PF_OWNER,
+                        FUNCTION,
+                        SEL,
+                        INS,
+                        UPD,
+                        DEL,
+                        ENABLE
+                    FROM USER_POLICIES
+                    ORDER BY OBJECT_NAME, POLICY_NAME
+                    """;
+
+                using var command = connection.CreateCommand();
+                command.CommandText = sql;
+
+                using var reader = command.ExecuteReader();
+                var result = new List<VpdPolicyViewItem>();
+                while (reader.Read())
+                {
+                    result.Add(new VpdPolicyViewItem
+                    {
+                        ObjectName = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+                        PolicyName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                        FunctionOwner = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                        PolicyFunction = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                        SelectEnabled = reader.IsDBNull(4) ? "NO" : reader.GetString(4),
+                        InsertEnabled = reader.IsDBNull(5) ? "NO" : reader.GetString(5),
+                        UpdateEnabled = reader.IsDBNull(6) ? "NO" : reader.GetString(6),
+                        DeleteEnabled = reader.IsDBNull(7) ? "NO" : reader.GetString(7),
+                        IsEnabled = reader.IsDBNull(8) ? "NO" : reader.GetString(8)
+                    });
+                }
+
+                return result;
+            });
+
+            _vpdPoliciesGrid.DataSource = policies;
+            _vpdPoliciesInfoLabel.Text = $"VPD: {policies.Count} policy";
+            UpdateFooterStatus($"VPD: Loaded {policies.Count} policy records.");
+        }
+        catch (OracleException ex)
+        {
+            _vpdPoliciesGrid.DataSource = new List<VpdPolicyViewItem>();
+            _vpdPoliciesInfoLabel.Text = "VPD: load failed";
+            UpdateFooterStatus($"VPD: Oracle error {ex.Number}.");
+            MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        catch (Exception ex)
+        {
+            _vpdPoliciesGrid.DataSource = new List<VpdPolicyViewItem>();
+            _vpdPoliciesInfoLabel.Text = "VPD: load failed";
+            UpdateFooterStatus("VPD: Load failed.");
+            MessageBox.Show(this, ex.Message, "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -1061,5 +1185,18 @@ public class AdminForm : Form
         }
 
         _createFlowTextBox.Text = string.Join(Environment.NewLine, steps);
+    }
+
+    private sealed class VpdPolicyViewItem
+    {
+        public string ObjectName { get; set; } = string.Empty;
+        public string PolicyName { get; set; } = string.Empty;
+        public string FunctionOwner { get; set; } = string.Empty;
+        public string PolicyFunction { get; set; } = string.Empty;
+        public string SelectEnabled { get; set; } = string.Empty;
+        public string InsertEnabled { get; set; } = string.Empty;
+        public string UpdateEnabled { get; set; } = string.Empty;
+        public string DeleteEnabled { get; set; } = string.Empty;
+        public string IsEnabled { get; set; } = string.Empty;
     }
 }
