@@ -32,10 +32,11 @@ public partial class LoginForm : Form
         _loginButton.Click += HandleLogin;
         AcceptButton = _loginButton;
 
+        Font = new Font("Segoe UI", 9);
         BackColor = Color.FromArgb(236, 245, 250);
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(900, 560);
-        MinimumSize = new Size(740, 520);
+        ClientSize = new Size(980, 600);
+        MinimumSize = new Size(820, 560);
 
         var rootLayout = new TableLayoutPanel
         {
@@ -45,14 +46,14 @@ public partial class LoginForm : Form
             ColumnCount = 2,
             RowCount = 1
         };
-        rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 39f));
-        rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 61f));
+        rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 37f));
+        rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 63f));
 
         var leftPanel = new Panel
         {
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(70, 140, 220),
-            Padding = new Padding(32, 40, 32, 40)
+            Padding = new Padding(36, 48, 36, 48)
         };
 
         var logoPanel = new Panel
@@ -64,9 +65,9 @@ public partial class LoginForm : Form
         var logoLabel = new Label
         {
             Dock = DockStyle.Fill,
-            Text = "∿",
+            Text = "⚕",
             TextAlign = ContentAlignment.MiddleCenter,
-            Font = new Font("Segoe UI", 44, FontStyle.Bold),
+            Font = new Font("Segoe UI", 42, FontStyle.Bold),
             ForeColor = Color.FromArgb(238, 247, 255)
         };
         logoPanel.Controls.Add(logoLabel);
@@ -75,7 +76,7 @@ public partial class LoginForm : Form
         {
             Text = "Medical Data",
             AutoSize = true,
-            Font = new Font("Segoe UI", 19, FontStyle.Bold),
+            Font = new Font("Segoe UI", 20, FontStyle.Bold),
             ForeColor = Color.White,
             Margin = new Padding(0, 18, 0, 0)
         };
@@ -86,7 +87,7 @@ public partial class LoginForm : Form
             AutoSize = true,
             Font = new Font("Segoe UI", 12),
             ForeColor = Color.FromArgb(232, 242, 255),
-            Margin = new Padding(0, 8, 0, 20)
+            Margin = new Padding(0, 8, 0, 24)
         };
 
         var leftPoints = new FlowLayoutPanel
@@ -106,7 +107,7 @@ public partial class LoginForm : Form
             Dock = DockStyle.Fill,
             WrapContents = false,
             Margin = Padding.Empty,
-            Padding = new Padding(0, 42, 0, 0)
+            Padding = new Padding(0, 28, 0, 0)
         };
         leftContent.Controls.Add(logoPanel);
         leftContent.Controls.Add(leftTitle);
@@ -118,15 +119,25 @@ public partial class LoginForm : Form
         {
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(246, 246, 247),
-            Padding = new Padding(44, 20, 44, 18),
+            Padding = new Padding(38, 20, 38, 18),
             AutoScroll = true
+        };
+
+        var rightCard = new Panel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(26, 24, 26, 20)
         };
 
         var rightLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
             ColumnCount = 1,
-            RowCount = 13,
+            RowCount = 12,
             Margin = Padding.Empty,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink
@@ -141,7 +152,6 @@ public partial class LoginForm : Form
         rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 10));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
@@ -149,9 +159,10 @@ public partial class LoginForm : Form
         {
             Text = "Hospital Management System",
             AutoSize = true,
-            Font = new Font("Segoe UI", 19, FontStyle.Bold),
+            Font = new Font("Segoe UI", 20, FontStyle.Bold),
             ForeColor = Color.FromArgb(16, 34, 58),
-            Margin = Padding.Empty
+            Margin = Padding.Empty,
+            Anchor = AnchorStyles.None
         };
 
         var subHeading = new Label
@@ -160,7 +171,8 @@ public partial class LoginForm : Form
             AutoSize = true,
             Font = new Font("Segoe UI", 12),
             ForeColor = Color.FromArgb(86, 96, 112),
-            Margin = new Padding(0, 0, 0, 6)
+            Margin = new Padding(0, 0, 0, 6),
+            Anchor = AnchorStyles.None
         };
 
         var usernameLabel = new Label { Text = "Oracle Username", AutoSize = true, Font = new Font("Segoe UI", 11, FontStyle.Bold), ForeColor = Color.FromArgb(35, 47, 65), Margin = Padding.Empty };
@@ -177,6 +189,34 @@ public partial class LoginForm : Form
         _passwordTextBox.Margin = Padding.Empty;
         _passwordTextBox.PlaceholderText = "Enter your password";
 
+        var togglePasswordButton = new Button
+        {
+            Text = "👁",
+            Dock = DockStyle.Fill,
+            FlatStyle = FlatStyle.Flat,
+            Margin = Padding.Empty,
+            BackColor = Color.FromArgb(248, 250, 252),
+            Font = new Font("Segoe UI Emoji", 10)
+        };
+        togglePasswordButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
+        togglePasswordButton.Click += (_, _) =>
+        {
+            _passwordTextBox.UseSystemPasswordChar = !_passwordTextBox.UseSystemPasswordChar;
+            togglePasswordButton.Text = _passwordTextBox.UseSystemPasswordChar ? "👁" : "🙈";
+        };
+
+        var passwordPanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        passwordPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        passwordPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44));
+        passwordPanel.Controls.Add(_passwordTextBox, 0, 0);
+        passwordPanel.Controls.Add(togglePasswordButton, 1, 0);
+
         _dataSourceTextBox.Dock = DockStyle.Fill;
         _dataSourceTextBox.Font = new Font("Segoe UI", 11);
         _dataSourceTextBox.Margin = Padding.Empty;
@@ -190,24 +230,13 @@ public partial class LoginForm : Form
         _loginButton.Font = new Font("Segoe UI", 12, FontStyle.Bold);
         _loginButton.BackColor = Color.FromArgb(71, 136, 219);
         _loginButton.ForeColor = Color.White;
-
-        var forgotPasswordLink = new LinkLabel
-        {
-            Text = "Forgot Password?",
-            AutoSize = true,
-            Font = new Font("Segoe UI", 11),
-            LinkColor = Color.FromArgb(49, 113, 197),
-            ActiveLinkColor = Color.FromArgb(35, 84, 154),
-            LinkBehavior = LinkBehavior.HoverUnderline,
-            Margin = new Padding(0, 0, 0, 0),
-            Anchor = AnchorStyles.Top
-        };
-        forgotPasswordLink.LinkClicked += (_, _) => ShowStatus("Please contact IT Support at ext. 4000.");
+        _loginButton.Cursor = Cursors.Hand;
 
         _statusLabel.AutoSize = true;
         _statusLabel.Font = new Font("Segoe UI", 10);
         _statusLabel.ForeColor = Color.FromArgb(184, 49, 47);
         _statusLabel.Margin = new Padding(0, 5, 0, 0);
+        _statusLabel.MaximumSize = new Size(540, 0);
 
         var footer = new Label
         {
@@ -233,16 +262,16 @@ public partial class LoginForm : Form
         rightLayout.Controls.Add(usernameLabel, 0, 2);
         rightLayout.Controls.Add(_usernameTextBox, 0, 3);
         rightLayout.Controls.Add(passwordLabel, 0, 4);
-        rightLayout.Controls.Add(_passwordTextBox, 0, 5);
+        rightLayout.Controls.Add(passwordPanel, 0, 5);
         rightLayout.Controls.Add(dataSourceLabel, 0, 6);
         rightLayout.Controls.Add(_dataSourceTextBox, 0, 7);
         rightLayout.Controls.Add(_loginButton, 0, 8);
-        rightLayout.Controls.Add(forgotPasswordLink, 0, 9);
-        rightLayout.Controls.Add(_statusLabel, 0, 10);
-        rightLayout.Controls.Add(separator, 0, 11);
-        rightLayout.Controls.Add(footer, 0, 12);
+        rightLayout.Controls.Add(_statusLabel, 0, 9);
+        rightLayout.Controls.Add(separator, 0, 10);
+        rightLayout.Controls.Add(footer, 0, 11);
 
-        rightPanel.Controls.Add(rightLayout);
+        rightCard.Controls.Add(rightLayout);
+        rightPanel.Controls.Add(rightCard);
 
         rootLayout.Controls.Add(leftPanel, 0, 0);
         rootLayout.Controls.Add(rightPanel, 1, 0);
