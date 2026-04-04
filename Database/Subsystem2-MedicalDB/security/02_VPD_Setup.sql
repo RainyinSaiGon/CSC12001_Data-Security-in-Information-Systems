@@ -82,7 +82,15 @@ RETURN VARCHAR2
 AS
     v_role NVARCHAR2(50);
     v_manv NUMBER;
+    v_user VARCHAR2(128);
 BEGIN
+    v_user := UPPER(SYS_CONTEXT('USERENV', 'SESSION_USER'));
+
+    -- Admin bypass
+    IF v_user = 'HOSPITAL_ADMIN' THEN
+        RETURN '1=1';
+    END IF;
+
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
 
@@ -92,7 +100,8 @@ BEGIN
         RETURN 'MABN IN (SELECT MABN FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
     END IF;
 
-    RETURN 'USERNAME = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
+    -- Patient self-row only
+    RETURN 'UPPER(USERNAME) = UPPER(SYS_CONTEXT(''USERENV'', ''SESSION_USER''))';
 END;
 /
 
