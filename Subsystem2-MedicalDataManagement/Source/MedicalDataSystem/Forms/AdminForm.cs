@@ -2,9 +2,8 @@ namespace MedicalDataSystem.Forms;
 
 using MedicalDataSystem.Models;
 using MedicalDataSystem.Services;
-using Oracle.ManagedDataAccess.Client;
-
 public class AdminForm : Form
+
 {
     private readonly UserSession _session;
     private readonly OracleConnectionService _connectionService;
@@ -28,6 +27,8 @@ public class AdminForm : Form
     };
     private readonly Label _vpdPoliciesInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
     private readonly Button _vpdRefreshButton = new() { Text = "Refresh VPD", Width = 110, Height = 30 };
+    private readonly Button _vpdEnableButton = new() { Text = "Enable", Width = 90, Height = 30, Enabled = false };
+    private readonly Button _vpdDisableButton = new() { Text = "Disable", Width = 90, Height = 30, Enabled = false };
 
     private readonly DataGridView _patientUsersGrid = new()
     {
@@ -611,6 +612,12 @@ public class AdminForm : Form
 
         _vpdRefreshButton.Click -= HandleVpdRefreshClick;
         _vpdRefreshButton.Click += HandleVpdRefreshClick;
+        _vpdEnableButton.Click -= HandleVpdEnableClick;
+        _vpdEnableButton.Click += HandleVpdEnableClick;
+        _vpdDisableButton.Click -= HandleVpdDisableClick;
+        _vpdDisableButton.Click += HandleVpdDisableClick;
+        _vpdPoliciesGrid.SelectionChanged -= HandleVpdPolicySelectionChanged;
+        _vpdPoliciesGrid.SelectionChanged += HandleVpdPolicySelectionChanged;
 
         var topPanel = new FlowLayoutPanel
         {
@@ -619,6 +626,8 @@ public class AdminForm : Form
             WrapContents = false
         };
         topPanel.Controls.Add(_vpdRefreshButton);
+        topPanel.Controls.Add(_vpdEnableButton);
+        topPanel.Controls.Add(_vpdDisableButton);
         topPanel.Controls.Add(_vpdPoliciesInfoLabel);
 
         var rootLayout = new TableLayoutPanel
@@ -659,67 +668,112 @@ public class AdminForm : Form
         RefreshVpdPolicies();
     }
 
+    private void HandleVpdEnableClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        ToggleSelectedVpdPolicy(true);
+    }
+
+    private void HandleVpdDisableClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        ToggleSelectedVpdPolicy(false);
+    }
+
+    private void HandleVpdPolicySelectionChanged(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        UpdateVpdActionButtons();
+    }
+
+    private void UpdateVpdActionButtons()
+    {
+        VpdPolicyItem? selectedPolicy = GetSelectedVpdPolicy();
+        if (selectedPolicy is null)
+        {
+            _vpdEnableButton.Enabled = false;
+            _vpdDisableButton.Enabled = false;
+            return;
+        }
+
+        bool isEnabled = string.Equals(selectedPolicy.IsEnabled, "YES", StringComparison.OrdinalIgnoreCase);
+        _vpdEnableButton.Enabled = !isEnabled;
+        _vpdDisableButton.Enabled = isEnabled;
+    }
+
+    private VpdPolicyItem? GetSelectedVpdPolicy()
+    {
+        if (_vpdPoliciesGrid.CurrentRow?.DataBoundItem is VpdPolicyItem selected)
+        {
+            return selected;
+        }
+
+        return null;
+    }
+
+    private void ToggleSelectedVpdPolicy(bool enable)
+    {
+        VpdPolicyItem? selectedPolicy = GetSelectedVpdPolicy();
+        if (selectedPolicy is null)
+        {
+            MessageBox.Show(this, "Please select one policy first.", "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        bool currentlyEnabled = string.Equals(selectedPolicy.IsEnabled, "YES", StringComparison.OrdinalIgnoreCase);
+        if (currentlyEnabled == enable)
+        {
+            UpdateFooterStatus($"VPD: Policy {selectedPolicy.PolicyName} is already {(enable ? "enabled" : "disabled")}.");
+            UpdateVpdActionButtons();
+            return;
+        }
+
+        string actionText = enable ? "enable" : "disable";
+        if (MessageBox.Show(
+                this,
+                $"Do you want to {actionText} policy {selectedPolicy.PolicyName} on {selectedPolicy.ObjectName}?",
+                "VPD Policies",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        bool updated = _userService.SetVpdPolicyEnabled(selectedPolicy.ObjectName, selectedPolicy.PolicyName, enable);
+        if (!updated)
+        {
+            UpdateFooterStatus("VPD: Failed to change policy state.");
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage)
+                ? "Failed to change VPD policy state."
+                : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        UpdateFooterStatus($"VPD: {(enable ? "Enabled" : "Disabled")} {selectedPolicy.PolicyName}.");
+        RefreshVpdPolicies();
+    }
+
     private void RefreshVpdPolicies()
     {
         try
         {
-            List<VpdPolicyViewItem> policies = _connectionService.Execute(connection =>
-            {
-                const string sql = """
-                    SELECT
-                        OBJECT_NAME,
-                        POLICY_NAME,
-                        PF_OWNER,
-                        FUNCTION,
-                        SEL,
-                        INS,
-                        UPD,
-                        DEL,
-                        ENABLE
-                    FROM USER_POLICIES
-                    ORDER BY OBJECT_NAME, POLICY_NAME
-                    """;
-
-                using var command = connection.CreateCommand();
-                command.CommandText = sql;
-
-                using var reader = command.ExecuteReader();
-                var result = new List<VpdPolicyViewItem>();
-                while (reader.Read())
-                {
-                    result.Add(new VpdPolicyViewItem
-                    {
-                        ObjectName = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
-                        PolicyName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                        FunctionOwner = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                        PolicyFunction = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                        SelectEnabled = reader.IsDBNull(4) ? "NO" : reader.GetString(4),
-                        InsertEnabled = reader.IsDBNull(5) ? "NO" : reader.GetString(5),
-                        UpdateEnabled = reader.IsDBNull(6) ? "NO" : reader.GetString(6),
-                        DeleteEnabled = reader.IsDBNull(7) ? "NO" : reader.GetString(7),
-                        IsEnabled = reader.IsDBNull(8) ? "NO" : reader.GetString(8)
-                    });
-                }
-
-                return result;
-            });
+            List<VpdPolicyItem> policies = _userService.GetVpdPolicies();
 
             _vpdPoliciesGrid.DataSource = policies;
             _vpdPoliciesInfoLabel.Text = $"VPD: {policies.Count} policy";
             UpdateFooterStatus($"VPD: Loaded {policies.Count} policy records.");
-        }
-        catch (OracleException ex)
-        {
-            _vpdPoliciesGrid.DataSource = new List<VpdPolicyViewItem>();
-            _vpdPoliciesInfoLabel.Text = "VPD: load failed";
-            UpdateFooterStatus($"VPD: Oracle error {ex.Number}.");
-            MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateVpdActionButtons();
         }
         catch (Exception ex)
         {
-            _vpdPoliciesGrid.DataSource = new List<VpdPolicyViewItem>();
+            _vpdPoliciesGrid.DataSource = new List<VpdPolicyItem>();
             _vpdPoliciesInfoLabel.Text = "VPD: load failed";
             UpdateFooterStatus("VPD: Load failed.");
+            UpdateVpdActionButtons();
             MessageBox.Show(this, ex.Message, "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
@@ -728,7 +782,7 @@ public class AdminForm : Form
     {
         try
         {
-            string cccdKeyword = new string(_patientSearchBox.Text.Where(char.IsDigit).ToArray());
+            string cccdKeyword = _userService.NormalizeIdText(_patientSearchBox.Text);
             if (string.IsNullOrWhiteSpace(cccdKeyword))
             {
                 _patientUsersGrid.DataSource = new List<object>();
@@ -747,41 +801,14 @@ public class AdminForm : Form
                 return;
             }
 
-            List<PatientAccountItem> users = _userService.GetPatientUsersByCccd(cccdKeyword);
-
-            _patientUsersGrid.DataSource = users
-                .Select(u => new
-                {
-                    MaBN = u.MABN,
-                    HoTen = u.TENBN,
-                    GioiTinh = u.PHAI,
-                    NgaySinh = u.NGAYSINH?.ToString("dd/MM/yyyy") ?? "—",
-                    CCCD = u.CCCD,
-                    SoNha = u.SONHA,
-                    TenDuong = u.TENDUONG,
-                    QuanHuyen = u.QUANHUYEN,
-                    TinhTP = u.TINHTP,
-                    TienSuBenh = u.TIENSUBENH,
-                    TienSuBenhGiaDinh = u.TIENSUBENHGD,
-                    DiUngThuoc = u.DIUNGTHUOC,
-                    Username = u.Username,
-                    TrangThaiTaiKhoan = u.AccountStatus,
-                    TaoLuc = u.CreatedDate?.ToString("dd/MM/yyyy") ?? "—",
-                    HetHan = u.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—"
-                })
-                .ToList();
+            List<PatientUserDisplayItem> users = _userService.GetPatientUserDisplayByCccd(cccdKeyword);
+            _patientUsersGrid.DataSource = users;
 
             _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan (toi da 100 dong)";
             UpdateFooterStatus($"BN: Tim thay {users.Count} tai khoan.");
 
             UserSecurityProfileItem? profile = _userService.GetPatientProfileWithRolesByCccd(cccdKeyword);
             ShowProfileResult(profile, $"Tra cuu theo CCCD: {cccdKeyword}");
-        }
-        catch (OracleException ex)
-        {
-            MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "Users - BN", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            UpdateFooterStatus($"BN: Loi Oracle {ex.Number}.");
-            ShowProfileResult(null, $"Loi Oracle khi tra cuu BN: {ex.Number}");
         }
         catch (Exception ex)
         {
@@ -805,24 +832,13 @@ public class AdminForm : Form
                 return;
             }
 
-            List<UserAccountItem> users = _userService.GetStaffUsersByCmnd(cmndKeyword);
-
-            _staffUsersGrid.DataSource = users
-                .Select(u => new
-                {
-                    Id = u.UserId,
-                    FullName = u.FullName,
-                    Username = u.Username,
-                    AccountStatus = u.AccountStatus,
-                    Created = u.CreatedDate?.ToString("dd/MM/yyyy") ?? "—",
-                    Expiry = u.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—"
-                })
-                .ToList();
+            List<StaffUserDisplayItem> users = _userService.GetStaffUserDisplayByCmnd(cmndKeyword);
+            _staffUsersGrid.DataSource = users;
 
             _staffPageInfoLabel.Text = $"NV: Tim thay {users.Count} tai khoan";
             UpdateFooterStatus($"NV: Tim thay {users.Count} tai khoan.");
 
-            string normalizedCmnd = new string(cmndKeyword.Where(char.IsDigit).ToArray());
+            string normalizedCmnd = _userService.NormalizeIdText(cmndKeyword);
             if (normalizedCmnd.Length == 12)
             {
                 UserSecurityProfileItem? profile = _userService.GetStaffProfileWithRolesByCmnd(normalizedCmnd);
@@ -832,12 +848,6 @@ public class AdminForm : Form
             {
                 ShowProfileResult(null, "CMND chua du 12 so, chi hien danh sach tim gan dung.");
             }
-        }
-        catch (OracleException ex)
-        {
-            MessageBox.Show(this, $"Oracle error {ex.Number}: {ex.Message}", "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            UpdateFooterStatus($"NV: Loi Oracle {ex.Number}.");
-            ShowProfileResult(null, $"Loi Oracle khi tra cuu NV: {ex.Number}");
         }
         catch (Exception ex)
         {
@@ -1187,16 +1197,4 @@ public class AdminForm : Form
         _createFlowTextBox.Text = string.Join(Environment.NewLine, steps);
     }
 
-    private sealed class VpdPolicyViewItem
-    {
-        public string ObjectName { get; set; } = string.Empty;
-        public string PolicyName { get; set; } = string.Empty;
-        public string FunctionOwner { get; set; } = string.Empty;
-        public string PolicyFunction { get; set; } = string.Empty;
-        public string SelectEnabled { get; set; } = string.Empty;
-        public string InsertEnabled { get; set; } = string.Empty;
-        public string UpdateEnabled { get; set; } = string.Empty;
-        public string DeleteEnabled { get; set; } = string.Empty;
-        public string IsEnabled { get; set; } = string.Empty;
-    }
 }
