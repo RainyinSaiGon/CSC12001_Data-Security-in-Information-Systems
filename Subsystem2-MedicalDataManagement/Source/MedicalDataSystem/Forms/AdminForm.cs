@@ -57,6 +57,9 @@ public class AdminForm : Form
         Dock = DockStyle.Fill,
         ScrollBars = ScrollBars.Vertical
     };
+    private readonly TextBox _olsContentTextBox = new() { Width = 300 };
+    private readonly DateTimePicker _olsDateTimePicker = new() { Width = 170, Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm" };
+    private readonly TextBox _olsLocationTextBox = new() { Width = 220 };
 
     private readonly DataGridView _patientUsersGrid = new()
     {
@@ -681,32 +684,39 @@ public class AdminForm : Form
     {
         var tab = new TabPage("OLS Labels");
 
-        _olsLoadLabelButton.Click -= HandleOlsLoadLabelClick;
-        _olsLoadLabelButton.Click += HandleOlsLoadLabelClick;
-        _olsPreviewButton.Click -= HandleOlsPreviewClick;
-        _olsPreviewButton.Click += HandleOlsPreviewClick;
-        _olsPreviewGrid.DataBindingComplete -= HandleOlsPreviewDataBindingComplete;
-        _olsPreviewGrid.DataBindingComplete += HandleOlsPreviewDataBindingComplete;
+        _olsLoadLabelButton.Text = "Xem tat ca thong bao";
+        _olsPreviewButton.Text = "Tao thong bao";
 
-        var topPanel = new FlowLayoutPanel
+        _olsLoadLabelButton.Click -= HandleOlsLoadAllNotificationsClick;
+        _olsLoadLabelButton.Click += HandleOlsLoadAllNotificationsClick;
+        _olsPreviewButton.Click -= HandleOlsCreateNotificationClick;
+        _olsPreviewButton.Click += HandleOlsCreateNotificationClick;
+
+        var actionPanel = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(8, 4, 8, 4),
             WrapContents = false
         };
-        topPanel.Controls.Add(new Label { Text = "User", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
-        topPanel.Controls.Add(_olsUserCombo);
-        topPanel.Controls.Add(_olsLoadLabelButton);
-        topPanel.Controls.Add(_olsPreviewButton);
-        topPanel.Controls.Add(_olsLabelSummaryLabel);
+        actionPanel.Controls.Add(_olsLoadLabelButton);
+        actionPanel.Controls.Add(new Label { Text = "OLS Label", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
+        actionPanel.Controls.Add(_olsUserCombo);
+        actionPanel.Controls.Add(new Label { Text = "Noi dung", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
+        actionPanel.Controls.Add(_olsContentTextBox);
+        actionPanel.Controls.Add(new Label { Text = "Ngay gio", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
+        actionPanel.Controls.Add(_olsDateTimePicker);
+        actionPanel.Controls.Add(new Label { Text = "Dia diem", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
+        actionPanel.Controls.Add(_olsLocationTextBox);
+        actionPanel.Controls.Add(_olsPreviewButton);
+        actionPanel.Controls.Add(_olsLabelSummaryLabel);
 
-        var hierarchyGroup = new GroupBox
+        var mappingGroup = new GroupBox
         {
-            Text = "OLS Label Hierarchy",
+            Text = "Mapping OLS Label (Tieng Viet)",
             Dock = DockStyle.Fill,
             Padding = new Padding(8)
         };
-        hierarchyGroup.Controls.Add(_olsHierarchyTextBox);
+        mappingGroup.Controls.Add(_olsHierarchyTextBox);
 
         var rootLayout = new TableLayoutPanel
         {
@@ -717,162 +727,136 @@ public class AdminForm : Form
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
-        rootLayout.Controls.Add(topPanel, 0, 0);
+        rootLayout.Controls.Add(actionPanel, 0, 0);
         rootLayout.Controls.Add(_olsPreviewGrid, 0, 1);
-        rootLayout.Controls.Add(hierarchyGroup, 0, 2);
+        rootLayout.Controls.Add(mappingGroup, 0, 2);
 
         tab.Controls.Add(rootLayout);
-        LoadOlsUserChoices();
-        _olsPreviewGrid.DataSource = new List<OlsNotificationAccessPreviewItem>();
+        LoadOlsLabelOptions();
+        RenderOlsLabelDefinitions();
+        RefreshOlsAllNotifications();
         return tab;
     }
 
-    private void LoadOlsUserChoices()
+    private void LoadOlsLabelOptions()
     {
-        try
+        List<OlsLabelOption> labels = _olsService.GetSupportedLabelOptions();
+
+        _olsUserCombo.BeginUpdate();
+        _olsUserCombo.Items.Clear();
+        foreach (OlsLabelOption label in labels)
         {
-            List<string> usernames = _olsService.GetAvailableUsernames();
-
-            _olsUserCombo.BeginUpdate();
-            _olsUserCombo.Items.Clear();
-            foreach (string user in usernames)
-            {
-                _olsUserCombo.Items.Add(user);
-            }
-
-            if (_olsUserCombo.Items.Count > 0)
-            {
-                _olsUserCombo.SelectedIndex = 0;
-            }
-
-            _olsUserCombo.EndUpdate();
-            UpdateFooterStatus($"OLS: Loaded {usernames.Count} users.");
+            _olsUserCombo.Items.Add(label);
         }
-        catch (Exception ex)
+
+        if (_olsUserCombo.Items.Count > 0)
         {
-            _olsUserCombo.Items.Clear();
-            _olsLabelSummaryLabel.Text = "User label: load users failed";
-            _olsHierarchyTextBox.Text = ex.Message;
-            UpdateFooterStatus("OLS: Failed to load user list.");
+            _olsUserCombo.SelectedIndex = 0;
         }
+        _olsUserCombo.EndUpdate();
     }
 
-    private void HandleOlsLoadLabelClick(object? sender, EventArgs e)
+    private void HandleOlsLoadAllNotificationsClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        RefreshOlsAllNotifications();
+    }
+
+    private void HandleOlsCreateNotificationClick(object? sender, EventArgs e)
     {
         _ = sender;
         _ = e;
 
-        string username = _olsUserCombo.SelectedItem?.ToString() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(username))
+        OlsLabelOption? selectedLabel = _olsUserCombo.SelectedItem as OlsLabelOption;
+        if (selectedLabel is null || string.IsNullOrWhiteSpace(selectedLabel.LabelCode))
         {
-            MessageBox.Show(this, "Please select a user.", "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Hay chon OLS label cu the (khong phai Tat ca nhan).", "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
-        try
-        {
-            string userLabel = _olsService.GetUserLabel(username);
-            if (string.IsNullOrWhiteSpace(userLabel))
-            {
-                _olsLabelSummaryLabel.Text = $"User label: {username} has no OLS metadata";
-                _olsHierarchyTextBox.Text = "No OLS label found in ALL_SA_USERS/DBA_SA_USERS for this user.";
-                UpdateFooterStatus($"OLS: No label metadata for {username}.");
-                return;
-            }
+        bool created = _olsService.CreateNotificationAsAdmin(
+            _olsContentTextBox.Text,
+            _olsDateTimePicker.Value,
+            _olsLocationTextBox.Text,
+            selectedLabel.LabelCode);
 
-            _olsLabelSummaryLabel.Text = $"User label: {userLabel}";
-            RenderUserHierarchy(userLabel);
-            UpdateFooterStatus($"OLS: Loaded label for {username}.");
-        }
-        catch (Exception ex)
+        if (!created)
         {
-            _olsLabelSummaryLabel.Text = "User label: failed";
-            _olsHierarchyTextBox.Text = ex.Message;
-            UpdateFooterStatus("OLS: Failed to load label.");
-            MessageBox.Show(this, ex.Message, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    private void HandleOlsPreviewClick(object? sender, EventArgs e)
-    {
-        _ = sender;
-        _ = e;
-
-        string username = _olsUserCombo.SelectedItem?.ToString() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            MessageBox.Show(this, "Please select a user.", "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            string detail = string.IsNullOrWhiteSpace(_olsService.LastErrorMessage)
+                ? "Khong tao duoc thong bao OLS."
+                : _olsService.LastErrorMessage;
+            MessageBox.Show(this, detail, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus("OLS: Tao thong bao that bai.");
             return;
         }
 
-        try
-        {
-            List<OlsNotificationAccessPreviewItem> previewRows = _olsService.BuildNotificationAccessPreview(username);
-            _olsPreviewGrid.DataSource = previewRows;
-
-            int allowedCount = previewRows.Count(row => row.CanAccess);
-            int deniedCount = previewRows.Count - allowedCount;
-            UpdateFooterStatus($"OLS: {username} -> YES={allowedCount}, NO={deniedCount}");
-
-            if (previewRows.Count > 0)
-            {
-                _olsLabelSummaryLabel.Text = $"User label: {previewRows[0].UserLabel}";
-                RenderUserHierarchy(previewRows[0].UserLabel);
-            }
-        }
-        catch (Exception ex)
-        {
-            _olsPreviewGrid.DataSource = new List<OlsNotificationAccessPreviewItem>();
-            UpdateFooterStatus("OLS: Preview failed.");
-            MessageBox.Show(this, ex.Message, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+        UpdateFooterStatus("OLS: Tao thong bao thanh cong.");
+        _olsContentTextBox.Clear();
+        _olsLocationTextBox.Clear();
+        RefreshOlsAllNotifications();
     }
 
-    private void HandleOlsPreviewDataBindingComplete(object? sender, DataGridViewBindingCompleteEventArgs e)
+    private void RefreshOlsAllNotifications()
     {
-        _ = sender;
-        _ = e;
-
-        foreach (DataGridViewRow row in _olsPreviewGrid.Rows)
+        try
         {
-            if (row.DataBoundItem is not OlsNotificationAccessPreviewItem item)
-            {
-                continue;
-            }
+            OlsLabelOption? selectedLabel = _olsUserCombo.SelectedItem as OlsLabelOption;
+            int? filterLabelTag = selectedLabel?.LabelTag;
+            string filterLabel = selectedLabel?.LabelCode ?? string.Empty;
 
-            if (item.CanAccess)
+            List<OlsNotificationDisplayItem> rows = _olsService.GetAllNotificationsForAdminDisplay(filterLabelTag);
+            _olsPreviewGrid.DataSource = rows;
+
+            SetOlsGridHeader("MaThongBao", "Ma thong bao");
+            SetOlsGridHeader("NoiDung", "Noi dung");
+            SetOlsGridHeader("NgayGio", "Ngay gio");
+            SetOlsGridHeader("DiaDiem", "Dia diem");
+            SetOlsGridHeader("OlsLabel", "OLS_Label");
+            SetOlsGridHeader("DoiTuongDuocThongBao", "Doi tuong duoc thong bao");
+
+            if (string.IsNullOrWhiteSpace(filterLabel))
             {
-                row.DefaultCellStyle.BackColor = Color.FromArgb(224, 247, 224);
+                _olsLabelSummaryLabel.Text = $"Tong thong bao: {rows.Count}";
+                UpdateFooterStatus($"OLS: Da tai {rows.Count} thong bao (tat ca nhan)." );
             }
             else
             {
-                row.DefaultCellStyle.BackColor = Color.FromArgb(252, 228, 228);
+                _olsLabelSummaryLabel.Text = $"Nhan {filterLabel}: {rows.Count} thong bao";
+                UpdateFooterStatus($"OLS: Da tai {rows.Count} thong bao cho nhan {filterLabel}." );
             }
+        }
+        catch (Exception ex)
+        {
+            _olsPreviewGrid.DataSource = new List<OlsNotificationDisplayItem>();
+            _olsLabelSummaryLabel.Text = "Load thong bao that bai";
+            UpdateFooterStatus("OLS: Loi tai du lieu thong bao.");
+            MessageBox.Show(this, ex.Message, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
-    private void RenderUserHierarchy(string userLabel)
+    private void RenderOlsLabelDefinitions()
     {
-        OlsParsedLabel parsed = _olsService.ParseLabel(userLabel);
-
-        string compartments = parsed.Compartments.Count == 0
-            ? "(none)"
-            : string.Join(", ", parsed.Compartments.OrderBy(x => x));
-        string groups = parsed.Groups.Count == 0
-            ? "(none)"
-            : string.Join(", ", parsed.Groups.OrderBy(x => x));
-
         _olsHierarchyTextBox.Text = string.Join(Environment.NewLine,
-            "OLS User Label Tree",
-            "|- Policy: THONGBAO_OLS",
-            $"|- Level: {parsed.LevelCode} (rank={parsed.LevelRank})",
-            $"|- Compartments: {compartments}",
-            $"|- Groups: {groups}",
+            "Danh muc map OLS label theo 03_OLS_Setup.sql:",
+            "- L1_NV: Gui den toan bo nhan vien",
+            "- L2_LD: Gui den cac lanh dao khoa",
+            "- L3_GD: Gui den toan bo Ban giam doc",
+            "- L2_LD:C_TIEU: Gui den lanh dao Khoa tieu hoa",
+            "- L1_NV:C_TIEU:G_HCM: Gui den nhan vien Khoa tieu hoa o Ho Chi Minh",
+            "- L1_NV:C_TIEU:G_HN: Gui den nhan vien Khoa tieu hoa o Ha Noi",
+            "- L2_LD:C_TIEU,C_THAN:G_HP: Gui den lanh dao Khoa tieu hoa va Khoa than kinh tai Hai Phong",
             "",
-            "Access rule simulation:",
-            "- Level dominance: user level >= row level",
-            "- Compartment inclusion: row compartments subset of user compartments",
-            "- Group inclusion: row groups subset of user groups");
+            "Tao thong bao moi: chi HOSPITAL_ADMIN duoc phep.");
+    }
+
+    private void SetOlsGridHeader(string columnName, string headerText)
+    {
+        DataGridViewColumn? column = _olsPreviewGrid.Columns[columnName];
+        if (column is not null)
+        {
+            column.HeaderText = headerText;
+        }
     }
 
     private void SetSearchHints()
