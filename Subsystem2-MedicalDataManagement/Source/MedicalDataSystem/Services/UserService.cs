@@ -6,12 +6,16 @@ using Oracle.ManagedDataAccess.Client;
 public sealed class UserService
 {
     private readonly OracleConnectionService _connectionService;
+    private readonly RBACService _rbacService;
+    private readonly VPDService _vpdService;
     public string LastErrorMessage { get; private set; } = string.Empty;
     public string LastRoleOperation { get; private set; } = string.Empty;
 
     public UserService(OracleConnectionService connectionService)
     {
         _connectionService = connectionService;
+        _rbacService = new RBACService(connectionService);
+        _vpdService = new VPDService(connectionService);
     }
 
     public bool CreateUser(CreateUserRequest request)
@@ -97,100 +101,12 @@ public sealed class UserService
 
     public List<PatientAccountItem> GetPatientUsersByCccd(string cccdKeyword)
     {
-        string normalizedKeyword = NormalizeIdKeyword(cccdKeyword);
-        if (normalizedKeyword.Length != 12)
-        {
-            return new List<PatientAccountItem>();
-        }
-
-        const string sql = """
-            SELECT
-                NVL(b.MABN, 0) AS MABN,
-                NVL(b.TENBN, '(Khong tim thay benh nhan)') AS TENBN,
-                NVL(b.PHAI, '') AS PHAI,
-                b.NGAYSINH,
-                NVL(b.CCCD, '') AS CCCD,
-                NVL(b.SONHA, '') AS SONHA,
-                NVL(b.TENDUONG, '') AS TENDUONG,
-                NVL(b.QUANHUYEN, '') AS QUANHUYEN,
-                NVL(b.TINHTP, '') AS TINHTP,
-                NVL(b.TIENSUBENH, '') AS TIENSUBENH,
-                NVL(b.TIENSUBENHGD, '') AS TIENSUBENHGD,
-                NVL(b.DIUNGTHUOC, '') AS DIUNGTHUOC,
-                u.USERNAME,
-                NVL(d.ACCOUNT_STATUS, 'N/A') AS ACCOUNT_STATUS,
-                d.CREATED,
-                d.EXPIRY_DATE
-            FROM (
-                SELECT DISTINCT rp.GRANTEE AS USERNAME
-                FROM DBA_ROLE_PRIVS rp
-                WHERE rp.GRANTED_ROLE = 'BENH_NHAN'
-            ) u
-            LEFT JOIN BENHNHAN b ON b.USERNAME = u.USERNAME
-            LEFT JOIN DBA_USERS d ON d.USERNAME = u.USERNAME
-            WHERE b.CCCD = :cccdExact
-            ORDER BY u.USERNAME
-            FETCH FIRST 100 ROWS ONLY
-            """;
-
-        return _connectionService.Execute(connection =>
-        {
-            using var dataCommand = connection.CreateCommand();
-            dataCommand.CommandText = sql;
-            dataCommand.Parameters.Add(new OracleParameter("cccdExact", normalizedKeyword));
-
-            using var reader = dataCommand.ExecuteReader();
-            var users = new List<PatientAccountItem>();
-            while (reader.Read())
-            {
-                users.Add(new PatientAccountItem
-                {
-                    MABN = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
-                    TENBN = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                    PHAI = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                    NGAYSINH = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
-                    CCCD = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                    SONHA = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                    TENDUONG = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
-                    QUANHUYEN = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
-                    TINHTP = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                    TIENSUBENH = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
-                    TIENSUBENHGD = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
-                    DIUNGTHUOC = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
-                    Username = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
-                    AccountStatus = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
-                    CreatedDate = reader.IsDBNull(14) ? null : reader.GetDateTime(14),
-                    ExpiryDate = reader.IsDBNull(15) ? null : reader.GetDateTime(15)
-                });
-            }
-
-            return users;
-        });
+        return _rbacService.GetPatientUsersByCccd(cccdKeyword);
     }
 
     public List<PatientUserDisplayItem> GetPatientUserDisplayByCccd(string cccdKeyword)
     {
-        return GetPatientUsersByCccd(cccdKeyword)
-            .Select(u => new PatientUserDisplayItem
-            {
-                MaBN = u.MABN,
-                HoTen = u.TENBN,
-                GioiTinh = u.PHAI,
-                NgaySinh = u.NGAYSINH?.ToString("dd/MM/yyyy") ?? "—",
-                CCCD = u.CCCD,
-                SoNha = u.SONHA,
-                TenDuong = u.TENDUONG,
-                QuanHuyen = u.QUANHUYEN,
-                TinhTP = u.TINHTP,
-                TienSuBenh = u.TIENSUBENH,
-                TienSuBenhGiaDinh = u.TIENSUBENHGD,
-                DiUngThuoc = u.DIUNGTHUOC,
-                Username = u.Username,
-                TrangThaiTaiKhoan = u.AccountStatus,
-                TaoLuc = u.CreatedDate?.ToString("dd/MM/yyyy") ?? "—",
-                HetHan = u.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—"
-            })
-            .ToList();
+        return _rbacService.GetPatientUserDisplayByCccd(cccdKeyword);
     }
 
     public List<DepartmentOption> GetDepartments()
@@ -226,374 +142,55 @@ public sealed class UserService
 
     public List<UserAccountItem> GetStaffUsersByCmnd(string cmndKeyword)
     {
-        return SearchUsers(
-            cmndKeyword,
-            """
-            SELECT
-                NVL(n.MANV, 0) AS USER_ID,
-                NVL(n.HOTEN, '(Khong tim thay nhan vien)') AS FULL_NAME,
-                u.USERNAME,
-                NVL(d.ACCOUNT_STATUS, 'N/A') AS ACCOUNT_STATUS,
-                d.CREATED,
-                d.EXPIRY_DATE
-            FROM (
-                SELECT DISTINCT rp.GRANTEE AS USERNAME
-                FROM DBA_ROLE_PRIVS rp
-                WHERE rp.GRANTED_ROLE IN ('DIEU_PHOI_VIEN', 'BAC_SI_Y_SI', 'KY_THUAT_VIEN')
-            ) u
-            LEFT JOIN NHANVIEN n ON UPPER(n.USERNAME) = UPPER(u.USERNAME)
-            LEFT JOIN DBA_USERS d ON UPPER(d.USERNAME) = UPPER(u.USERNAME)
-            WHERE n.CMND LIKE :searchTerm
-            ORDER BY u.USERNAME
-            """);
+        return _rbacService.GetStaffUsersByCmnd(cmndKeyword);
     }
 
     public List<StaffUserDisplayItem> GetStaffUserDisplayByCmnd(string cmndKeyword)
     {
-        return GetStaffUsersByCmnd(cmndKeyword)
-            .Select(u => new StaffUserDisplayItem
-            {
-                Id = u.UserId,
-                FullName = u.FullName,
-                Username = u.Username,
-                AccountStatus = u.AccountStatus,
-                Created = u.CreatedDate?.ToString("dd/MM/yyyy") ?? "—",
-                Expiry = u.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—"
-            })
-            .ToList();
+        return _rbacService.GetStaffUserDisplayByCmnd(cmndKeyword);
     }
 
     public List<VpdPolicyItem> GetVpdPolicies()
     {
-        const string sql = """
-            SELECT
-                OBJECT_NAME,
-                POLICY_NAME,
-                PF_OWNER,
-                FUNCTION,
-                SEL,
-                INS,
-                UPD,
-                DEL,
-                ENABLE
-            FROM USER_POLICIES
-            ORDER BY OBJECT_NAME, POLICY_NAME
-            """;
-
-        return _connectionService.Execute(connection =>
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-
-            using var reader = command.ExecuteReader();
-            var result = new List<VpdPolicyItem>();
-            while (reader.Read())
-            {
-                result.Add(new VpdPolicyItem
-                {
-                    ObjectName = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
-                    PolicyName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                    FunctionOwner = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                    PolicyFunction = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                    SelectEnabled = reader.IsDBNull(4) ? "NO" : reader.GetString(4),
-                    InsertEnabled = reader.IsDBNull(5) ? "NO" : reader.GetString(5),
-                    UpdateEnabled = reader.IsDBNull(6) ? "NO" : reader.GetString(6),
-                    DeleteEnabled = reader.IsDBNull(7) ? "NO" : reader.GetString(7),
-                    IsEnabled = reader.IsDBNull(8) ? "NO" : reader.GetString(8)
-                });
-            }
-
-            return result;
-        });
+        return _vpdService.GetVpdPolicies();
     }
 
     public bool SetVpdPolicyEnabled(string objectName, string policyName, bool enable)
     {
-        LastErrorMessage = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(objectName) || string.IsNullOrWhiteSpace(policyName))
-        {
-            LastErrorMessage = "Policy name and object name are required.";
-            return false;
-        }
-
-        try
-        {
-            _connectionService.Execute(connection =>
-            {
-                using var command = connection.CreateCommand();
-                command.CommandText = $"""
-                    BEGIN
-                        DBMS_RLS.ENABLE_POLICY(
-                            object_schema => 'HOSPITAL_ADMIN',
-                            object_name   => :object_name,
-                            policy_name   => :policy_name,
-                            enable        => {(enable ? "TRUE" : "FALSE")}
-                        );
-                    END;
-                    """;
-                command.Parameters.Add("object_name", OracleDbType.Varchar2, objectName, System.Data.ParameterDirection.Input);
-                command.Parameters.Add("policy_name", OracleDbType.Varchar2, policyName, System.Data.ParameterDirection.Input);
-                command.ExecuteNonQuery();
-            });
-
-            return true;
-        }
-        catch (OracleException ex)
-        {
-            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
-            return false;
-        }
-        catch (Exception ex)
-        {
-            LastErrorMessage = ex.Message;
-            return false;
-        }
+        bool ok = _vpdService.SetVpdPolicyEnabled(objectName, policyName, enable);
+        LastErrorMessage = _vpdService.LastErrorMessage;
+        return ok;
     }
 
     public string NormalizeIdText(string input)
     {
-        return NormalizeIdKeyword(input);
+        return _rbacService.NormalizeIdText(input);
     }
 
     public UserSecurityProfileItem? GetStaffProfileWithRolesByCmnd(string cmndKeyword)
     {
-        string normalizedKeyword = NormalizeIdKeyword(cmndKeyword);
-        if (normalizedKeyword.Length != 12)
-        {
-            return null;
-        }
-
-        const string sql = """
-            SELECT
-                n.MANV,
-                n.HOTEN,
-                n.PHAI,
-                n.NGAYSINH,
-                n.CMND,
-                n.USERNAME,
-                n.QUEQUAN,
-                n.SODT,
-                n.VAITRO,
-                n.CHUYENKHOA
-            FROM NHANVIEN n
-            WHERE n.CMND = :idNumber
-            FETCH FIRST 1 ROWS ONLY
-            """;
-
-        return _connectionService.Execute(connection =>
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            command.Parameters.Add(new OracleParameter("idNumber", normalizedKeyword));
-
-            using var reader = command.ExecuteReader();
-            if (!reader.Read())
-            {
-                return null;
-            }
-
-            string username = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
-            var roles = GetCurrentRolesByUsername(connection, username);
-
-            return new UserSecurityProfileItem
-            {
-                UserType = "STAFF",
-                UserId = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
-                FullName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                Gender = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                BirthDate = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
-                IdNumber = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                Username = username,
-                Address = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
-                Phone = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
-                BusinessRole = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                Department = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
-                CurrentOracleRoles = roles
-            };
-        });
+        return _rbacService.GetStaffProfileWithRolesByCmnd(cmndKeyword);
     }
 
     public UserSecurityProfileItem? GetPatientProfileWithRolesByCccd(string cccdKeyword)
     {
-        string normalizedKeyword = NormalizeIdKeyword(cccdKeyword);
-        if (normalizedKeyword.Length != 12)
-        {
-            return null;
-        }
-
-        const string sql = """
-            SELECT
-                b.MABN,
-                b.TENBN,
-                b.PHAI,
-                b.NGAYSINH,
-                b.CCCD,
-                b.USERNAME,
-                b.SONHA,
-                b.TENDUONG,
-                b.QUANHUYEN,
-                b.TINHTP,
-                b.TIENSUBENH,
-                b.TIENSUBENHGD,
-                b.DIUNGTHUOC
-            FROM BENHNHAN b
-            WHERE b.CCCD = :idNumber
-            FETCH FIRST 1 ROWS ONLY
-            """;
-
-        return _connectionService.Execute(connection =>
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            command.Parameters.Add(new OracleParameter("idNumber", normalizedKeyword));
-
-            using var reader = command.ExecuteReader();
-            if (!reader.Read())
-            {
-                return null;
-            }
-
-            string username = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
-            var roles = GetCurrentRolesByUsername(connection, username);
-
-            return new UserSecurityProfileItem
-            {
-                UserType = "PATIENT",
-                UserId = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
-                FullName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                Gender = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                BirthDate = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
-                IdNumber = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                Username = username,
-                SoNha = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
-                TenDuong = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
-                QuanHuyen = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                TinhTp = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
-                TienSuBenh = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
-                TienSuBenhGiaDinh = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
-                DiUngThuoc = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
-                CurrentOracleRoles = roles
-            };
-        });
+        return _rbacService.GetPatientProfileWithRolesByCccd(cccdKeyword);
     }
 
     public bool GrantRoleToStaff(string username, string roleName)
     {
-        LastErrorMessage = string.Empty;
-        LastRoleOperation = string.Empty;
-
-        string safeUsername;
-        try
-        {
-            safeUsername = NormalizeAndValidateOracleUsername(username);
-        }
-        catch (ArgumentException ex)
-        {
-            LastErrorMessage = ex.Message;
-            return false;
-        }
-
-        string normalizedRole = NormalizeAndValidateGrantRole(roleName);
-        if (string.IsNullOrWhiteSpace(normalizedRole))
-        {
-            LastErrorMessage = "Unsupported role for staff grant.";
-            return false;
-        }
-
-        using var connection = _connectionService.GetConnection();
-        using var transaction = connection.BeginTransaction();
-
-        try
-        {
-            if (!IsStaffUsername(connection, transaction, safeUsername))
-            {
-                LastErrorMessage = "Selected account is not mapped to NHANVIEN.";
-                transaction.Rollback();
-                return false;
-            }
-
-            bool alreadyGranted = HasRoleGrant(connection, transaction, safeUsername, normalizedRole);
-            if (alreadyGranted)
-            {
-                LastErrorMessage = $"Role {normalizedRole} is already granted to {safeUsername}.";
-                transaction.Rollback();
-                return false;
-            }
-
-            ExecuteNonQuery(connection, transaction, $"GRANT {normalizedRole} TO {safeUsername}");
-            LastRoleOperation = "GRANTED";
-
-            transaction.Commit();
-            return true;
-        }
-        catch (OracleException ex)
-        {
-            TryRollback(transaction);
-            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
-            return false;
-        }
-        catch (Exception ex)
-        {
-            TryRollback(transaction);
-            LastErrorMessage = ex.Message;
-            return false;
-        }
+        bool ok = _rbacService.GrantRoleToStaff(username, roleName);
+        LastErrorMessage = _rbacService.LastErrorMessage;
+        LastRoleOperation = _rbacService.LastRoleOperation;
+        return ok;
     }
 
     public bool RevokeRoleFromUser(string username, string roleName)
     {
-        LastErrorMessage = string.Empty;
-        LastRoleOperation = string.Empty;
-
-        string safeUsername;
-        try
-        {
-            safeUsername = NormalizeAndValidateOracleUsername(username);
-        }
-        catch (ArgumentException ex)
-        {
-            LastErrorMessage = ex.Message;
-            return false;
-        }
-
-        string normalizedRole = NormalizeAndValidateGrantRole(roleName);
-        if (string.IsNullOrWhiteSpace(normalizedRole))
-        {
-            LastErrorMessage = "Unsupported role for revoke.";
-            return false;
-        }
-
-        using var connection = _connectionService.GetConnection();
-        using var transaction = connection.BeginTransaction();
-
-        try
-        {
-            bool alreadyGranted = HasRoleGrant(connection, transaction, safeUsername, normalizedRole);
-            if (!alreadyGranted)
-            {
-                LastErrorMessage = $"Role {normalizedRole} is not granted to {safeUsername}.";
-                transaction.Rollback();
-                return false;
-            }
-
-            ExecuteNonQuery(connection, transaction, $"REVOKE {normalizedRole} FROM {safeUsername}");
-            LastRoleOperation = "REVOKED";
-            transaction.Commit();
-            return true;
-        }
-        catch (OracleException ex)
-        {
-            TryRollback(transaction);
-            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
-            return false;
-        }
-        catch (Exception ex)
-        {
-            TryRollback(transaction);
-            LastErrorMessage = ex.Message;
-            return false;
-        }
+        bool ok = _rbacService.RevokeRoleFromUser(username, roleName);
+        LastErrorMessage = _rbacService.LastErrorMessage;
+        LastRoleOperation = _rbacService.LastRoleOperation;
+        return ok;
     }
 
     private List<UserAccountItem> SearchUsers(string searchText, string sql)

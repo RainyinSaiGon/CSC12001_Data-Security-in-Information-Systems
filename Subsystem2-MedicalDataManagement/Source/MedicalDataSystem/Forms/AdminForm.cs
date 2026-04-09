@@ -8,6 +8,9 @@ public class AdminForm : Form
     private readonly UserSession _session;
     private readonly OracleConnectionService _connectionService;
     private readonly UserService _userService;
+    private readonly RBACService _rbacService;
+    private readonly VPDService _vpdService;
+    private readonly OLSService _olsService;
     private readonly TabControl _mainTabControl = new() { Dock = DockStyle.Fill };
     private readonly TabControl _usersSubTabs = new() { Dock = DockStyle.Fill };
     private readonly Label _footerStatusLabel = new() { Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft };
@@ -29,6 +32,31 @@ public class AdminForm : Form
     private readonly Button _vpdRefreshButton = new() { Text = "Refresh VPD", Width = 110, Height = 30 };
     private readonly Button _vpdEnableButton = new() { Text = "Enable", Width = 90, Height = 30, Enabled = false };
     private readonly Button _vpdDisableButton = new() { Text = "Disable", Width = 90, Height = 30, Enabled = false };
+    private readonly ComboBox _olsUserCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly Button _olsLoadLabelButton = new() { Text = "Load User Labels", Width = 130, Height = 30 };
+    private readonly Button _olsPreviewButton = new() { Text = "Preview Accessible Notifications", Width = 210, Height = 30 };
+    private readonly Label _olsLabelSummaryLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0), Text = "User label: (not loaded)" };
+    private readonly DataGridView _olsPreviewGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly TextBox _olsHierarchyTextBox = new()
+    {
+        Multiline = true,
+        ReadOnly = true,
+        Dock = DockStyle.Fill,
+        ScrollBars = ScrollBars.Vertical
+    };
 
     private readonly DataGridView _patientUsersGrid = new()
     {
@@ -129,6 +157,9 @@ public class AdminForm : Form
         _session = session;
         _connectionService = new OracleConnectionService(session.ConnectionString);
         _userService = new UserService(_connectionService);
+        _rbacService = new RBACService(_connectionService);
+        _vpdService = new VPDService(_connectionService);
+        _olsService = new OLSService(_connectionService);
         InitializeComponent();
         SetSearchHints();
     }
@@ -144,7 +175,7 @@ public class AdminForm : Form
         _mainTabControl.TabPages.Clear();
         _mainTabControl.TabPages.Add(BuildUsersTab());
         _mainTabControl.TabPages.Add(BuildVpdPoliciesTab());
-        _mainTabControl.TabPages.Add(new TabPage("OLS Labels"));
+        _mainTabControl.TabPages.Add(BuildOlsVisualizationTab());
         _mainTabControl.TabPages.Add(new TabPage("Audit Log"));
 
         _mainTabControl.SelectedIndexChanged += (_, _) =>
@@ -646,6 +677,204 @@ public class AdminForm : Form
         return tab;
     }
 
+    private TabPage BuildOlsVisualizationTab()
+    {
+        var tab = new TabPage("OLS Labels");
+
+        _olsLoadLabelButton.Click -= HandleOlsLoadLabelClick;
+        _olsLoadLabelButton.Click += HandleOlsLoadLabelClick;
+        _olsPreviewButton.Click -= HandleOlsPreviewClick;
+        _olsPreviewButton.Click += HandleOlsPreviewClick;
+        _olsPreviewGrid.DataBindingComplete -= HandleOlsPreviewDataBindingComplete;
+        _olsPreviewGrid.DataBindingComplete += HandleOlsPreviewDataBindingComplete;
+
+        var topPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+        topPanel.Controls.Add(new Label { Text = "User", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        topPanel.Controls.Add(_olsUserCombo);
+        topPanel.Controls.Add(_olsLoadLabelButton);
+        topPanel.Controls.Add(_olsPreviewButton);
+        topPanel.Controls.Add(_olsLabelSummaryLabel);
+
+        var hierarchyGroup = new GroupBox
+        {
+            Text = "OLS Label Hierarchy",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        hierarchyGroup.Controls.Add(_olsHierarchyTextBox);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
+        rootLayout.Controls.Add(topPanel, 0, 0);
+        rootLayout.Controls.Add(_olsPreviewGrid, 0, 1);
+        rootLayout.Controls.Add(hierarchyGroup, 0, 2);
+
+        tab.Controls.Add(rootLayout);
+        LoadOlsUserChoices();
+        _olsPreviewGrid.DataSource = new List<OlsNotificationAccessPreviewItem>();
+        return tab;
+    }
+
+    private void LoadOlsUserChoices()
+    {
+        try
+        {
+            List<string> usernames = _olsService.GetAvailableUsernames();
+
+            _olsUserCombo.BeginUpdate();
+            _olsUserCombo.Items.Clear();
+            foreach (string user in usernames)
+            {
+                _olsUserCombo.Items.Add(user);
+            }
+
+            if (_olsUserCombo.Items.Count > 0)
+            {
+                _olsUserCombo.SelectedIndex = 0;
+            }
+
+            _olsUserCombo.EndUpdate();
+            UpdateFooterStatus($"OLS: Loaded {usernames.Count} users.");
+        }
+        catch (Exception ex)
+        {
+            _olsUserCombo.Items.Clear();
+            _olsLabelSummaryLabel.Text = "User label: load users failed";
+            _olsHierarchyTextBox.Text = ex.Message;
+            UpdateFooterStatus("OLS: Failed to load user list.");
+        }
+    }
+
+    private void HandleOlsLoadLabelClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+
+        string username = _olsUserCombo.SelectedItem?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            MessageBox.Show(this, "Please select a user.", "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            string userLabel = _olsService.GetUserLabel(username);
+            if (string.IsNullOrWhiteSpace(userLabel))
+            {
+                _olsLabelSummaryLabel.Text = $"User label: {username} has no OLS metadata";
+                _olsHierarchyTextBox.Text = "No OLS label found in ALL_SA_USERS/DBA_SA_USERS for this user.";
+                UpdateFooterStatus($"OLS: No label metadata for {username}.");
+                return;
+            }
+
+            _olsLabelSummaryLabel.Text = $"User label: {userLabel}";
+            RenderUserHierarchy(userLabel);
+            UpdateFooterStatus($"OLS: Loaded label for {username}.");
+        }
+        catch (Exception ex)
+        {
+            _olsLabelSummaryLabel.Text = "User label: failed";
+            _olsHierarchyTextBox.Text = ex.Message;
+            UpdateFooterStatus("OLS: Failed to load label.");
+            MessageBox.Show(this, ex.Message, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void HandleOlsPreviewClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+
+        string username = _olsUserCombo.SelectedItem?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            MessageBox.Show(this, "Please select a user.", "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            List<OlsNotificationAccessPreviewItem> previewRows = _olsService.BuildNotificationAccessPreview(username);
+            _olsPreviewGrid.DataSource = previewRows;
+
+            int allowedCount = previewRows.Count(row => row.CanAccess);
+            int deniedCount = previewRows.Count - allowedCount;
+            UpdateFooterStatus($"OLS: {username} -> YES={allowedCount}, NO={deniedCount}");
+
+            if (previewRows.Count > 0)
+            {
+                _olsLabelSummaryLabel.Text = $"User label: {previewRows[0].UserLabel}";
+                RenderUserHierarchy(previewRows[0].UserLabel);
+            }
+        }
+        catch (Exception ex)
+        {
+            _olsPreviewGrid.DataSource = new List<OlsNotificationAccessPreviewItem>();
+            UpdateFooterStatus("OLS: Preview failed.");
+            MessageBox.Show(this, ex.Message, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void HandleOlsPreviewDataBindingComplete(object? sender, DataGridViewBindingCompleteEventArgs e)
+    {
+        _ = sender;
+        _ = e;
+
+        foreach (DataGridViewRow row in _olsPreviewGrid.Rows)
+        {
+            if (row.DataBoundItem is not OlsNotificationAccessPreviewItem item)
+            {
+                continue;
+            }
+
+            if (item.CanAccess)
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(224, 247, 224);
+            }
+            else
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(252, 228, 228);
+            }
+        }
+    }
+
+    private void RenderUserHierarchy(string userLabel)
+    {
+        OlsParsedLabel parsed = _olsService.ParseLabel(userLabel);
+
+        string compartments = parsed.Compartments.Count == 0
+            ? "(none)"
+            : string.Join(", ", parsed.Compartments.OrderBy(x => x));
+        string groups = parsed.Groups.Count == 0
+            ? "(none)"
+            : string.Join(", ", parsed.Groups.OrderBy(x => x));
+
+        _olsHierarchyTextBox.Text = string.Join(Environment.NewLine,
+            "OLS User Label Tree",
+            "|- Policy: THONGBAO_OLS",
+            $"|- Level: {parsed.LevelCode} (rank={parsed.LevelRank})",
+            $"|- Compartments: {compartments}",
+            $"|- Groups: {groups}",
+            "",
+            "Access rule simulation:",
+            "- Level dominance: user level >= row level",
+            "- Compartment inclusion: row compartments subset of user compartments",
+            "- Group inclusion: row groups subset of user groups");
+    }
+
     private void SetSearchHints()
     {
         if (string.IsNullOrWhiteSpace(_patientSearchBox.Text))
@@ -742,13 +971,13 @@ public class AdminForm : Form
             return;
         }
 
-        bool updated = _userService.SetVpdPolicyEnabled(selectedPolicy.ObjectName, selectedPolicy.PolicyName, enable);
+        bool updated = _vpdService.SetVpdPolicyEnabled(selectedPolicy.ObjectName, selectedPolicy.PolicyName, enable);
         if (!updated)
         {
             UpdateFooterStatus("VPD: Failed to change policy state.");
-            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage)
+            string detail = string.IsNullOrWhiteSpace(_vpdService.LastErrorMessage)
                 ? "Failed to change VPD policy state."
-                : _userService.LastErrorMessage;
+                : _vpdService.LastErrorMessage;
             MessageBox.Show(this, detail, "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
@@ -761,7 +990,7 @@ public class AdminForm : Form
     {
         try
         {
-            List<VpdPolicyItem> policies = _userService.GetVpdPolicies();
+            List<VpdPolicyItem> policies = _vpdService.GetVpdPolicies();
 
             _vpdPoliciesGrid.DataSource = policies;
             _vpdPoliciesInfoLabel.Text = $"VPD: {policies.Count} policy";
@@ -782,7 +1011,7 @@ public class AdminForm : Form
     {
         try
         {
-            string cccdKeyword = _userService.NormalizeIdText(_patientSearchBox.Text);
+            string cccdKeyword = _rbacService.NormalizeIdText(_patientSearchBox.Text);
             if (string.IsNullOrWhiteSpace(cccdKeyword))
             {
                 _patientUsersGrid.DataSource = new List<object>();
@@ -801,13 +1030,13 @@ public class AdminForm : Form
                 return;
             }
 
-            List<PatientUserDisplayItem> users = _userService.GetPatientUserDisplayByCccd(cccdKeyword);
+            List<PatientUserDisplayItem> users = _rbacService.GetPatientUserDisplayByCccd(cccdKeyword);
             _patientUsersGrid.DataSource = users;
 
             _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan (toi da 100 dong)";
             UpdateFooterStatus($"BN: Tim thay {users.Count} tai khoan.");
 
-            UserSecurityProfileItem? profile = _userService.GetPatientProfileWithRolesByCccd(cccdKeyword);
+            UserSecurityProfileItem? profile = _rbacService.GetPatientProfileWithRolesByCccd(cccdKeyword);
             ShowProfileResult(profile, $"Tra cuu theo CCCD: {cccdKeyword}");
         }
         catch (Exception ex)
@@ -832,16 +1061,16 @@ public class AdminForm : Form
                 return;
             }
 
-            List<StaffUserDisplayItem> users = _userService.GetStaffUserDisplayByCmnd(cmndKeyword);
+            List<StaffUserDisplayItem> users = _rbacService.GetStaffUserDisplayByCmnd(cmndKeyword);
             _staffUsersGrid.DataSource = users;
 
             _staffPageInfoLabel.Text = $"NV: Tim thay {users.Count} tai khoan";
             UpdateFooterStatus($"NV: Tim thay {users.Count} tai khoan.");
 
-            string normalizedCmnd = _userService.NormalizeIdText(cmndKeyword);
+            string normalizedCmnd = _rbacService.NormalizeIdText(cmndKeyword);
             if (normalizedCmnd.Length == 12)
             {
-                UserSecurityProfileItem? profile = _userService.GetStaffProfileWithRolesByCmnd(normalizedCmnd);
+                UserSecurityProfileItem? profile = _rbacService.GetStaffProfileWithRolesByCmnd(normalizedCmnd);
                 ShowProfileResult(profile, $"Tra cuu theo CMND: {normalizedCmnd}");
             }
             else
@@ -935,10 +1164,10 @@ public class AdminForm : Form
             return;
         }
 
-        bool granted = _userService.GrantRoleToStaff(_selectedProfile.Username, roleName);
+        bool granted = _rbacService.GrantRoleToStaff(_selectedProfile.Username, roleName);
         if (!granted)
         {
-            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Grant role failed." : _userService.LastErrorMessage;
+            string detail = string.IsNullOrWhiteSpace(_rbacService.LastErrorMessage) ? "Grant role failed." : _rbacService.LastErrorMessage;
             MessageBox.Show(this, detail, "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
@@ -989,10 +1218,10 @@ public class AdminForm : Form
             return;
         }
 
-        bool revoked = _userService.RevokeRoleFromUser(_selectedProfile.Username, roleName);
+        bool revoked = _rbacService.RevokeRoleFromUser(_selectedProfile.Username, roleName);
         if (!revoked)
         {
-            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Revoke role failed." : _userService.LastErrorMessage;
+            string detail = string.IsNullOrWhiteSpace(_rbacService.LastErrorMessage) ? "Revoke role failed." : _rbacService.LastErrorMessage;
             MessageBox.Show(this, detail, "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
@@ -1024,8 +1253,8 @@ public class AdminForm : Form
         }
 
         UserSecurityProfileItem? refreshed = string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase)
-            ? _userService.GetStaffProfileWithRolesByCmnd(_selectedProfile.IdNumber)
-            : _userService.GetPatientProfileWithRolesByCccd(_selectedProfile.IdNumber);
+            ? _rbacService.GetStaffProfileWithRolesByCmnd(_selectedProfile.IdNumber)
+            : _rbacService.GetPatientProfileWithRolesByCccd(_selectedProfile.IdNumber);
 
         ShowProfileResult(refreshed, note);
     }
