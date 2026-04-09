@@ -73,9 +73,10 @@ BEGIN
         RETURN 'MABS = ' || TO_CHAR(v_manv);
     END IF;
 
-    RETURN '1=1';
+    RETURN '1=0';
 END;
 /
+
 
 CREATE OR REPLACE FUNCTION VPD_BENHNHAN_FN(p_schema VARCHAR2, p_object VARCHAR2)
 RETURN VARCHAR2
@@ -120,7 +121,7 @@ BEGIN
         RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
     END IF;
 
-    RETURN '1=1';
+    RETURN '1=0'; -- No access for others
 END;
 /
 
@@ -139,7 +140,7 @@ BEGIN
         RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
     END IF;
 
-    RETURN '1=1';
+    RETURN '1=0';
 END;
 /
 
@@ -160,7 +161,7 @@ BEGIN
         policy_name     => 'BENHNHAN_VPD',
         function_schema => USER,
         policy_function => 'VPD_BENHNHAN_FN',
-        statement_types => 'SELECT,UPDATE',
+        statement_types => 'SELECT,UPDATE,DELETE,INSERT',
         update_check    => TRUE
     );
 
