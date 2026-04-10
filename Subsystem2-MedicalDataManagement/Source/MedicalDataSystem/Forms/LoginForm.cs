@@ -58,16 +58,16 @@ public partial class LoginForm : Form
 
         var logoPanel = new Panel
         {
-            Size = new Size(116, 116),
+            Size = new Size(130, 130),
             BackColor = Color.FromArgb(108, 167, 232)
         };
 
         var logoLabel = new Label
         {
             Dock = DockStyle.Fill,
-            Text = "⚕",
+            Text = "+",
             TextAlign = ContentAlignment.MiddleCenter,
-            Font = new Font("Segoe UI", 42, FontStyle.Bold),
+            Font = new Font("Arial", 88, FontStyle.Bold, GraphicsUnit.Pixel),
             ForeColor = Color.FromArgb(238, 247, 255)
         };
         logoPanel.Controls.Add(logoLabel);
@@ -101,14 +101,28 @@ public partial class LoginForm : Form
         leftPoints.Controls.Add(new Label { Text = "•  HIPAA Compliant", AutoSize = true, Font = new Font("Segoe UI", 12), ForeColor = Color.FromArgb(233, 243, 255), Margin = new Padding(0, 10, 0, 0) });
         leftPoints.Controls.Add(new Label { Text = "•  24/7 Access", AutoSize = true, Font = new Font("Segoe UI", 12), ForeColor = Color.FromArgb(233, 243, 255), Margin = new Padding(0, 10, 0, 0) });
 
-        var leftContent = new FlowLayoutPanel
+        var leftContent = new TableLayoutPanel
         {
-            FlowDirection = FlowDirection.TopDown,
             Dock = DockStyle.Fill,
-            WrapContents = false,
             Margin = Padding.Empty,
-            Padding = new Padding(0, 28, 0, 0)
+            Padding = new Padding(0, 20, 0, 0),
+            ColumnCount = 1,
+            RowCount = 4
         };
+        leftContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        leftContent.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        leftContent.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        leftContent.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        leftContent.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        logoPanel.Anchor = AnchorStyles.None;
+        leftTitle.Anchor = AnchorStyles.None;
+        leftSubtitle.Anchor = AnchorStyles.None;
+        leftPoints.Anchor = AnchorStyles.None;
+
+        leftTitle.TextAlign = ContentAlignment.MiddleCenter;
+        leftSubtitle.TextAlign = ContentAlignment.MiddleCenter;
+
         leftContent.Controls.Add(logoPanel);
         leftContent.Controls.Add(leftTitle);
         leftContent.Controls.Add(leftSubtitle);
@@ -119,15 +133,13 @@ public partial class LoginForm : Form
         {
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(246, 246, 247),
-            Padding = new Padding(38, 20, 38, 18),
+            Padding = new Padding(22, 18, 22, 16),
             AutoScroll = true
         };
 
         var rightCard = new Panel
         {
-            Dock = DockStyle.Top,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Dock = DockStyle.Fill,
             BackColor = Color.White,
             BorderStyle = BorderStyle.FixedSingle,
             Padding = new Padding(26, 24, 26, 20)
@@ -135,7 +147,7 @@ public partial class LoginForm : Form
 
         var rightLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Top,
+            Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 12,
             Margin = Padding.Empty,
@@ -145,12 +157,12 @@ public partial class LoginForm : Form
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
-        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
+        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 10));
         rightLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -159,7 +171,7 @@ public partial class LoginForm : Form
         {
             Text = "Hospital Management System",
             AutoSize = true,
-            Font = new Font("Segoe UI", 20, FontStyle.Bold),
+            Font = new Font("Segoe UI", 22, FontStyle.Bold),
             ForeColor = Color.FromArgb(16, 34, 58),
             Margin = Padding.Empty,
             Anchor = AnchorStyles.None
@@ -171,7 +183,7 @@ public partial class LoginForm : Form
             AutoSize = true,
             Font = new Font("Segoe UI", 12),
             ForeColor = Color.FromArgb(86, 96, 112),
-            Margin = new Padding(0, 0, 0, 6),
+            Margin = new Padding(0, 2, 0, 10),
             Anchor = AnchorStyles.None
         };
 
