@@ -233,6 +233,25 @@ public partial class LoginForm : Form
         _dataSourceTextBox.Font = new Font("Segoe UI", 11);
         _dataSourceTextBox.Margin = Padding.Empty;
         _dataSourceTextBox.PlaceholderText = "localhost:11521/xepdb1";
+        _dataSourceTextBox.ReadOnly = true;
+        _dataSourceTextBox.BackColor = Color.FromArgb(242, 244, 248);
+        _dataSourceTextBox.DoubleClick += (_, _) =>
+        {
+            _dataSourceTextBox.ReadOnly = false;
+            _dataSourceTextBox.BackColor = Color.White;
+            _dataSourceTextBox.Focus();
+            _dataSourceTextBox.SelectAll();
+        };
+        _dataSourceTextBox.Leave += (_, _) =>
+        {
+            if (string.IsNullOrWhiteSpace(_dataSourceTextBox.Text))
+            {
+                _dataSourceTextBox.Text = "localhost:11521/xepdb1";
+            }
+
+            _dataSourceTextBox.ReadOnly = true;
+            _dataSourceTextBox.BackColor = Color.FromArgb(242, 244, 248);
+        };
 
         _loginButton.Dock = DockStyle.Fill;
         _loginButton.Height = 44;
