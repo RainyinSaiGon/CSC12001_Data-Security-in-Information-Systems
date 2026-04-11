@@ -11,6 +11,7 @@ public class AdminForm : Form
     private readonly RBACService _rbacService;
     private readonly VPDService _vpdService;
     private readonly OLSService _olsService;
+    private readonly AuditService _auditService;
     private readonly TabControl _mainTabControl = new() { Dock = DockStyle.Fill };
     private readonly TabControl _usersSubTabs = new() { Dock = DockStyle.Fill };
     private readonly Label _footerStatusLabel = new() { Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft };
@@ -60,6 +61,35 @@ public class AdminForm : Form
     private readonly TextBox _olsContentTextBox = new() { Width = 300 };
     private readonly DateTimePicker _olsDateTimePicker = new() { Width = 170, Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm" };
     private readonly TextBox _olsLocationTextBox = new() { Width = 220 };
+    private readonly DataGridView dgvStandardAudit = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly DataGridView dgvFgaAudit = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly Button btnRefreshAudit = new() { Text = "Refresh Audit", Width = 120, Height = 30 };
 
     private readonly DataGridView _patientUsersGrid = new()
     {
@@ -163,6 +193,7 @@ public class AdminForm : Form
         _rbacService = new RBACService(_connectionService);
         _vpdService = new VPDService(_connectionService);
         _olsService = new OLSService(_connectionService);
+        _auditService = new AuditService(_connectionService);
         InitializeComponent();
         SetSearchHints();
     }
@@ -179,7 +210,7 @@ public class AdminForm : Form
         _mainTabControl.TabPages.Add(BuildUsersTab());
         _mainTabControl.TabPages.Add(BuildVpdPoliciesTab());
         _mainTabControl.TabPages.Add(BuildOlsVisualizationTab());
-        _mainTabControl.TabPages.Add(new TabPage("Audit Log"));
+        _mainTabControl.TabPages.Add(BuildAuditLogTab());
 
         _mainTabControl.SelectedIndexChanged += (_, _) =>
         {
@@ -190,6 +221,10 @@ public class AdminForm : Form
             else if (_mainTabControl.SelectedIndex == 1)
             {
                 RefreshVpdPolicies();
+            }
+            else if (_mainTabControl.SelectedIndex == 3)
+            {
+                RefreshAuditLogs();
             }
 
             UpdateFooterStatus("Ready");
@@ -736,6 +771,244 @@ public class AdminForm : Form
         RenderOlsLabelDefinitions();
         RefreshOlsAllNotifications();
         return tab;
+    }
+
+    private TabPage BuildAuditLogTab()
+    {
+        var tab = new TabPage("Audit Log");
+
+        btnRefreshAudit.Click -= HandleRefreshAuditClick;
+        btnRefreshAudit.Click += HandleRefreshAuditClick;
+
+        ConfigureAuditGridsOnce();
+
+        var actionPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+        actionPanel.Controls.Add(btnRefreshAudit);
+        actionPanel.Controls.Add(new Label { Text = "Theo doi Standard Audit va FGA audit theo script Oracle", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
+
+        var standardGroup = new GroupBox
+        {
+            Text = "Standard Audit (DBA_AUDIT_TRAIL)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        standardGroup.Controls.Add(dgvStandardAudit);
+
+        var fgaGroup = new GroupBox
+        {
+            Text = "FGA Audit (DBA_FGA_AUDIT_TRAIL)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        fgaGroup.Controls.Add(dgvFgaAudit);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        rootLayout.Controls.Add(actionPanel, 0, 0);
+        rootLayout.Controls.Add(standardGroup, 0, 1);
+        rootLayout.Controls.Add(fgaGroup, 0, 2);
+
+        tab.Controls.Add(rootLayout);
+        RefreshAuditLogs();
+        return tab;
+    }
+
+    private void ConfigureAuditGridsOnce()
+    {
+        if (dgvStandardAudit.Columns.Count == 0)
+        {
+            dgvStandardAudit.AutoGenerateColumns = false;
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Username),
+                Name = "Username",
+                HeaderText = "Username"
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Action),
+                Name = "Action",
+                HeaderText = "Action"
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Object),
+                Name = "Object",
+                HeaderText = "Object"
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Time),
+                Name = "Time",
+                HeaderText = "Time",
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Status),
+                Name = "Status",
+                HeaderText = "Status"
+            });
+        }
+
+        if (dgvFgaAudit.Columns.Count == 0)
+        {
+            dgvFgaAudit.AutoGenerateColumns = false;
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.User),
+                Name = "User",
+                HeaderText = "User"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Object),
+                Name = "Object",
+                HeaderText = "Object"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Policy),
+                Name = "Policy",
+                HeaderText = "Policy"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Statement),
+                Name = "Statement",
+                HeaderText = "Statement"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Time),
+                Name = "Time",
+                HeaderText = "Time",
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.SqlText),
+                Name = "SqlText",
+                HeaderText = "SQL Text",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            });
+        }
+    }
+
+    private void HandleRefreshAuditClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        RefreshAuditLogs();
+    }
+
+    private void RefreshAuditLogs()
+    {
+        try
+        {
+            List<AuditLog> standardLogs = _auditService.GetStandardAuditLogs();
+            List<FgaAuditLog> fgaLogs = _auditService.GetFgaAuditLogs();
+
+            List<StandardAuditGridItem> standardRows = standardLogs
+                .OrderByDescending(item => item.ActionTime)
+                .Select(item => new StandardAuditGridItem
+                {
+                    Username = item.Username,
+                    Action = item.ActionName,
+                    Object = item.ObjectName,
+                    Time = item.ActionTime,
+                    ReturnCode = item.ReturnCode,
+                    Status = item.ReturnCode == 0 ? "Success" : "Failed"
+                })
+                .ToList();
+
+            List<FgaAuditGridItem> fgaRows = fgaLogs
+                .OrderByDescending(item => item.ActionTime)
+                .Select(item => new FgaAuditGridItem
+                {
+                    User = item.DbUser,
+                    Object = item.ObjectName,
+                    Policy = item.PolicyName,
+                    Statement = item.StatementType,
+                    Time = item.ActionTime,
+                    SqlText = item.SqlText
+                })
+                .ToList();
+
+            dgvStandardAudit.DataSource = standardRows;
+            dgvFgaAudit.DataSource = fgaRows;
+
+            HighlightStandardAuditRows();
+            HighlightFgaAuditRows();
+
+            UpdateFooterStatus($"Audit: Loaded {standardRows.Count} standard logs and {fgaRows.Count} FGA logs.");
+        }
+        catch (Exception ex)
+        {
+            dgvStandardAudit.DataSource = new List<StandardAuditGridItem>();
+            dgvFgaAudit.DataSource = new List<FgaAuditGridItem>();
+            UpdateFooterStatus("Audit: Load failed.");
+            MessageBox.Show(this, ex.Message, "Audit Log", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void HighlightStandardAuditRows()
+    {
+        foreach (DataGridViewRow row in dgvStandardAudit.Rows)
+        {
+            if (row.DataBoundItem is not StandardAuditGridItem item)
+            {
+                continue;
+            }
+
+            if (item.ReturnCode != 0)
+            {
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+            else
+            {
+                row.DefaultCellStyle.BackColor = dgvStandardAudit.DefaultCellStyle.BackColor;
+                row.DefaultCellStyle.ForeColor = dgvStandardAudit.DefaultCellStyle.ForeColor;
+            }
+        }
+    }
+
+    private void HighlightFgaAuditRows()
+    {
+        foreach (DataGridViewRow row in dgvFgaAudit.Rows)
+        {
+            if (row.DataBoundItem is not FgaAuditGridItem item)
+            {
+                continue;
+            }
+
+            bool suspicious = string.Equals(item.Policy, "FGA_HSBA_INVALID_UPDATE", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(item.Policy, "FGA_HSBA_DV_ILLEGAL_DML", StringComparison.OrdinalIgnoreCase);
+
+            if (suspicious)
+            {
+                row.DefaultCellStyle.BackColor = Color.Moccasin;
+                row.DefaultCellStyle.ForeColor = Color.DarkOrange;
+            }
+            else
+            {
+                row.DefaultCellStyle.BackColor = dgvFgaAudit.DefaultCellStyle.BackColor;
+                row.DefaultCellStyle.ForeColor = dgvFgaAudit.DefaultCellStyle.ForeColor;
+            }
+        }
     }
 
     private void LoadOlsLabelOptions()
@@ -1408,6 +1681,26 @@ public class AdminForm : Form
         }
 
         _createFlowTextBox.Text = string.Join(Environment.NewLine, steps);
+    }
+
+    private sealed class StandardAuditGridItem
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public string Object { get; set; } = string.Empty;
+        public DateTime Time { get; set; }
+        public int ReturnCode { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    private sealed class FgaAuditGridItem
+    {
+        public string User { get; set; } = string.Empty;
+        public string Object { get; set; } = string.Empty;
+        public string Policy { get; set; } = string.Empty;
+        public string Statement { get; set; } = string.Empty;
+        public DateTime Time { get; set; }
+        public string SqlText { get; set; } = string.Empty;
     }
 
 }
