@@ -7,6 +7,12 @@ public partial class PatientForm : BaseMedicalForm
 {
     private readonly UserSession _session;
     private readonly PatientService _patientService;
+    private readonly BindingSource _recordsBindingSource = new();
+    private readonly BindingSource _prescriptionsBindingSource = new();
+    private readonly DateTimePicker _recordsDateFilterPicker = new() { Width = 170, Format = DateTimePickerFormat.Short, ShowCheckBox = true };
+    private readonly DateTimePicker _prescriptionsDateFilterPicker = new() { Width = 170, Format = DateTimePickerFormat.Short, ShowCheckBox = true };
+    private List<MedicalRecord> _allRecords = new();
+    private List<Prescription> _allPrescriptions = new();
     private readonly TextBox _sonhaTextBox = new() { Width = 140 };
     private readonly TextBox _tenduongTextBox = new() { Width = 180 };
     private readonly TextBox _quanhuyenTextBox = new() { Width = 160 };
@@ -58,6 +64,13 @@ public partial class PatientForm : BaseMedicalForm
 
         ConfigureGrid(_recordsGrid);
         ConfigureGrid(_prescriptionsGrid);
+        _recordsGrid.DataSource = _recordsBindingSource;
+        _prescriptionsGrid.DataSource = _prescriptionsBindingSource;
+
+        _recordsDateFilterPicker.Checked = false;
+        _prescriptionsDateFilterPicker.Checked = false;
+        _recordsDateFilterPicker.ValueChanged += (_, _) => ApplyRecordDateFilter();
+        _prescriptionsDateFilterPicker.ValueChanged += (_, _) => ApplyPrescriptionDateFilter();
 
         var saveButton = new Button
         {
@@ -187,8 +200,69 @@ public partial class PatientForm : BaseMedicalForm
             Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 9)
         };
-        tabs.TabPages.Add(new TabPage("Hồ sơ bệnh án") { Controls = { _recordsGrid } });
-        tabs.TabPages.Add(new TabPage("Đơn thuốc") { Controls = { _prescriptionsGrid } });
+
+        var recordsTab = new TabPage("Hồ sơ bệnh án");
+        var recordsTabLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(8, 8, 8, 8)
+        };
+        recordsTabLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+        recordsTabLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        var recordsFilterPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        recordsFilterPanel.Controls.Add(new Label
+        {
+            Text = "Lọc theo ngày điều trị:",
+            AutoSize = true,
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            Margin = new Padding(0, 8, 8, 0)
+        });
+        recordsFilterPanel.Controls.Add(_recordsDateFilterPicker);
+        recordsTabLayout.Controls.Add(recordsFilterPanel, 0, 0);
+        recordsTabLayout.Controls.Add(_recordsGrid, 0, 1);
+        recordsTab.Controls.Add(recordsTabLayout);
+
+        var prescriptionsTab = new TabPage("Đơn thuốc");
+        var prescriptionsTabLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(8, 8, 8, 8)
+        };
+        prescriptionsTabLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+        prescriptionsTabLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        var prescriptionsFilterPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        prescriptionsFilterPanel.Controls.Add(new Label
+        {
+            Text = "Lọc theo ngày điều trị:",
+            AutoSize = true,
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            Margin = new Padding(0, 8, 8, 0)
+        });
+        prescriptionsFilterPanel.Controls.Add(_prescriptionsDateFilterPicker);
+        prescriptionsTabLayout.Controls.Add(prescriptionsFilterPanel, 0, 0);
+        prescriptionsTabLayout.Controls.Add(_prescriptionsGrid, 0, 1);
+        prescriptionsTab.Controls.Add(prescriptionsTabLayout);
+
+        tabs.TabPages.Add(recordsTab);
+        tabs.TabPages.Add(prescriptionsTab);
 
         dataCard.Controls.Add(tabs);
 
@@ -252,8 +326,38 @@ public partial class PatientForm : BaseMedicalForm
         _tiensuGiaDinhTextBox.Text = patient.TIENSUBENHGD;
         _diungTextBox.Text = patient.DIUNGTHUOC;
 
-        _recordsGrid.DataSource = _patientService.GetMyMedicalRecords(_session.PatientId.Value.ToString());
-        _prescriptionsGrid.DataSource = _patientService.GetMyPrescriptions(_session.PatientId.Value.ToString());
+        _allRecords = _patientService.GetMyMedicalRecords(_session.PatientId.Value.ToString());
+        _allPrescriptions = _patientService.GetMyPrescriptions(_session.PatientId.Value.ToString());
+        ApplyRecordDateFilter();
+        ApplyPrescriptionDateFilter();
+    }
+
+    private void ApplyRecordDateFilter()
+    {
+        if (!_recordsDateFilterPicker.Checked)
+        {
+            _recordsBindingSource.DataSource = _allRecords;
+            return;
+        }
+
+        DateTime target = _recordsDateFilterPicker.Value.Date;
+        _recordsBindingSource.DataSource = _allRecords
+            .Where(r => r.NGAY.Date == target)
+            .ToList();
+    }
+
+    private void ApplyPrescriptionDateFilter()
+    {
+        if (!_prescriptionsDateFilterPicker.Checked)
+        {
+            _prescriptionsBindingSource.DataSource = _allPrescriptions;
+            return;
+        }
+
+        DateTime target = _prescriptionsDateFilterPicker.Value.Date;
+        _prescriptionsBindingSource.DataSource = _allPrescriptions
+            .Where(p => p.NGAYDT.Date == target)
+            .ToList();
     }
 
     private void SaveProfile()
