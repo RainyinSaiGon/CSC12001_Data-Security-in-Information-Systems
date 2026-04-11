@@ -7,6 +7,10 @@ public partial class TechnicianForm : BaseMedicalForm
 {
     private readonly UserSession _session;
     private readonly TechnicianService _technicianService;
+    private readonly BindingSource _servicesBindingSource = new();
+    private readonly ComboBox _servicesSearchFieldComboBox = new() { Width = 170, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly TextBox _servicesSearchTextBox = new() { Width = 260 };
+    private List<DiagnosticService> _allServices = new();
     private readonly DataGridView _servicesGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
     private readonly TextBox _recordIdTextBox = new() { Width = 80 };
     private readonly TextBox _serviceTypeTextBox = new() { Width = 180 };
@@ -24,9 +28,28 @@ public partial class TechnicianForm : BaseMedicalForm
 
     private void BuildUi()
     {
-        Text = $"Technician Dashboard - {_session.FullName}";
+        Text = $"Màn hình kỹ thuật viên - {_session.FullName}";
         BackColor = Color.FromArgb(241, 244, 249);
         MinimumSize = new Size(920, 620);
+
+        _recordIdTextBox.PlaceholderText = "Mã hồ sơ";
+        _serviceTypeTextBox.PlaceholderText = "Loại dịch vụ";
+        _resultTextBox.PlaceholderText = "Nhập kết quả/chẩn đoán cận lâm sàng";
+        _serviceDatePicker.Format = DateTimePickerFormat.Short;
+
+        _servicesSearchTextBox.PlaceholderText = "Tìm kiếm trong danh sách dịch vụ";
+        _servicesSearchTextBox.TextChanged += (_, _) => ApplyServicesFilter();
+        _servicesSearchFieldComboBox.Items.AddRange([
+            "Mã hồ sơ",
+            "Loại dịch vụ",
+            "Ngày dịch vụ",
+            "Kết quả",
+            "Mã kỹ thuật viên"
+        ]);
+        _servicesSearchFieldComboBox.SelectedIndex = 0;
+        _servicesSearchFieldComboBox.SelectedIndexChanged += (_, _) => ApplyServicesFilter();
+
+        _servicesGrid.DataSource = _servicesBindingSource;
 
         var scrollHost = new Panel
         {
@@ -38,9 +61,7 @@ public partial class TechnicianForm : BaseMedicalForm
 
         var root = new TableLayoutPanel
         {
-            Dock = DockStyle.Top,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
             Padding = new Padding(12, 12, 12, 56),
@@ -80,7 +101,7 @@ public partial class TechnicianForm : BaseMedicalForm
 
         headerTextPanel.Controls.Add(new Label
         {
-            Text = "Technician Dashboard",
+            Text = "Bảng kỹ thuật viên",
             AutoSize = true,
             Font = new Font("Segoe UI", 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42),
@@ -89,7 +110,7 @@ public partial class TechnicianForm : BaseMedicalForm
 
         headerTextPanel.Controls.Add(new Label
         {
-            Text = $"Welcome back, {_session.FullName}. Manage assigned services and update results",
+            Text = $"Xin chào, {_session.FullName}. Quản lý dịch vụ được phân công và cập nhật kết quả",
             AutoSize = true,
             Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139),
@@ -98,7 +119,7 @@ public partial class TechnicianForm : BaseMedicalForm
 
         var notificationsButton = new Button
         {
-            Text = "Notifications",
+            Text = "Thông báo",
             AutoSize = true,
             Anchor = AnchorStyles.Top | AnchorStyles.Right,
             FlatStyle = FlatStyle.Flat,
@@ -137,35 +158,33 @@ public partial class TechnicianForm : BaseMedicalForm
         actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
         actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
 
-        actionLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
-        actionLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
-        actionLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
+        actionLayout.Controls.Add(new Label { Text = "Mã hồ sơ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
+        actionLayout.Controls.Add(new Label { Text = "Loại dịch vụ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
+        actionLayout.Controls.Add(new Label { Text = "Ngày", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
         actionLayout.Controls.Add(_recordIdTextBox, 0, 1);
         actionLayout.Controls.Add(_serviceTypeTextBox, 1, 1);
         actionLayout.Controls.Add(_serviceDatePicker, 2, 1);
-        actionLayout.Controls.Add(new Label { Text = "Result", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
+        actionLayout.Controls.Add(new Label { Text = "Kết quả", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
 
         _recordIdTextBox.Dock = DockStyle.Fill;
         _recordIdTextBox.Margin = new Padding(0, 0, 10, 0);
-        _recordIdTextBox.PlaceholderText = "Enter record ID";
         _serviceTypeTextBox.Dock = DockStyle.Fill;
         _serviceTypeTextBox.Margin = new Padding(0, 0, 10, 0);
-        _serviceTypeTextBox.PlaceholderText = "Enter service type";
         _serviceDatePicker.Dock = DockStyle.Fill;
         _serviceDatePicker.Margin = new Padding(0, 0, 10, 0);
         _resultTextBox.Dock = DockStyle.Fill;
         _resultTextBox.Margin = new Padding(0, 0, 10, 0);
-        _resultTextBox.PlaceholderText = "Enter test result or observations";
 
         var saveButton = new Button
         {
-            Text = "Save result",
+            Text = "Lưu kết quả",
             Dock = DockStyle.Fill,
-            MinimumSize = new Size(0, 36),
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            TextAlign = ContentAlignment.MiddleCenter,
+            Padding = new Padding(0)
         };
         saveButton.FlatAppearance.BorderSize = 0;
         saveButton.Click += (_, _) => SaveResult();
@@ -189,16 +208,17 @@ public partial class TechnicianForm : BaseMedicalForm
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3,
+            RowCount = 4,
             Margin = Padding.Empty
         };
         gridCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26));
         gridCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
+        gridCardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
         gridCardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         gridCardLayout.Controls.Add(new Label
         {
-            Text = "Assigned Services",
+            Text = "Dịch vụ được phân công",
             AutoSize = true,
             Font = new Font("Segoe UI", 10, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42)
@@ -206,11 +226,30 @@ public partial class TechnicianForm : BaseMedicalForm
 
         gridCardLayout.Controls.Add(new Label
         {
-            Text = "View and manage all services assigned to you",
+            Text = "Theo dõi và cập nhật các dịch vụ bạn phụ trách",
             AutoSize = true,
             Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139)
         }, 0, 1);
+
+        var searchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = new Padding(0, 0, 0, 8),
+            Padding = Padding.Empty,
+            AutoSize = true
+        };
+        searchPanel.Controls.Add(new Label
+        {
+            Text = "Tìm kiếm:",
+            AutoSize = true,
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            Margin = new Padding(0, 8, 8, 0)
+        });
+        searchPanel.Controls.Add(_servicesSearchFieldComboBox);
+        searchPanel.Controls.Add(_servicesSearchTextBox);
 
         _servicesGrid.BackgroundColor = Color.White;
         _servicesGrid.BorderStyle = BorderStyle.None;
@@ -222,7 +261,8 @@ public partial class TechnicianForm : BaseMedicalForm
         _servicesGrid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
         _servicesGrid.RowTemplate.Height = 26;
 
-        gridCardLayout.Controls.Add(_servicesGrid, 0, 2);
+        gridCardLayout.Controls.Add(searchPanel, 0, 2);
+        gridCardLayout.Controls.Add(_servicesGrid, 0, 3);
         gridCard.Controls.Add(gridCardLayout);
 
         root.Controls.Add(headerCard, 0, 0);
@@ -240,7 +280,33 @@ public partial class TechnicianForm : BaseMedicalForm
             return;
         }
 
-        _servicesGrid.DataSource = _technicianService.GetAssignedServices(_session.StaffId.Value.ToString());
+        _allServices = _technicianService.GetAssignedServices(_session.StaffId.Value.ToString());
+        ApplyServicesFilter();
+    }
+
+    private void ApplyServicesFilter()
+    {
+        string keyword = _servicesSearchTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            _servicesBindingSource.DataSource = _allServices;
+            return;
+        }
+
+        string selectedField = _servicesSearchFieldComboBox.SelectedItem?.ToString() ?? "Mã hồ sơ";
+
+        _servicesBindingSource.DataSource = _allServices
+            .Where(s => selectedField switch
+            {
+                "Mã hồ sơ" => s.MAHSBA.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                "Loại dịch vụ" => s.LOAIDV.Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                "Ngày dịch vụ" => s.NGAYDV.ToString("dd/MM/yyyy HH:mm").Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                "Kết quả" => s.KETQUA.Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                "Mã kỹ thuật viên" => s.MAKTV.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase),
+                _ => true
+            })
+            .ToList();
     }
 
     private void SaveResult()
@@ -257,7 +323,7 @@ public partial class TechnicianForm : BaseMedicalForm
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Technician", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Kỹ thuật viên", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
