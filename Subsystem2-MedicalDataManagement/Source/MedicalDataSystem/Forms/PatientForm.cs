@@ -29,7 +29,7 @@ public partial class PatientForm : BaseMedicalForm
 
     private void BuildUi()
     {
-        Text = $"Patient Portal - {_session.FullName}";
+        Text = $"Cổng thông tin bệnh nhân - {_session.FullName}";
         BackColor = Color.FromArgb(241, 244, 249);
         MinimumSize = new Size(980, 680);
 
@@ -48,28 +48,38 @@ public partial class PatientForm : BaseMedicalForm
         _diungTextBox.Dock = DockStyle.Fill;
         _diungTextBox.PlaceholderText = "Dị ứng thuốc";
 
+        ConfigureReadOnlyPersonalField(_sonhaTextBox);
+        ConfigureReadOnlyPersonalField(_tenduongTextBox);
+        ConfigureReadOnlyPersonalField(_quanhuyenTextBox);
+        ConfigureReadOnlyPersonalField(_tinhtpTextBox);
+        ConfigureReadOnlyPersonalField(_tiensuTextBox);
+        ConfigureReadOnlyPersonalField(_tiensuGiaDinhTextBox);
+        ConfigureReadOnlyPersonalField(_diungTextBox);
+
         ConfigureGrid(_recordsGrid);
         ConfigureGrid(_prescriptionsGrid);
 
         var saveButton = new Button
         {
-            Text = "Save profile",
+            Text = "Lưu hồ sơ",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            Padding = Padding.Empty
         };
         saveButton.FlatAppearance.BorderSize = 0;
         saveButton.Click += (_, _) => SaveProfile();
 
         var notificationsButton = new Button
         {
-            Text = "Notifications",
+            Text = "Thông báo",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(248, 250, 252),
-            Font = new Font("Segoe UI", 8f)
+            Font = new Font("Segoe UI", 8),
+            Padding = Padding.Empty
         };
         notificationsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
@@ -121,6 +131,7 @@ public partial class PatientForm : BaseMedicalForm
         }
         profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
         profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
         profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
@@ -128,25 +139,36 @@ public partial class PatientForm : BaseMedicalForm
         profileLayout.Controls.Add(_identityLabel, 0, 0);
         profileLayout.SetColumnSpan(_identityLabel, 6);
 
-        profileLayout.Controls.Add(new Label { Text = "Số nhà", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 1);
-        profileLayout.Controls.Add(new Label { Text = "Tên đường", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 1);
-        profileLayout.Controls.Add(new Label { Text = "Quận/Huyện", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 1);
-        profileLayout.Controls.Add(new Label { Text = "Tỉnh/TP", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 1);
-        profileLayout.Controls.Add(new Label { Text = "Tiền sử bệnh", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 1);
+        var editHintLabel = new Label
+        {
+            Text = "(Nhấp đúp vào ô để chỉnh sửa)",
+            AutoSize = true,
+            Font = new Font("Segoe UI", 7.5f, FontStyle.Italic),
+            ForeColor = Color.FromArgb(100, 116, 139),
+            Margin = new Padding(0, 0, 0, 0)
+        };
+        profileLayout.Controls.Add(editHintLabel, 0, 1);
+        profileLayout.SetColumnSpan(editHintLabel, 6);
 
-        profileLayout.Controls.Add(_sonhaTextBox, 0, 2);
-        profileLayout.Controls.Add(_tenduongTextBox, 1, 2);
-        profileLayout.Controls.Add(_quanhuyenTextBox, 2, 2);
-        profileLayout.Controls.Add(_tinhtpTextBox, 3, 2);
-        profileLayout.Controls.Add(_tiensuTextBox, 4, 2);
+        profileLayout.Controls.Add(new Label { Text = "Số nhà", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
+        profileLayout.Controls.Add(new Label { Text = "Tên đường", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
+        profileLayout.Controls.Add(new Label { Text = "Quận/Huyện", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 2);
+        profileLayout.Controls.Add(new Label { Text = "Tỉnh/TP", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 2);
+        profileLayout.Controls.Add(new Label { Text = "Tiền sử bệnh", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 2);
 
-        profileLayout.Controls.Add(new Label { Text = "Tiền sử bệnh GD", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 3);
-        profileLayout.Controls.Add(new Label { Text = "Dị ứng thuốc", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 3);
+        profileLayout.Controls.Add(_sonhaTextBox, 0, 3);
+        profileLayout.Controls.Add(_tenduongTextBox, 1, 3);
+        profileLayout.Controls.Add(_quanhuyenTextBox, 2, 3);
+        profileLayout.Controls.Add(_tinhtpTextBox, 3, 3);
+        profileLayout.Controls.Add(_tiensuTextBox, 4, 3);
 
-        profileLayout.Controls.Add(_tiensuGiaDinhTextBox, 0, 4);
-        profileLayout.Controls.Add(_diungTextBox, 1, 4);
-        profileLayout.Controls.Add(saveButton, 4, 4);
-        profileLayout.Controls.Add(notificationsButton, 5, 4);
+        profileLayout.Controls.Add(new Label { Text = "Tiền sử bệnh GD", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 4);
+        profileLayout.Controls.Add(new Label { Text = "Dị ứng thuốc", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 4);
+
+        profileLayout.Controls.Add(_tiensuGiaDinhTextBox, 0, 5);
+        profileLayout.Controls.Add(_diungTextBox, 1, 5);
+        profileLayout.Controls.Add(saveButton, 4, 5);
+        profileLayout.Controls.Add(notificationsButton, 5, 5);
 
         profileCard.Controls.Add(profileLayout);
 
@@ -165,8 +187,8 @@ public partial class PatientForm : BaseMedicalForm
             Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 9)
         };
-        tabs.TabPages.Add(new TabPage("Medical Records") { Controls = { _recordsGrid } });
-        tabs.TabPages.Add(new TabPage("Prescriptions") { Controls = { _prescriptionsGrid } });
+        tabs.TabPages.Add(new TabPage("Hồ sơ bệnh án") { Controls = { _recordsGrid } });
+        tabs.TabPages.Add(new TabPage("Đơn thuốc") { Controls = { _prescriptionsGrid } });
 
         dataCard.Controls.Add(tabs);
 
@@ -190,6 +212,24 @@ public partial class PatientForm : BaseMedicalForm
         grid.RowTemplate.Height = 26;
     }
 
+    private static void ConfigureReadOnlyPersonalField(TextBox textBox)
+    {
+        textBox.ReadOnly = true;
+        textBox.BackColor = Color.FromArgb(242, 244, 248);
+        textBox.DoubleClick += (_, _) =>
+        {
+            textBox.ReadOnly = false;
+            textBox.BackColor = Color.White;
+            textBox.Focus();
+            textBox.SelectAll();
+        };
+        textBox.Leave += (_, _) =>
+        {
+            textBox.ReadOnly = true;
+            textBox.BackColor = Color.FromArgb(242, 244, 248);
+        };
+    }
+
     private void LoadData()
     {
         if (_session.PatientId is null)
@@ -203,7 +243,7 @@ public partial class PatientForm : BaseMedicalForm
             return;
         }
 
-        _identityLabel.Text = $"Patient #{patient.MABN} - {patient.TENBN} - {patient.CCCD}";
+        _identityLabel.Text = $"Bệnh nhân #{patient.MABN} - {patient.TENBN} - {patient.CCCD}";
         _sonhaTextBox.Text = patient.SONHA;
         _tenduongTextBox.Text = patient.TENDUONG;
         _quanhuyenTextBox.Text = patient.QUANHUYEN;
@@ -238,12 +278,12 @@ public partial class PatientForm : BaseMedicalForm
         try
         {
             _patientService.UpdatePatientInfo(patient);
-            MessageBox.Show(this, "Profile updated.", "Patient", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Đã cập nhật hồ sơ.", "Bệnh nhân", MessageBoxButtons.OK, MessageBoxIcon.Information);
             LoadData();
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Patient", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Bệnh nhân", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
