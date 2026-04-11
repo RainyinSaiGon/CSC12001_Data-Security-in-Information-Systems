@@ -7,6 +7,9 @@ public partial class CoordinatorForm : BaseMedicalForm
 {
     private readonly UserSession _session;
     private readonly CoordinatorService _coordinatorService;
+    private readonly BindingSource _patientsBindingSource = new();
+    private readonly TextBox _cccdSearchTextBox = new() { Width = 220 };
+    private List<Patient> _allPatients = new();
     private readonly DataGridView _patientsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
     private readonly ComboBox _doctorComboBox = new() { Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly ComboBox _technicianComboBox = new() { Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
@@ -33,13 +36,13 @@ public partial class CoordinatorForm : BaseMedicalForm
 
     private void BuildUi()
     {
-        Text = $"Coordinator Dashboard - {_session.FullName}";
+        Text = $"Màn hình điều phối - {_session.FullName}";
         BackColor = Color.FromArgb(241, 244, 249);
         MinimumSize = new Size(1040, 680);
 
         var notificationsButton = new Button
         {
-            Text = "Notifications",
+            Text = "Thông báo",
             AutoSize = true,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(248, 250, 252),
@@ -51,7 +54,7 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         var addButton = new Button
         {
-            Text = "Add patient",
+            Text = "Thêm bệnh nhân",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
@@ -63,7 +66,7 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         var refreshButton = new Button
         {
-            Text = "Refresh",
+            Text = "Làm mới",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(225, 233, 251),
@@ -75,7 +78,7 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         var assignDoctorButton = new Button
         {
-            Text = "Create record + assign doctor",
+            Text = "Tạo hồ sơ + phân bác sĩ",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
@@ -87,7 +90,7 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         var assignTechnicianButton = new Button
         {
-            Text = "Assign technician",
+            Text = "Phân kỹ thuật viên",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
@@ -98,27 +101,39 @@ public partial class CoordinatorForm : BaseMedicalForm
         assignTechnicianButton.Click += (_, _) => AssignTechnician();
 
         _nameTextBox.Dock = DockStyle.Fill;
-        _nameTextBox.PlaceholderText = "Enter full name";
+        _nameTextBox.PlaceholderText = "Nhập họ tên";
         _cccdTextBox.Dock = DockStyle.Fill;
-        _cccdTextBox.PlaceholderText = "Enter CCCD";
+        _cccdTextBox.PlaceholderText = "Nhập CCCD";
         _addressTextBox.Dock = DockStyle.Fill;
-        _addressTextBox.PlaceholderText = "House, Street, District, City";
+        _addressTextBox.PlaceholderText = "Số nhà, Đường, Quận/Huyện, Tỉnh/TP";
         _medicalHistoryTextBox.Dock = DockStyle.Fill;
-        _medicalHistoryTextBox.PlaceholderText = "Medical history";
+        _medicalHistoryTextBox.PlaceholderText = "Tiền sử bệnh";
         _familyHistoryTextBox.Dock = DockStyle.Fill;
-        _familyHistoryTextBox.PlaceholderText = "Family medical history";
+        _familyHistoryTextBox.PlaceholderText = "Tiền sử bệnh gia đình";
         _allergyTextBox.Dock = DockStyle.Fill;
-        _allergyTextBox.PlaceholderText = "Drug allergy";
+        _allergyTextBox.PlaceholderText = "Dị ứng thuốc";
         _patientIdTextBox.Dock = DockStyle.Fill;
-        _patientIdTextBox.PlaceholderText = "Patient ID";
+        _patientIdTextBox.PlaceholderText = "Mã bệnh nhân";
         _recordIdTextBox.Dock = DockStyle.Fill;
-        _recordIdTextBox.PlaceholderText = "Record ID";
+        _recordIdTextBox.PlaceholderText = "Mã hồ sơ";
         _serviceTypeTextBox.Dock = DockStyle.Fill;
-        _serviceTypeTextBox.PlaceholderText = "Service type";
+        _serviceTypeTextBox.PlaceholderText = "Loại dịch vụ";
         _doctorComboBox.Dock = DockStyle.Fill;
+        _doctorComboBox.DropDownStyle = ComboBoxStyle.DropDown;
+        _doctorComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+        _doctorComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
         _technicianComboBox.Dock = DockStyle.Fill;
+        _technicianComboBox.DropDownStyle = ComboBoxStyle.DropDown;
+        _technicianComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+        _technicianComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
         _serviceDatePicker.Dock = DockStyle.Fill;
         _serviceDatePicker.Format = DateTimePickerFormat.Short;
+
+        _cccdSearchTextBox.Dock = DockStyle.Left;
+        _cccdSearchTextBox.PlaceholderText = "Nhập CCCD để lọc";
+        _cccdSearchTextBox.TextChanged += (_, _) => ApplyPatientFilter();
+
+        _patientsGrid.DataSource = _patientsBindingSource;
 
         _patientsGrid.BackgroundColor = Color.White;
         _patientsGrid.BorderStyle = BorderStyle.None;
@@ -181,7 +196,7 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         headerTextPanel.Controls.Add(new Label
         {
-            Text = "Coordinator Dashboard",
+            Text = "Bảng điều phối",
             AutoSize = true,
             Font = new Font("Segoe UI", 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42),
@@ -190,7 +205,7 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         headerTextPanel.Controls.Add(new Label
         {
-            Text = "Manage patient intake and staff assignments",
+            Text = "Quản lý tiếp nhận bệnh nhân và phân công nhân sự",
             AutoSize = true,
             Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139),
@@ -227,17 +242,17 @@ public partial class CoordinatorForm : BaseMedicalForm
         intakeLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
         intakeLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
-        intakeLayout.Controls.Add(new Label { Text = "Name", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
+        intakeLayout.Controls.Add(new Label { Text = "Họ tên", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
         intakeLayout.Controls.Add(new Label { Text = "CCCD", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
-        intakeLayout.Controls.Add(new Label { Text = "Address", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
-        intakeLayout.Controls.Add(new Label { Text = "Medical history", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
+        intakeLayout.Controls.Add(new Label { Text = "Địa chỉ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
+        intakeLayout.Controls.Add(new Label { Text = "Tiền sử bệnh", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
         intakeLayout.Controls.Add(_nameTextBox, 0, 1);
         intakeLayout.Controls.Add(_cccdTextBox, 1, 1);
         intakeLayout.Controls.Add(_addressTextBox, 2, 1);
         intakeLayout.Controls.Add(_medicalHistoryTextBox, 3, 1);
 
-        intakeLayout.Controls.Add(new Label { Text = "Family history", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
-        intakeLayout.Controls.Add(new Label { Text = "Allergy", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
+        intakeLayout.Controls.Add(new Label { Text = "Tiền sử bệnh GĐ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
+        intakeLayout.Controls.Add(new Label { Text = "Dị ứng", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
         intakeLayout.Controls.Add(_familyHistoryTextBox, 0, 3);
         intakeLayout.Controls.Add(_allergyTextBox, 1, 3);
         intakeLayout.Controls.Add(addButton, 2, 3);
@@ -259,16 +274,17 @@ public partial class CoordinatorForm : BaseMedicalForm
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3,
+            RowCount = 4,
             Margin = Padding.Empty
         };
         listLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
         listLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
+        listLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         listLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         listLayout.Controls.Add(new Label
         {
-            Text = "Patient List",
+            Text = "Danh sách bệnh nhân",
             AutoSize = true,
             Font = new Font("Segoe UI", 10, FontStyle.Bold),
             ForeColor = Color.FromArgb(15, 23, 42)
@@ -276,13 +292,31 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         listLayout.Controls.Add(new Label
         {
-            Text = "View and manage all registered patients",
+            Text = "Xem và quản lý bệnh nhân theo CCCD",
             AutoSize = true,
             Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(100, 116, 139)
         }, 0, 1);
 
-        listLayout.Controls.Add(_patientsGrid, 0, 2);
+        var cccdSearchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        cccdSearchPanel.Controls.Add(new Label
+        {
+            Text = "Tìm CCCD:",
+            AutoSize = true,
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            Margin = new Padding(0, 8, 8, 0)
+        });
+        cccdSearchPanel.Controls.Add(_cccdSearchTextBox);
+        listLayout.Controls.Add(cccdSearchPanel, 0, 2);
+
+        listLayout.Controls.Add(_patientsGrid, 0, 3);
         listCard.Controls.Add(listLayout);
 
         var assignmentCard = new Panel
@@ -313,18 +347,18 @@ public partial class CoordinatorForm : BaseMedicalForm
         assignmentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
         assignmentLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
-        assignmentLayout.Controls.Add(new Label { Text = "Patient ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
-        assignmentLayout.Controls.Add(new Label { Text = "Doctor", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
-        assignmentLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
-        assignmentLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Mã bệnh nhân", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Bác sĩ (gõ để gợi ý)", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Mã hồ sơ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
+        assignmentLayout.Controls.Add(new Label { Text = "Loại dịch vụ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 0);
         assignmentLayout.Controls.Add(_patientIdTextBox, 0, 1);
         assignmentLayout.Controls.Add(_doctorComboBox, 1, 1);
         assignmentLayout.Controls.Add(_recordIdTextBox, 3, 1);
         assignmentLayout.Controls.Add(_serviceTypeTextBox, 4, 1);
         assignmentLayout.Controls.Add(assignDoctorButton, 5, 1);
 
-        assignmentLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
-        assignmentLayout.Controls.Add(new Label { Text = "Technician", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
+        assignmentLayout.Controls.Add(new Label { Text = "Ngày", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
+        assignmentLayout.Controls.Add(new Label { Text = "KTV (gõ để gợi ý)", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
         assignmentLayout.Controls.Add(_serviceDatePicker, 0, 3);
         assignmentLayout.Controls.Add(_technicianComboBox, 1, 3);
         assignmentLayout.Controls.Add(assignTechnicianButton, 5, 3);
@@ -353,7 +387,23 @@ public partial class CoordinatorForm : BaseMedicalForm
 
     private void RefreshPatients()
     {
-        _patientsGrid.DataSource = _coordinatorService.GetAllPatients();
+        _allPatients = _coordinatorService.GetAllPatients();
+        ApplyPatientFilter();
+    }
+
+    private void ApplyPatientFilter()
+    {
+        string keyword = _cccdSearchTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            _patientsBindingSource.DataSource = _allPatients;
+            return;
+        }
+
+        _patientsBindingSource.DataSource = _allPatients
+            .Where(p => (p.CCCD ?? string.Empty).Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
     private void AddPatient()
@@ -381,7 +431,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -392,11 +442,11 @@ public partial class CoordinatorForm : BaseMedicalForm
             int patientId = int.Parse(_patientIdTextBox.Text);
             int doctorId = Convert.ToInt32(_doctorComboBox.SelectedValue);
             _coordinatorService.CreateMedicalRecord(patientId, doctorId, string.Empty);
-            MessageBox.Show(this, "Medical record created and assigned.", "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Đã tạo hồ sơ và phân công bác sĩ.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -407,11 +457,11 @@ public partial class CoordinatorForm : BaseMedicalForm
             int recordId = int.Parse(_recordIdTextBox.Text);
             int technicianId = Convert.ToInt32(_technicianComboBox.SelectedValue);
             _coordinatorService.AssignTechnician(recordId, _serviceTypeTextBox.Text.Trim(), _serviceDatePicker.Value, technicianId);
-            MessageBox.Show(this, "Technician assigned.", "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Đã phân công kỹ thuật viên.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
