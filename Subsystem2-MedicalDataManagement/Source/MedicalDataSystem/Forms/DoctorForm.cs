@@ -7,6 +7,12 @@ public partial class DoctorForm : BaseMedicalForm
 {
     private readonly UserSession _session;
     private readonly DoctorService _doctorService;
+    private readonly BindingSource _patientsBindingSource = new();
+    private readonly BindingSource _recordsBindingSource = new();
+    private readonly TextBox _patientCccdSearchTextBox = new() { Width = 220 };
+    private readonly TextBox _recordMabnSearchTextBox = new() { Width = 220 };
+    private List<Patient> _allPatients = new();
+    private List<MedicalRecord> _allRecords = new();
     private readonly DataGridView _patientsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
     private readonly DataGridView _recordsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
     private readonly TextBox _recordIdTextBox = new() { Width = 80 };
@@ -30,32 +36,40 @@ public partial class DoctorForm : BaseMedicalForm
 
     private void BuildUi()
     {
-        Text = $"Doctor Dashboard - {_session.FullName}";
+        Text = $"Bảng bác sĩ - {_session.FullName}";
         BackColor = Color.FromArgb(241, 244, 249);
         MinimumSize = new Size(1040, 700);
 
         _recordIdTextBox.Dock = DockStyle.Fill;
-        _recordIdTextBox.PlaceholderText = "Record ID";
+        _recordIdTextBox.PlaceholderText = "Mã hồ sơ";
         _diagnosisTextBox.Dock = DockStyle.Fill;
-        _diagnosisTextBox.PlaceholderText = "Diagnosis";
+        _diagnosisTextBox.PlaceholderText = "Chẩn đoán";
         _treatmentTextBox.Dock = DockStyle.Fill;
-        _treatmentTextBox.PlaceholderText = "Treatment plan";
+        _treatmentTextBox.PlaceholderText = "Phác đồ điều trị";
         _conclusionTextBox.Dock = DockStyle.Fill;
-        _conclusionTextBox.PlaceholderText = "Conclusion";
+        _conclusionTextBox.PlaceholderText = "Kết luận";
         _serviceTypeTextBox.Dock = DockStyle.Fill;
-        _serviceTypeTextBox.PlaceholderText = "Service type";
+        _serviceTypeTextBox.PlaceholderText = "Loại dịch vụ";
         _serviceDatePicker.Dock = DockStyle.Fill;
         _serviceDatePicker.Format = DateTimePickerFormat.Short;
         _prescriptionNameTextBox.Dock = DockStyle.Fill;
-        _prescriptionNameTextBox.PlaceholderText = "Drug name";
+        _prescriptionNameTextBox.PlaceholderText = "Tên thuốc";
         _prescriptionDoseTextBox.Dock = DockStyle.Fill;
-        _prescriptionDoseTextBox.PlaceholderText = "Dose instructions";
+        _prescriptionDoseTextBox.PlaceholderText = "Liều dùng";
         _prescriptionDatePicker.Dock = DockStyle.Fill;
         _prescriptionDatePicker.Format = DateTimePickerFormat.Short;
 
+        _patientCccdSearchTextBox.PlaceholderText = "Tìm theo CCCD";
+        _patientCccdSearchTextBox.TextChanged += (_, _) => ApplyPatientFilter();
+        _recordMabnSearchTextBox.PlaceholderText = "Tìm theo MABN";
+        _recordMabnSearchTextBox.TextChanged += (_, _) => ApplyRecordFilter();
+
+        _patientsGrid.DataSource = _patientsBindingSource;
+        _recordsGrid.DataSource = _recordsBindingSource;
+
         var updateRecordButton = new Button
         {
-            Text = "Update record",
+            Text = "Cập nhật hồ sơ",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
@@ -67,7 +81,7 @@ public partial class DoctorForm : BaseMedicalForm
 
         var addServiceButton = new Button
         {
-            Text = "Order service",
+            Text = "Chỉ định dịch vụ",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
@@ -79,7 +93,7 @@ public partial class DoctorForm : BaseMedicalForm
 
         var savePrescriptionButton = new Button
         {
-            Text = "Save prescription",
+            Text = "Lưu toa thuốc",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(37, 99, 235),
@@ -91,7 +105,7 @@ public partial class DoctorForm : BaseMedicalForm
 
         var notificationsButton = new Button
         {
-            Text = "Notifications",
+            Text = "Thông báo",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(248, 250, 252),
@@ -182,14 +196,16 @@ public partial class DoctorForm : BaseMedicalForm
         actionCard.Controls.Add(actionLayout);
 
         var patientsCard = CreateGridCard(
-            "Patient List",
-            "View all patients under your care",
+            "Danh sách bệnh nhân",
+            "Tìm bệnh nhân theo CCCD",
+            _patientCccdSearchTextBox,
             _patientsGrid,
             174);
 
         var recordsCard = CreateGridCard(
-            "Medical Records",
-            "View and manage medical examination records",
+            "Hồ sơ bệnh án",
+            "Tìm hồ sơ theo MABN",
+            _recordMabnSearchTextBox,
             _recordsGrid,
             174);
 
@@ -214,7 +230,7 @@ public partial class DoctorForm : BaseMedicalForm
         grid.RowTemplate.Height = 26;
     }
 
-    private static Panel CreateGridCard(string title, string subtitle, DataGridView grid, int height)
+    private static Panel CreateGridCard(string title, string subtitle, TextBox searchBox, DataGridView grid, int height)
     {
         var card = new Panel
         {
@@ -230,11 +246,12 @@ public partial class DoctorForm : BaseMedicalForm
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3,
+            RowCount = 4,
             Margin = Padding.Empty
         };
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         layout.Controls.Add(new Label
@@ -253,7 +270,25 @@ public partial class DoctorForm : BaseMedicalForm
             ForeColor = Color.FromArgb(100, 116, 139)
         }, 0, 1);
 
-        layout.Controls.Add(grid, 0, 2);
+        var searchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        searchPanel.Controls.Add(new Label
+        {
+            Text = "Tìm kiếm:",
+            AutoSize = true,
+            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+            Margin = new Padding(0, 8, 8, 0)
+        });
+        searchPanel.Controls.Add(searchBox);
+        layout.Controls.Add(searchPanel, 0, 2);
+
+        layout.Controls.Add(grid, 0, 3);
         card.Controls.Add(layout);
 
         return card;
@@ -267,8 +302,40 @@ public partial class DoctorForm : BaseMedicalForm
         }
 
         string doctorId = _session.StaffId.Value.ToString();
-        _patientsGrid.DataSource = _doctorService.GetAssignedPatients(doctorId);
-        _recordsGrid.DataSource = _doctorService.GetAssignedMedicalRecords(doctorId);
+        _allPatients = _doctorService.GetAssignedPatients(doctorId);
+        _allRecords = _doctorService.GetAssignedMedicalRecords(doctorId);
+        ApplyPatientFilter();
+        ApplyRecordFilter();
+    }
+
+    private void ApplyPatientFilter()
+    {
+        string keyword = _patientCccdSearchTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            _patientsBindingSource.DataSource = _allPatients;
+            return;
+        }
+
+        _patientsBindingSource.DataSource = _allPatients
+            .Where(p => (p.CCCD ?? string.Empty).Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ApplyRecordFilter()
+    {
+        string keyword = _recordMabnSearchTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            _recordsBindingSource.DataSource = _allRecords;
+            return;
+        }
+
+        _recordsBindingSource.DataSource = _allRecords
+            .Where(r => r.MABN.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
     private void UpdateRecord()
@@ -288,7 +355,7 @@ public partial class DoctorForm : BaseMedicalForm
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Doctor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -308,7 +375,7 @@ public partial class DoctorForm : BaseMedicalForm
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Doctor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -325,11 +392,11 @@ public partial class DoctorForm : BaseMedicalForm
             };
 
             _doctorService.UpdatePrescription(prescription);
-            MessageBox.Show(this, "Prescription saved.", "Doctor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Đã lưu toa thuốc.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Doctor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
