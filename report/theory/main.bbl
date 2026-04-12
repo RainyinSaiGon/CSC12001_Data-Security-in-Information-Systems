@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{ref3}
 {Microsoft Security}.
@@ -7,6 +7,11 @@
 \newblock
   \url{https://www.microsoft.com/en-us/security/blog/2019/08/15/one-simple-action-you-can-take-to-prevent-99-9-percent-of-attacks/},
   2019.
+
+\bibitem{ref1}
+David Kim and Michael~G. Solomon.
+\newblock {\em Fundamentals of Information Systems Security}.
+\newblock Jones \& Bartlett Learning, Burlington, MA, 4th edition, 2018.
 
 \bibitem{kim2018fundamentals}
 David Kim and Michael~G. Solomon.
@@ -38,5 +43,555 @@ David Kim and Michael~G. Solomon.
 \newblock Wannacry ransomware cyber attack.
 \newblock Technical report, National Audit Office, 2017.
 \newblock Public sector cyber incident report.
+
+\bibitem{ref6}
+{The Hill}.
+\newblock Hillicon valley --- apache vulnerability sets off alarm bells.
+\newblock
+  \url{https://thehill.com/policy/technology/overnights/585832-hillicon-valley/},
+  2021.
+
+\bibitem{ref7}
+{The Guardian}.
+\newblock Ddos attack that disrupted internet was largest of its kind in
+  history, experts say.
+\newblock
+  \url{https://www.theguardian.com/technology/2016/oct/26/ddos-attack-dyn-mirai-botnet},
+  2016.
+
+\bibitem{ref8}
+David Kim and Michael~G. Solomon.
+\newblock {\em Fundamentals of Information Systems Security}.
+\newblock Jones \& Bartlett Learning, 4th edition, 2021.
+\newblock Chapter 8: Malicious Software and Attack Vectors.
+
+\bibitem{ref9}
+{Taipei Times}.
+\newblock Vietnamese hacker becomes cyberagent.
+\newblock
+  \url{https://www.taipeitimes.com/News/world/archives/2022/05/26/2003778844},
+  2022.
+
+\bibitem{ref10}
+{Ministry of Science and Technology Vietnam}.
+\newblock Hieu pc: From hacker to cybersecurity expert.
+\newblock
+  \url{https://mst.gov.vn/hieu-pc-tu-mot-hacker-gioi-nhat-the-gioi-den-chuyen-gia-ve-an-ninh-mang-197152090.htm},
+  2021.
+
+\bibitem{ref11}
+{The Guardian}.
+\newblock Lulzsec: what they did, who they were and how they were caught.
+\newblock
+  \url{https://www.theguardian.com/technology/2013/may/16/lulzsec-hacking-fbi-jail},
+  2013.
+
+\bibitem{ref12}
+{BBC News}.
+\newblock George floyd: Anonymous hackers re-emerge amid us unrest.
+\newblock \url{https://www.bbc.co.uk/news/technology-52879000}, 2020.
+
+\bibitem{ref13}
+{EBSCO Research Starters}.
+\newblock Anonymous.
+\newblock \url{https://www.ebsco.com/research-starters/biography/anonymous},
+  2024.
+
+\bibitem{ref14}
+{Control Engineering}.
+\newblock Throwback attack: An insider releases 265,000 gallons of sewage on
+  the maroochy shire.
+\newblock
+  \url{https://www.controleng.com/throwback-attack-an-insider-releases-265000-gallons-of-sewage-on-the-maroochy-shire},
+  2021.
+
+\bibitem{ref15}
+{EBSCO Research Starters}.
+\newblock Stuxnet.
+\newblock
+  \url{https://www.ebsco.com/research-starters/computer-science/stuxnet}, 2024.
+
+\bibitem{ref16}
+{Dan Tri}.
+\newblock The world's first terrifying digital weapon.
+\newblock
+  \url{https://dantri.com.vn/cong-nghe/stuxnet-vu-khi-ky-thuat-so-dang-so-dau-tien-tren-the-gioi-202409210526244.htm},
+  2024.
+
+\bibitem{ref17}
+{Reuters}.
+\newblock Ex-google engineer convicted of stealing ai secrets for chinese
+  companies.
+\newblock
+  \url{https://www.reuters.com/legal/government/ex-google-engineer-convicted-stealing-ai-secrets-chinese-companies-2026-01-29/},
+  2026.
+
+\bibitem{ref18}
+{VNExpress}.
+\newblock Ex-google engineer convicted of stealing ai secrets for chinese
+  companies.
+\newblock
+  \url{https://e.vnexpress.net/news/tech/tech-news/ex-google-engineer-convicted-of-stealing-ai-secrets-for-chinese-companies-5011854.html},
+  2026.
+
+\bibitem{ref19}
+A.W. Junaid.
+\newblock Mafiaboy’s moment: The 2000 denial-of-service attacks that shook
+  the internet.
+\newblock
+  \url{https://awjunaid.com/cyber-security/mafiaboys-moment-the-2000-denial-of-service-attacks-that-shook-the-internet/},
+  2025.
+
+\bibitem{ref20}
+{Fortinet}.
+\newblock Solarwinds cyber attack: An overview.
+\newblock
+  \url{https://www.fortinet.com/uk/resources/cyberglossary/solarwinds-cyber-attack}.
+
+\bibitem{ref21}
+{TechTarget}.
+\newblock Solarwinds hack explained: Everything you need to know.
+\newblock
+  \url{https://www.techtarget.com/whatis/feature/SolarWinds-hack-explained-Everything-you-need-to-know},
+  2023.
+
+\bibitem{ref22}
+{UK National Cyber Security Centre}.
+\newblock Moveit vulnerability and data extortion incident.
+\newblock \url{https://www.ncsc.gov.uk/information/moveit-vulnerability}, 2023.
+
+\bibitem{ref23}
+{National Audit Office (UK)}.
+\newblock Wannacry ransomware cyber attack.
+\newblock Technical report, National Audit Office, 2017.
+\newblock Public sector cyber incident report.
+
+\bibitem{ref24}
+{Cloudflare}.
+\newblock What is wannacry ransomware?
+\newblock
+  \url{https://www.cloudflare.com/learning/security/ransomware/wannacry-ransomware/}.
+
+\bibitem{oldref1}
+David Kim and Michael~G. Solomon.
+\newblock {\em Fundamentals of Information Systems Security}.
+\newblock Jones \& Bartlett Learning, Burlington, MA, 3rd edition, 2018.
+\newblock Chapter 8: Malicious Software and Attack Vectors.
+
+\bibitem{oldref2}
+{Swiss Cyber Institute}.
+\newblock Top 12 worst computer viruses in history (\& what they taught us
+  about cybersecurity), 2025.
+\newblock Accessed March 22, 2026.
+
+\bibitem{oldref3}
+Mikalai Shershan.
+\newblock Twilio data breach: what happened and how to protect yourself.
+\newblock
+  \url{https://onerep.com/blog/twilio-data-breach-how-to-protect-yourself},
+  2025.
+
+\bibitem{oldref4}
+{Europol}.
+\newblock World’s most dangerous malware emotet disrupted through global
+  action.
+\newblock
+  \url{https://www.europol.europa.eu/media-press/newsroom/news/world%E2%80%99s-most-dangerous-malware-emotet-disrupted-through-global-action},
+  2021.
+
+\bibitem{oldref5}
+{IBM}.
+\newblock What is the log4j vulnerability?
+\newblock \url{https://www.ibm.com/think/topics/log4j}.
+
+\bibitem{oldref6}
+Rebecca~Klar Miller and Chris~Mills Rodrigo.
+\newblock Hillicon valley --- apache vulnerability sets off alarm bells.
+\newblock
+  \url{https://thehill.com/policy/technology/overnights/585832-hillicon-valley/},
+  2021.
+
+\bibitem{oldref7}
+{The Guardian}.
+\newblock Ddos attack that disrupted internet was largest of its kind in
+  history, experts say.
+\newblock
+  \url{https://www.theguardian.com/technology/2016/oct/26/ddos-attack-dyn-mirai-botnet},
+  2016.
+
+\bibitem{oldref8}
+David Kim and Michael~G. Solomon.
+\newblock {\em Fundamentals of Information Systems Security}.
+\newblock Jones \& Bartlett Learning, 4th edition, 2021.
+\newblock Chapter 8: Malicious Software and Attack Vectors.
+
+\bibitem{oldref9}
+{Taipei Times}.
+\newblock Vietnamese hacker becomes cyberagent.
+\newblock
+  \url{https://www.taipeitimes.com/News/world/archives/2022/05/26/2003778844},
+  2022.
+
+\bibitem{oldref10}
+{Ministry of Science and Technology Vietnam}.
+\newblock Hieu pc: From hacker to cybersecurity expert.
+\newblock
+  \url{https://mst.gov.vn/hieu-pc-tu-mot-hacker-gioi-nhat-the-gioi-den-chuyen-gia-ve-an-ninh-mang-197152090.htm},
+  2021.
+
+\bibitem{oldref11}
+{The Guardian}.
+\newblock Lulzsec: what they did, who they were and how they were caught.
+\newblock
+  \url{https://www.theguardian.com/technology/2013/may/16/lulzsec-hacking-fbi-jail},
+  2013.
+
+\bibitem{oldref12}
+{BBC News}.
+\newblock George floyd: Anonymous hackers re-emerge amid us unrest.
+\newblock \url{https://www.bbc.co.uk/news/technology-52879000}, 2020.
+
+\bibitem{oldref13}
+{EBSCO Research Starters}.
+\newblock Anonymous.
+\newblock \url{https://www.ebsco.com/research-starters/biography/anonymous},
+  2024.
+
+\bibitem{oldref14}
+{Control Engineering}.
+\newblock Throwback attack: An insider releases 265,000 gallons of sewage on
+  the maroochy shire.
+\newblock
+  \url{https://www.controleng.com/throwback-attack-an-insider-releases-265000-gallons-of-sewage-on-the-maroochy-shire},
+  2021.
+
+\bibitem{oldref15}
+{EBSCO Research Starters}.
+\newblock Stuxnet.
+\newblock
+  \url{https://www.ebsco.com/research-starters/computer-science/stuxnet}, 2024.
+
+\bibitem{oldref16}
+{Dan Tri}.
+\newblock The world's first terrifying digital weapon.
+\newblock
+  \url{https://dantri.com.vn/cong-nghe/stuxnet-vu-khi-ky-thuat-so-dang-so-dau-tien-tren-the-gioi-202409210526244.htm},
+  2024.
+
+\bibitem{oldref17}
+{Reuters}.
+\newblock Ex-google engineer convicted of stealing ai secrets for chinese
+  companies.
+\newblock
+  \url{https://www.reuters.com/legal/government/ex-google-engineer-convicted-stealing-ai-secrets-chinese-companies-2026-01-29/},
+  2026.
+
+\bibitem{oldref18}
+{VNExpress}.
+\newblock Ex-google engineer convicted of stealing ai secrets for chinese
+  companies.
+\newblock
+  \url{https://e.vnexpress.net/news/tech/tech-news/ex-google-engineer-convicted-of-stealing-ai-secrets-for-chinese-companies-5011854.html},
+  2026.
+
+\bibitem{oldref19}
+A.W. Junaid.
+\newblock Mafiaboy’s moment: The 2000 denial-of-service attacks that shook
+  the internet.
+\newblock
+  \url{https://awjunaid.com/cyber-security/mafiaboys-moment-the-2000-denial-of-service-attacks-that-shook-the-internet/},
+  2025.
+
+\bibitem{oldref20}
+{Fortinet}.
+\newblock Solarwinds cyber attack: An overview.
+\newblock
+  \url{https://www.fortinet.com/uk/resources/cyberglossary/solarwinds-cyber-attack}.
+
+\bibitem{oldref21}
+{TechTarget}.
+\newblock Solarwinds hack explained: Everything you need to know.
+\newblock
+  \url{https://www.techtarget.com/whatis/feature/SolarWinds-hack-explained-Everything-you-need-to-know},
+  2023.
+
+\bibitem{oldref22}
+{UK National Cyber Security Centre}.
+\newblock Moveit vulnerability and data extortion incident.
+\newblock \url{https://www.ncsc.gov.uk/information/moveit-vulnerability}, 2023.
+
+\bibitem{oldref23}
+{National Audit Office (UK)}.
+\newblock Wannacry ransomware cyber attack.
+\newblock Technical report, National Audit Office, 2017.
+\newblock Public sector cyber incident report.
+
+\bibitem{oldref24}
+{Cloudflare}.
+\newblock What is wannacry ransomware?
+\newblock
+  \url{https://www.cloudflare.com/learning/security/ransomware/wannacry-ransomware/}.
+
+\bibitem{oldref25}
+{Federal Bureau of Investigation}.
+\newblock A study on the morris worm.
+\newblock
+  \url{https://www.researchgate.net/publication/337499010_A_study_on_the_Morris_Worm}.
+\newblock Akshay Jajoo; historical analysis of the 1988 incident.
+
+\bibitem{oldref26}
+{Huntress}.
+\newblock Iloveyou malware: Analysis, detection, removal.
+\newblock \url{https://www.huntress.com/threat-library/malware/iloveyou}, 2024.
+
+\bibitem{oldref27}
+{EBSCO Research Starters}.
+\newblock Iloveyou virus attacks computers.
+\newblock
+  \url{https://www.ebsco.com/research-starters/computer-science/iloveyou-virus-attacks-computers}.
+
+\bibitem{oldref28}
+{Computerworld Staff}.
+\newblock ‘love bug’ virus charges reportedly dropped, 2000.
+\newblock Computerworld; accessed February 3, 2026.
+
+\bibitem{oldref29}
+{Respicio \& Co. Law Firm}.
+\newblock The emergence and significance of ra 8792: A comprehensive legal
+  overview.
+\newblock
+  \url{https://www.respicio.ph/dear-attorney/the-emergence-and-significance-of-ra-8792-a-comprehensive-legal-overview},
+  2024.
+\newblock Accessed February 3, 2026.
+
+\bibitem{oldref30}
+{The Record}.
+\newblock Cyberattack on vietnam securities broker disrupts stock markets.
+\newblock
+  \url{https://therecord.media/vietnam-securities-broker-cyberattack-vndirect},
+  2024.
+
+\bibitem{oldref31}
+{Sangfor Technologies}.
+\newblock The top ransomware attacks in 2024.
+\newblock
+  \url{https://www.sangfor.com/blog/cybersecurity/ransomware-attacks-2024-top-ransomware-headlines},
+  2024.
+
+\bibitem{oldref32}
+{Dark Reading}.
+\newblock Ransomware, junk bank accounts: Cyber threats proliferate in vietnam.
+\newblock
+  \url{https://www.darkreading.com/cyber-risk/ransomware-junk-bank-accounts-cyberthreats-proliferates-in-vietnam},
+  2024.
+
+\bibitem{oldref33}
+{The Investor}.
+\newblock Gasoline retailer pvoil hit by ransomware attack.
+\newblock
+  \url{https://theinvestor.vn/gasoline-retailer-pvoil-hit-by-ransomware-attack-d9363.html},
+  2024.
+
+\bibitem{oldref34}
+{Vietbao.vn}.
+\newblock Pvoil was subjected to a data encryption attack, causing system
+  downtime.
+\newblock
+  \url{https://vietbao.vn/en/pvoil-bi-tan-cong-ma-hoa-du-lieu-he-thong-ngung-tre-479453.html},
+  2024.
+
+\bibitem{oldref35}
+{VNCS}.
+\newblock Why can the pvoil system recover quickly after a ransomware attack?
+\newblock
+  \url{https://vncs.vn/en/tin-tuc/detail-why-can-the-pvoil-system-recover-quickly-after-a-ransomware-attack-341},
+  2024.
+
+\bibitem{oldref36}
+{Trend Micro}.
+\newblock Ransomware spotlight: Blackcat.
+\newblock
+  \url{https://www.trendmicro.com/vinfo/us/security/news/ransomware-spotlight/ransomware-spotlight-blackcat},
+  2024.
+
+\bibitem{oldref37}
+{Varonis}.
+\newblock Blackcat ransomware (alphv).
+\newblock \url{https://www.varonis.com/blog/blackcat-ransomware}, 2024.
+
+\bibitem{oldref38}
+{PVOIL}.
+\newblock Press release regarding the restoration of pvoil’s information
+  technology system.
+\newblock
+  \url{https://pvoil.com.vn/en/press-release-regarding-the-restoration-of-pvoils-information-technology-system},
+  2024.
+
+\bibitem{oldref39}
+{VNCS}.
+\newblock Breaking news: Another large enterprise in vietnam was attacked by
+  ransomware.
+\newblock
+  \url{https://vncs.vn/en/tin-tuc/detail-breaking-news-another-large-enterprise-in-vietnam-was-attacked-by-ransomware},
+  2024.
+
+\bibitem{oldref40}
+{The Record}.
+\newblock Vietnam’s state postal service claims to restore its systems after
+  cyberattack.
+\newblock
+  \url{https://therecord.media/vietnam-claims-restore-services-cyberattack},
+  2024.
+
+\bibitem{oldref41}
+{Ministry of Information and Communications}.
+\newblock Vietnam sees sharp decline in cyber attacks as awareness of security
+  rises.
+\newblock
+  \url{https://beta-en.mic.gov.vn/vietnam-sees-sharp-decline-in-cyber-attacks-as-awareness-of-security-rises-19724111.htm},
+  2024.
+
+\bibitem{oldref42}
+{Viettel Cyber Security}.
+\newblock Viettel releases 2024 vietnam cybersecurity threat landscape report.
+\newblock
+  \url{https://viettel.com.vn/en/news-events/news/viettel-releases-2024-vietnam-cybersecurity-threat-landscape-report/},
+  2024.
+
+\bibitem{oldref43}
+{Bkav Corporation}.
+\newblock 60\% of vietnamese businesses are not equipped with adequate security
+  solutions.
+\newblock
+  \url{https://www.bkav.com/top-new/-/view-content/2327397/60-of-vietnamese-businesses-are-not-equipped-with-adequate-security-solutions},
+  2024.
+
+\bibitem{oldref44}
+David Kim and Michael~G. Solomon.
+\newblock {\em Fundamentals of Information Systems Security}.
+\newblock Jones \& Bartlett Learning, Burlington, MA, 4th edition, 2018.
+
+\bibitem{oldref45}
+{IBM Security}.
+\newblock Cost of a data breach report 2024: Ai and automation in
+  cybersecurity.
+\newblock Technical report, 2024.
+
+\bibitem{oldref46}
+Murugiah Souppaya and Karen Scarfone.
+\newblock Guide to malware incident prevention and handling for desktops and
+  laptops.
+\newblock Technical Report SP 800-83 Rev. 1, National Institute of Standards
+  and Technology (NIST), 2023.
+
+\bibitem{oldref47}
+{CrowdStrike}.
+\newblock 2024 global threat report: Cyberattacks in the age of ai.
+\newblock Technical report, 2024.
+
+\bibitem{oldref48}
+{Ministry of Information and Communications}.
+\newblock Enhancing network security critical to defend against attacks.
+\newblock
+  \url{https://english.mic.gov.vn/enhancing-network-security-critical-to-defend-against-attacks-19724042309573251.htm},
+  2024.
+
+\bibitem{oldref49}
+{Vietnam News}.
+\newblock Ransomware attack hits vietnam post.
+\newblock
+  \url{https://vietnamnews.vn/economy/1656859/ransomware-attack-hits-vietnam-post.html},
+  2024.
+
+\bibitem{oldref50}
+{The Investor}.
+\newblock Vietnam postal services crippled by ransomware attack.
+\newblock
+  \url{https://theinvestor.vn/vietnam-postal-services-crippled-by-ransomware-attack-d10489.html},
+  2024.
+
+\bibitem{oldref51}
+{VietNamNet}.
+\newblock Cmc group hit by ransomware attack, authorities launch investigation.
+\newblock
+  \url{https://vietnamnet.vn/en/cmc-group-hit-by-ransomware-attack-authorities-launch-investigation-2391420.html},
+  2024.
+
+\bibitem{oldref52}
+{Ministry of Information and Communications}.
+\newblock Lockbit, blackcat, and stealer malware among top threats in vietnam
+  q3 2024.
+\newblock
+  \url{https://beta-en.mic.gov.vn/lockbit-blackcat-and-stealer-malware-among-top-threats-in-vietnam-q3-2024-197241104.htm},
+  2024.
+
+\bibitem{oldref53}
+{VietNamNet}.
+\newblock Vndirect cyberattack causes big splash on stock market.
+\newblock
+  \url{https://vietnamnet.vn/en/vndirect-cyberattack-causes-big-splash-on-stock-market-2264185.html},
+  2024.
+
+\bibitem{oldref54}
+{Palo Alto Networks Unit 42}.
+\newblock Ransomware retrospective 2024: Unit 42 leak site analysis.
+\newblock
+  \url{https://unit42.paloaltonetworks.com/unit-42-ransomware-leak-site-data-analysis-all-2023/},
+  2024.
+
+\bibitem{oldref55}
+{CISA}.
+\newblock Understanding ransomware threat actors: Lockbit.
+\newblock
+  \url{https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-165a},
+  2023.
+
+\bibitem{oldref56}
+{Group-IB}.
+\newblock Deciphering the brain cipher ransomware.
+\newblock \url{https://www.group-ib.com/blog/brain-cipher-ransomware/}, 2024.
+
+\bibitem{oldref57}
+{Netskope}.
+\newblock Blackcat ransomware: Tactics and techniques from a targeted attack.
+\newblock
+  \url{https://www.netskope.com/blog/blackcat-ransomware-tactics-and-techniques-from-a-targeted-attack},
+  2024.
+
+\bibitem{oldref58}
+{Viettel Cyber Security}.
+\newblock Viettel releases cybersecurity report for the first half of 2024.
+\newblock
+  \url{https://viettel.com.vn/en/news-events/news/viettel-releases-cybersecurity-report-for-the-first-half-of-2024/},
+  2024.
+
+\bibitem{oldref59}
+Stav Cohen et~al.
+\newblock Here comes the ai worm: Unleashing zero-click worms that target
+  genai-powered applications.
+\newblock \url{https://arxiv.org/html/2403.02817v2}, 2024.
+
+\bibitem{oldref60}
+{IBM Security}.
+\newblock Cost of a data breach report 2024.
+\newblock Technical report, 2024.
+
+\bibitem{oldref61}
+{Gartner}.
+\newblock Top strategic cybersecurity trends for 2024--2025.
+\newblock Technical report, 2024.
+
+\bibitem{oldref62}
+Paul Cichonski, Tom Millar, Tim Grance, and Karen Scarfone.
+\newblock Computer security incident handling guide.
+\newblock Technical Report SP 800-61 Revision 2, National Institute of
+  Standards and Technology, 2012.
+
+\bibitem{oldref63}
+{Fortinet}.
+\newblock History of cyber warfare and the top 5 most notorious attacks.
+\newblock
+  \url{https://www.fortinet.com/resources/cyberglossary/most-notorious-attacks-in-the-history-of-cyber-warfare},
+  2024.
 
 \end{thebibliography}

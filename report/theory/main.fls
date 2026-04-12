@@ -1,6 +1,6 @@
-PWD c:\Users\Vu\schoolProject\CSC12001_Data-Security-in-Information-Systems\report\theory
+PWD C:\Users\Vu\schoolProject\CSC12001_Data-Security-in-Information-Systems\report\theory
 INPUT C:\Users\Vu\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\Users\Vu\schoolProject\CSC12001_Data-Security-in-Information-Systems\report\theory\main.tex
+INPUT main.tex
 OUTPUT main.log
 INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
@@ -500,6 +500,11 @@ INPUT .\content\1_Introduction and Scope of Research.tex
 INPUT .\content\1_Introduction and Scope of Research.tex
 INPUT .\content\1_Introduction and Scope of Research.tex
 INPUT content\1_Introduction and Scope of Research.tex
+INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\lm\ts1lmr.fd
+INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\lm\ts1lmr.fd
+INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\lm\ts1lmr.fd
+INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\fonts\tfm\public\lm\ts1-lmr12.tfm
+INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\fonts\enc\dvips\lm\lm-ts1.enc
 INPUT .\content\2_Classification and Architecture of Malicious Software.tex
 INPUT .\content\2_Classification and Architecture of Malicious Software.tex
 INPUT .\content\2_Classification and Architecture of Malicious Software.tex
@@ -551,11 +556,6 @@ INPUT .\content\7_Defense and Mitigation Strategies.tex
 INPUT .\content\7_Defense and Mitigation Strategies.tex
 INPUT .\content\7_Defense and Mitigation Strategies.tex
 INPUT content\7_Defense and Mitigation Strategies.tex
-INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\lm\ts1lmr.fd
-INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\lm\ts1lmr.fd
-INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\tex\latex\lm\ts1lmr.fd
-INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\fonts\tfm\public\lm\ts1-lmr12.tfm
-INPUT C:\Users\Vu\AppData\Local\Programs\MiKTeX\fonts\enc\dvips\lm\lm-ts1.enc
 INPUT .\images\mfa_report.png
 INPUT .\images\mfa_report.png
 INPUT .\images\mfa_report.png

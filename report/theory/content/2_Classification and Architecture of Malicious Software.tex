@@ -1,1 +1,352 @@
 \section{Classification and Architecture of Malicious Software}
+
+\subsection{Overview}
+
+Malware (malicious software) refers to programs that run on a computer and perform actions the user does not intend. Attackers can cause harm in several ways:
+
+\begin{itemize}
+  \item Gaining administrative control of a system to issue harmful commands.
+  \item Establishing command-and-control (C2) channels that allow attackers to send remote commands executed by the infected system.
+  \item Propagating through various attack vectors, including removable media (e.g., USB drives or malicious USB cables) and network-based channels such as the Internet.
+  \item Using legitimate remote administration tools to scan for and exploit system vulnerabilities.
+\end{itemize}
+
+\subsection{Classification}
+
+Most computer users refer to any malicious code as a virus; however, in reality, there are several types of viruses as well as many other forms of malicious code. Each of these has unique characteristics and architectures, and therefore requires different approaches to defend against them.
+
+\subsubsection{Viruses}
+
+\paragraph{Definition.}
+A computer virus is a software program that attaches itself to or replicates by inserting its code into another executable program on a computer. Its core purpose is to trick the system into executing actions that were not intended by the original program's developer.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Dependency: A virus typically requires user interaction, such as executing an infected file, to activate and infect a host program.
+  \item Propagation Mechanism: It spreads by attaching itself to executable files and replicating.
+  \item Payload Behavior: The virus may carry a payload that is destructive, hidden, or non-malicious.
+  \item Stealth and Persistence: Some viruses hide their payload or install backdoors, enabling long-term undetected access.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+\begin{itemize}
+  \item System infectors: They target system boot functions, typically the Master Boot Record (MBR), to gain control before protective mechanisms are loaded.
+  \item File infectors: Attach to executable files to replicate and spread. They primarily target Windows systems and, in some cases, may also affect mobile and IoT devices. These viruses control program execution to replicate and may deliver a payload. Companion viruses exploit file extension priority to execute before legitimate programs.
+  \item Data/Macro infectors: Infect document files containing macros, allowing malware to spread when files are opened or shared. They are easy to create, cross-platform, and commonly delivered via malicious email attachments or shared templates.
+\end{itemize}
+
+\paragraph{Other Virus Classifications.}
+Most viruses propagate by copying exact replicas of themselves to infected files or systems, creating predictable signatures that antivirus software can detect. However, some viruses employ advanced techniques to evade detection, including:
+
+\begin{itemize}
+  \item Polymorphic viruses
+  \item Stealth viruses
+  \item Slow viruses
+  \item Retro viruses
+  \item Cross-platform viruses
+  \item Multipartite viruses
+\end{itemize}
+
+\paragraph{Examples.}
+Examples of historically significant computer viruses include: [2]
+
+\begin{itemize}
+  \item ILOVEYOU (2000)
+  \item Klez (2001)
+  \item Nimda (2001)
+  \item Sasser (2004)
+  \item Conficker (2008)
+  \item Shamoon (2012 and 2016)
+\end{itemize}
+
+\paragraph{Detection.}
+Virus infections may be detected through reduced system performance, abnormal disk or memory usage, frequent system crashes or errors, unexpected antivirus alerts, and unusual file or application behavior.
+
+\subsubsection{Worms}
+
+\paragraph{Definition.}
+Worms are self-contained malware programs that propagate automatically from one host to another using network communication protocols, without requiring a host program or user interaction.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Do not attach to executable files.
+  \item Operate independently as standalone programs.
+  \item Spread rapidly across networks.
+  \item Consist of components running on multiple systems and communicating over a network.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+\begin{itemize}
+  \item Independence and autonomous operation: Worms are self-contained programs capable of self-replication and network-based propagation without attaching themselves to a host program, unlike computer viruses.
+  \item No human interaction required: The propagation process occurs fully automatically and does not require any user action or interaction to initiate infection.
+  \item Scanning and vulnerability exploitation: Worms actively scan network-connected systems to identify and exploit specific software or operating system vulnerabilities, such as buffer overflow flaws or remote code execution vulnerabilities.
+  \item Email-based propagation: After compromising a host, worms may harvest email addresses from the system and automatically send copies of themselves to other targets via the Simple Mail Transfer Protocol (SMTP) or the host's email infrastructure.
+  \item Multiple infection vectors: In addition to email, worms can spread rapidly through shared network drives, misconfigured services, or compromised websites.
+  \item Termination conditions: Propagation continues until the worm is detected and contained by security mechanisms, or until security patches are applied to eliminate the exploited vulnerabilities.
+\end{itemize}
+
+\paragraph{Examples.}
+Notable worms include:
+
+\begin{itemize}
+  \item Morris Worm
+  \item Conficker
+  \item Stuxnet
+  \item WannaCry
+  \item Sobig.F
+  \item Blaster
+  \item Linux worms such as L10n, Badbunny, and Darlloz
+\end{itemize}
+
+\paragraph{Detection.}
+Worm infections may be detected through:
+
+\begin{itemize}
+  \item Unexplained increases in bandwidth consumption.
+  \item High volumes of inbound and outbound email or other network traffic during normal activity periods.
+  \item Unexplained decreases in available disk space.
+  \item Unusual increases in average message size or the volume of attachments.
+  \item Unexpected Simple Mail Transfer Protocol (SMTP) or Post Office Protocol 3 (POP3) daemon responses.
+  \item Sudden increases in user response times across the network or sudden congestion at chokepoints near server clusters.
+\end{itemize}
+
+\subsubsection{Trojan Horses}
+
+\paragraph{Definition.}
+Trojan horses represent one of the most prevalent and diverse categories of malware. A Trojan horse is any program that masquerades as a useful or legitimate application while hiding its malicious intent. Trojans typically encourage users to download and execute the program voluntarily.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Information theft: Trojan horses are often designed to steal sensitive information such as passwords, banking credentials, and personal data stored on the victim's system.
+  \item Remote access: A Trojan may grant attackers remote access, allowing them to control the infected system without the user's knowledge or consent.
+  \item Data deletion or corruption: Some Trojans delete or corrupt files, leading to data loss or system instability.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+Trojan horses are distributed through multiple delivery methods:
+
+\begin{itemize}
+  \item Email attachments: Trojans are often attached to malicious or fake emails. When users download and open the attachment, the Trojan installs itself and may execute automatically on system startup or file access.
+  \item Social engineering: Attackers trick users into installing Trojans through malicious links, pop-up advertisements, fake software updates, or deceptive banner ads.
+  \item Infected devices: Once a device is compromised, the Trojan may spread to other systems via networks or removable media. Infected machines can be remotely controlled and used as part of a botnet.
+\end{itemize}
+
+\paragraph{Examples.}
+Common types of Trojan horses include:
+
+\begin{itemize}
+  \item Backdoor Trojan
+  \item Exploit Trojan
+  \item Banker Trojan
+  \item DDoS Trojan
+  \item Downloader Trojan
+\end{itemize}
+
+\paragraph{Detection.}
+Trojan infections may be detected through:
+
+\begin{itemize}
+  \item Unrecognized or suspicious new processes running on the system.
+  \item Startup messages indicating unexpected software installation or registry updates.
+  \item Applications becoming unresponsive to normal commands.
+  \item Unusual redirection of web requests to unknown or malicious websites.
+  \item Unexpected remote logon prompts at unusual times or unfamiliar logon interfaces.
+  \item Sudden termination or failure of antivirus or personal firewall software.
+\end{itemize}
+
+\subsubsection{Logic Bombs}
+
+\paragraph{Definition.}
+A logic bomb is a program that executes a malicious function when specific conditions are met or at a predetermined time.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Malicious tasks may cause immediate damage or initiate a sequence of events that results in damage over an extended period.
+  \item Logic bombs are often associated with insider threats, as insiders typically possess detailed knowledge of organizational systems.
+  \item Remain dormant while waiting for specific conditions or a triggering time.
+\end{itemize}
+
+\paragraph{Activation Mechanism.}
+\begin{itemize}
+  \item Logic bombs are usually embedded and concealed within legitimate software by individuals who have authorized access to the system.
+\end{itemize}
+
+\paragraph{Examples.}
+\begin{itemize}
+  \item A common example involves a programmer embedding a logic bomb into company software that automatically deletes critical files or causes system damage if the programmer is terminated.
+\end{itemize}
+
+\paragraph{Detection.}
+\begin{itemize}
+  \item Logic bombs are difficult to detect because they are deliberately designed to remain hidden until activation.
+  \item Designers often understand organizational security controls and place logic bombs in locations that are unlikely to attract attention.
+\end{itemize}
+
+\subsubsection{Spyware}
+
+\paragraph{Definition.}
+Spyware is any unsolicited background process that installs itself on a user's computer without the user's knowledge or consent. It is designed to collect information about the user's browsing habits, website activities, and potentially sensitive personal data.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Data collection: Gathers sensitive personal information such as account credentials, balances, and other private data for identity theft or fraud.
+  \item Keystroke logging: Records all keystrokes, including passwords, emails, and chat messages.
+  \item Activity tracking: Monitors online behavior such as visited websites, search queries, and social media activity to analyze patterns or deliver targeted advertisements.
+  \item Screen capturing: Takes screenshots of the device screen, potentially exposing confidential information.
+  \item Remote control: Some advanced spyware variants include remote access capabilities.
+\end{itemize}
+
+\paragraph{Distribution Mechanisms.}
+\begin{itemize}
+  \item Phishing: Spyware enters the system when users click malicious links or download infected attachments.
+  \item Spoofing: Attackers disguise malicious emails as legitimate messages to trick users into installing spyware.
+  \item Freeware/Shareware bundling: Spyware is bundled with free or shared software during installation.
+  \item Misleading software: Fake optimization or utility programs secretly install spyware to steal confidential information.
+\end{itemize}
+
+\paragraph{Examples.}
+\begin{itemize}
+  \item Pegasus: A highly sophisticated and targeted spyware platform primarily used for surveillance by state-level actors.
+\end{itemize}
+
+\paragraph{Detection.}
+\begin{itemize}
+  \item Slow system performance, frequent freezing, or unexpected crashes due to excessive resource consumption.
+  \item Unusual network activity, such as abnormally high traffic or excessive outbound connections.
+  \item Frequent and unexpected pop-up windows or advertisements.
+  \item Unwanted changes to browser settings, including homepage, search engine, or bookmarks.
+  \item Appearance of unfamiliar or suspicious programs or running processes.
+\end{itemize}
+
+Spyware detection typically relies on endpoint protection platforms, behavioral analysis, network traffic monitoring, and specialized anti-spyware tools.
+
+\subsubsection{Adware}
+
+\paragraph{Definition.}
+Adware is a type of software designed to automatically display or download advertising material, such as pop-up windows and banner advertisements, often without the user's consent.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Disruption: Adware triggers intrusive behaviors such as pop-up windows and banner advertisements when users visit certain websites.
+  \item Productivity impact: Adware negatively affects user productivity and overall system performance.
+  \item Privacy risk: Adware may track user behavior to deliver targeted advertisements, potentially violating user privacy.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+\begin{itemize}
+  \item Adware is commonly bundled with freeware or shareware and is unknowingly installed by users during software installation.
+  \item It may also be distributed through deceptive pop-up windows or misleading download prompts.
+\end{itemize}
+
+\paragraph{Examples.}
+\begin{itemize}
+  \item Web banners
+  \item Pop-up advertisements
+  \item Browser toolbars
+  \item In-text advertisements injected into webpages
+\end{itemize}
+
+\paragraph{Prevention.}
+\begin{itemize}
+  \item Download software only from official websites or reputable sources.
+  \item Read license agreements carefully and use custom installation options to decline bundled programs.
+  \item Regularly update the operating system and applications to patch security vulnerabilities.
+  \item Use reliable security software for additional protection.
+  \item Avoid clicking suspicious links or downloading attachments from unknown sources.
+  \item Be cautious of websites that trigger unexpected downloads.
+  \item Stay informed about emerging adware threats and share knowledge to promote safer online practices.
+\end{itemize}
+
+\subsubsection{Botnets}
+
+\paragraph{Definition.}
+Botnets (short for robotically controlled networks) are networks of compromised computers that are remotely controlled by an attacker. The individual who manages and issues commands to the botnet is commonly referred to as a bot-herder or controller. In simple terms, a botnet is a collection of Internet-connected devices coordinated to perform malicious activities.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Remote control: Early botnets primarily used Internet Relay Chat (IRC) channels for communication, whereas modern botnets increasingly rely on HTTP/HTTPS, peer-to-peer architectures, or cloud-based services to evade detection.
+  \item Use of agents: Attackers install software agents on compromised systems to execute commands and perform malicious tasks.
+  \item High computational power: Botnets can generate enormous computing power; in some cases, their combined performance has rivaled that of the world's most powerful supercomputers.
+  \item Resilience: Botnets are difficult to dismantle because they are distributed across a large number of geographically dispersed systems.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+\begin{itemize}
+  \item Exploiting vulnerabilities: Attackers scan for systems with security vulnerabilities and install botnet control agents upon successful compromise.
+  \item Self-replication via malware: Many modern viruses and worms contain components that convert infected machines into botnet nodes.
+  \item Spam distribution: Infected machines (often called zombies) are used to send spam emails containing malware to propagate the botnet further.
+\end{itemize}
+
+\paragraph{Examples.}
+\begin{itemize}
+  \item Storm botnet: In 2007, it was recorded as one of the most powerful computer networks in the world at that time.
+  \item Attacks on U.S. banks (2012--2013): Botnets were used to carry out large-scale attacks against major U.S. financial institutions and infrastructure.
+\end{itemize}
+
+\paragraph{Detection.}
+\begin{itemize}
+  \item Detecting botnets is challenging because they are distributed across numerous personal computers, servers, and devices.
+  \item Tracing and identifying the bot-herder is difficult, as control may be exercised from locations far removed from the infected systems.
+  \item Securing all computing devices, including Internet of Things (IoT) devices, is essential to prevent their exploitation as botnet participants.
+\end{itemize}
+
+\subsubsection{Keystroke Loggers}
+
+\paragraph{Definition.}
+A keystroke logger is a type of software or hardware monitoring tool capable of recording every keystroke a user makes on a keyboard into a log file. The recorded data may be stored locally for later retrieval or transmitted over a network to a designated recipient.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Monitoring tool: Keystroke loggers function as tracking tools and may be embedded within spyware to steal passwords and personal information.
+  \item Dual-use nature: Keystroke loggers can be used legitimately by organizations to monitor employee productivity, but are frequently abused by cybercriminals for malicious purposes.
+  \item Stealthy operation: Hardware-based keystroke loggers are typically small and designed to be hidden in inconspicuous locations, such as behind a computer or within cable connections.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+\begin{itemize}
+  \item Physical form: Hardware keystroke loggers require the attacker to physically connect an intermediary device between the keyboard and the computer's input port.
+  \item Software form: Software-based keystroke loggers are commonly distributed as Trojan malware via malicious URLs, email attachments (e.g., PDF or ZIP files), or stealthily installed as part of a rootkit after system compromise.
+\end{itemize}
+
+\paragraph{Examples.}
+\begin{itemize}
+  \item Hardware: Plug-in devices approximately the size of a battery that attach to USB or legacy keyboard ports and store keystroke data internally.
+  \item Software: Malicious programs that record keystrokes and periodically transmit the collected data to attackers over the Internet without the user's knowledge.
+\end{itemize}
+
+\paragraph{Detection.}
+\begin{itemize}
+  \item Physical inspection: Manually inspect keyboard and computer ports for unfamiliar or unauthorized devices.
+  \item Security software: Use antivirus and anti-malware tools to scan for suspicious processes or keystroke-recording software.
+  \item System monitoring: Monitor system behavior, review activity logs, and identify unknown or suspicious network connections.
+\end{itemize}
+
+\subsubsection{Malicious Add-Ons (Browser Extensions)}
+
+\paragraph{Definition.}
+Browser add-ons (also known as extensions) are companion programs that operate alongside a web browser to extend its functionality, such as integrating news feeds or weather alerts. Malicious add-ons are browser extensions that contain embedded malware.
+
+\paragraph{Characteristics.}
+\begin{itemize}
+  \item Reduced security: Malicious add-ons lower the overall security level of the web browser and the underlying computer system.
+  \item Unauthorized actions: Once installed, these extensions can perform various malicious activities using the browser's privileges.
+  \item Disguised nature: They often appear to be legitimate or useful tools while secretly carrying out harmful actions.
+\end{itemize}
+
+\paragraph{Propagation Mechanisms.}
+\begin{itemize}
+  \item Voluntary but uncontrolled installation: Users may install malicious add-ons unknowingly, believing them to be legitimate extensions.
+  \item Untrusted sources: These add-ons are commonly distributed through unreliable websites or unknown extension providers.
+\end{itemize}
+
+\paragraph{Examples.}
+\begin{itemize}
+  \item Malicious browser toolbars designed to track user activity or display unauthorized advertisements.
+  \item Deceptive extensions that claim to offer features such as news updates, weather information, or system optimization but instead install malware.
+\end{itemize}
+
+\paragraph{Detection.}
+\begin{itemize}
+  \item Exercise caution when installing browser extensions and use only trusted sources.
+  \item Regularly review installed add-ons to ensure all extensions are recognized and necessary.
+\end{itemize}
