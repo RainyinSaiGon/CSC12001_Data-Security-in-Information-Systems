@@ -4,20 +4,22 @@ using System.Text.RegularExpressions;
 
 public class ValidationService
 {
+    private static readonly Regex CccdRegex = new("^[0-9]{12}$", RegexOptions.Compiled);
+    private static readonly Regex UuidLikeRegex = new("^[A-Fa-f0-9]{32}$|^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$", RegexOptions.Compiled);
+
     public bool ValidateUsername(string username)
     {
-        return !string.IsNullOrWhiteSpace(username)
-            && Regex.IsMatch(username, "^[A-Za-z0-9_]{3,30}$");
+        return !string.IsNullOrWhiteSpace(username) && CccdRegex.IsMatch(username);
     }
 
     public bool ValidatePassword(string password)
     {
-        return !string.IsNullOrWhiteSpace(password) && password.Length >= 3;
+        return !string.IsNullOrWhiteSpace(password) && CccdRegex.IsMatch(password);
     }
 
     public bool ValidatePatientId(string patientId)
     {
-        return int.TryParse(patientId, out int value) && value > 0;
+        return !string.IsNullOrWhiteSpace(patientId) && UuidLikeRegex.IsMatch(patientId);
     }
 
     public bool ValidateMedicalRecord(string diagnosis, string treatment, string conclusion)

@@ -163,7 +163,7 @@ BEGIN
 
     FOR i IN 1 .. v_usernames.COUNT LOOP
         BEGIN
-            EXECUTE IMMEDIATE 'DROP USER ' || v_usernames(i) || ' CASCADE';
+            EXECUTE IMMEDIATE 'DROP USER "' || REPLACE(v_usernames(i), '"', '""') || '" CASCADE';
             v_count := v_count + 1;
         EXCEPTION
             WHEN OTHERS THEN NULL;
@@ -192,7 +192,7 @@ BEGIN
 
     FOR i IN 1 .. v_usernames.COUNT LOOP
         BEGIN
-            EXECUTE IMMEDIATE 'DROP USER ' || v_usernames(i) || ' CASCADE';
+            EXECUTE IMMEDIATE 'DROP USER "' || REPLACE(v_usernames(i), '"', '""') || '" CASCADE';
             v_count := v_count + 1;
         EXCEPTION
             WHEN OTHERS THEN NULL;

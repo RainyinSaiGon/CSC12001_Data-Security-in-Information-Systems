@@ -1,0 +1,42 @@
+\begin{thebibliography}{1}
+
+\bibitem{ref3}
+{Microsoft Security}.
+\newblock One simple action you can take to prevent 99.9 percent of attacks on
+  your accounts.
+\newblock
+  \url{https://www.microsoft.com/en-us/security/blog/2019/08/15/one-simple-action-you-can-take-to-prevent-99-9-percent-of-attacks/},
+  2019.
+
+\bibitem{kim2018fundamentals}
+David Kim and Michael~G. Solomon.
+\newblock {\em Fundamentals of Information Systems Security}.
+\newblock Jones \& Bartlett Learning, Burlington, MA, 4th edition, 2018.
+
+\bibitem{ref2}
+{National Institute of Standards and Technology (NIST)}.
+\newblock Security and privacy controls for information systems and
+  organizations.
+\newblock
+  \url{https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final}, 2020.
+\newblock NIST Special Publication 800-53 Rev. 5.
+
+\bibitem{ref4}
+{FIDO Alliance}.
+\newblock How passkeys work.
+\newblock \url{https://fidoalliance.org/passkeys/}, 2023.
+
+\bibitem{ref5}
+{Microsoft}.
+\newblock Microsoft security bulletin ms17-010 - critical.
+\newblock
+  \url{https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010},
+  2017.
+
+\bibitem{nao2017wannacry}
+{National Audit Office (UK)}.
+\newblock Wannacry ransomware cyber attack.
+\newblock Technical report, National Audit Office, 2017.
+\newblock Public sector cyber incident report.
+
+\end{thebibliography}

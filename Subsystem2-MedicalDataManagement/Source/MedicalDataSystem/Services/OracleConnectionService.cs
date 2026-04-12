@@ -16,7 +16,9 @@ public class OracleConnectionService
 
     public static string BuildConnectionString(string dataSource, string userId, string password)
     {
-        return $"Data Source={dataSource};User Id={userId};Password={password};Pooling=true;";
+        string escapedUserId = userId.Replace("\"", "\"\"");
+        string escapedPassword = password.Replace("\"", "\"\"");
+        return $"Data Source={dataSource};User Id=\"{escapedUserId}\";Password=\"{escapedPassword}\";Pooling=true;";
     }
 
     public bool TestConnection()

@@ -27,7 +27,7 @@ public class DoctorService
                 WHERE h.MABS = :mabs
                 ORDER BY b.MABN
                 """;
-            command.Parameters.Add(new OracleParameter("mabs", int.Parse(doctorId)));
+            command.Parameters.Add(new OracleParameter("mabs", doctorId));
 
             using var reader = command.ExecuteReader();
             var items = new List<Patient>();
@@ -35,7 +35,7 @@ public class DoctorService
             {
                 items.Add(new Patient
                 {
-                    MABN = reader.GetInt32(0),
+                    MABN = reader.GetString(0),
                     TENBN = reader.GetString(1),
                     PHAI = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
                     NGAYSINH = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
@@ -66,7 +66,7 @@ public class DoctorService
                 WHERE MABS = :mabs
                 ORDER BY NGAY DESC, MAHSBA DESC
                 """;
-            command.Parameters.Add(new OracleParameter("mabs", int.Parse(doctorId)));
+            command.Parameters.Add(new OracleParameter("mabs", doctorId));
 
             using var reader = command.ExecuteReader();
             var items = new List<MedicalRecord>();
@@ -75,12 +75,12 @@ public class DoctorService
                 items.Add(new MedicalRecord
                 {
                     MAHSBA = reader.GetInt32(0),
-                    MABN = reader.GetInt32(1),
+                    MABN = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                     NGAY = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
                     CHANDOAN = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
                     DIEUTRI = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
                     KETLUAN = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                    MABS = reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                    MABS = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
                     MAKHOA = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
                 });
             }
@@ -192,7 +192,7 @@ public class DoctorService
             command.Parameters.Add(new OracleParameter("loaidv", service.LOAIDV));
             command.Parameters.Add(new OracleParameter("ngaydv", service.NGAYDV));
             command.Parameters.Add(new OracleParameter("ketqua", string.IsNullOrWhiteSpace(service.KETQUA) ? DBNull.Value : service.KETQUA));
-            command.Parameters.Add(new OracleParameter("maktv", service.MAKTV == 0 ? DBNull.Value : service.MAKTV));
+            command.Parameters.Add(new OracleParameter("maktv", string.IsNullOrWhiteSpace(service.MAKTV) ? DBNull.Value : service.MAKTV));
             return command.ExecuteNonQuery() == 1;
         });
     }

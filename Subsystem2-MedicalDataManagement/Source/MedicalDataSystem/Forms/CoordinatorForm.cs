@@ -10,7 +10,7 @@ public partial class CoordinatorForm : Form
     private readonly DataGridView _patientsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
     private readonly ComboBox _doctorComboBox = new() { Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly ComboBox _technicianComboBox = new() { Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
-    private readonly TextBox _patientIdTextBox = new() { Width = 80 };
+    private readonly TextBox _patientIdTextBox = new() { Width = 260 };
     private readonly TextBox _recordIdTextBox = new() { Width = 80 };
     private readonly TextBox _serviceTypeTextBox = new() { Width = 180 };
     private readonly DateTimePicker _serviceDatePicker = new() { Width = 160 };
@@ -148,8 +148,8 @@ public partial class CoordinatorForm : Form
     {
         try
         {
-            int patientId = int.Parse(_patientIdTextBox.Text);
-            int doctorId = Convert.ToInt32(_doctorComboBox.SelectedValue);
+            string patientId = _patientIdTextBox.Text.Trim();
+            string doctorId = _doctorComboBox.SelectedValue?.ToString() ?? string.Empty;
             _coordinatorService.CreateMedicalRecord(patientId, doctorId, string.Empty);
             MessageBox.Show(this, "Medical record created and assigned.", "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -164,7 +164,7 @@ public partial class CoordinatorForm : Form
         try
         {
             int recordId = int.Parse(_recordIdTextBox.Text);
-            int technicianId = Convert.ToInt32(_technicianComboBox.SelectedValue);
+            string technicianId = _technicianComboBox.SelectedValue?.ToString() ?? string.Empty;
             _coordinatorService.AssignTechnician(recordId, _serviceTypeTextBox.Text.Trim(), _serviceDatePicker.Value, technicianId);
             MessageBox.Show(this, "Technician assigned.", "Coordinator", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
