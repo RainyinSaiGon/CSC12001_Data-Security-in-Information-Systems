@@ -57,10 +57,12 @@ The current login textbox may still default to `localhost:1521/XE`. Replace it m
 
 Do not log in as `HOSPITAL_ADMIN`. Use the business accounts created by the RBAC script:
 
-- `NV000001 / 123`
-- `NV000021 / 123`
-- `NV000121 / 123`
-- `BN000000001 / 123`
+- `990000000001 / 990000000001`
+- `990000000021 / 990000000021`
+- `990000000121 / 990000000121`
+- `000000000001 / 000000000001`
+
+`USERNAME` is now mapped to CCCD for both staff and patients. Passwords use CCCD as the initial input and are lazily stored as bcrypt hashes in `PASSWORD_HASH` on first successful login.
 
 ## Implementation Note
 

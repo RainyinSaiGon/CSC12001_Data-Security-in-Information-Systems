@@ -72,12 +72,12 @@ public partial class PatientForm : Form
 
     private void LoadData()
     {
-        if (_session.PatientId is null)
+        if (string.IsNullOrWhiteSpace(_session.PatientId))
         {
             return;
         }
 
-        Patient? patient = _patientService.GetPatient(_session.PatientId.Value.ToString());
+        Patient? patient = _patientService.GetPatient(_session.PatientId);
         if (patient is null)
         {
             return;
@@ -92,20 +92,20 @@ public partial class PatientForm : Form
         _tiensuGiaDinhTextBox.Text = patient.TIENSUBENHGD;
         _diungTextBox.Text = patient.DIUNGTHUOC;
 
-        _recordsGrid.DataSource = _patientService.GetMyMedicalRecords(_session.PatientId.Value.ToString());
-        _prescriptionsGrid.DataSource = _patientService.GetMyPrescriptions(_session.PatientId.Value.ToString());
+        _recordsGrid.DataSource = _patientService.GetMyMedicalRecords(_session.PatientId);
+        _prescriptionsGrid.DataSource = _patientService.GetMyPrescriptions(_session.PatientId);
     }
 
     private void SaveProfile()
     {
-        if (_session.PatientId is null)
+        if (string.IsNullOrWhiteSpace(_session.PatientId))
         {
             return;
         }
 
         var patient = new Patient
         {
-            MABN = _session.PatientId.Value,
+            MABN = _session.PatientId,
             SONHA = _sonhaTextBox.Text.Trim(),
             TENDUONG = _tenduongTextBox.Text.Trim(),
             QUANHUYEN = _quanhuyenTextBox.Text.Trim(),

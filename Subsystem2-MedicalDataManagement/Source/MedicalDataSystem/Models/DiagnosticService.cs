@@ -6,5 +6,5 @@ public class DiagnosticService
     public string LOAIDV { get; set; } = string.Empty;
     public DateTime NGAYDV { get; set; }
     public string KETQUA { get; set; } = string.Empty;
-    public int MAKTV { get; set; }
+    public string MAKTV { get; set; } = string.Empty;
 }

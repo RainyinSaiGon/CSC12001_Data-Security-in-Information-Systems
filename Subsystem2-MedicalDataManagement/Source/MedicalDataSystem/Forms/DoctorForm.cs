@@ -84,12 +84,12 @@ public partial class DoctorForm : Form
 
     private void RefreshData()
     {
-        if (_session.StaffId is null)
+        if (string.IsNullOrWhiteSpace(_session.StaffId))
         {
             return;
         }
 
-        string doctorId = _session.StaffId.Value.ToString();
+        string doctorId = _session.StaffId;
         _patientsGrid.DataSource = _doctorService.GetAssignedPatients(doctorId);
         _recordsGrid.DataSource = _doctorService.GetAssignedMedicalRecords(doctorId);
     }

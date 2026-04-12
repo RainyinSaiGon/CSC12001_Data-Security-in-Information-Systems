@@ -1,0 +1,57 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Introduction and Scope of Research}{6}{section.1}%
+\contentsline {section}{\numberline {2}Classification and Architecture of Malicious Software}{7}{section.2}%
+\contentsline {section}{\numberline {3}Vulnerabilities and Malware Enablers}{8}{section.3}%
+\contentsline {section}{\numberline {4}Attack Vectors}{9}{section.4}%
+\contentsline {section}{\numberline {5}Anatomy of an Attack}{10}{section.5}%
+\contentsline {section}{\numberline {6}Case Study: The MGM Resorts Cyberattack (September 2023)}{11}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Background and Context}{11}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}The Two Threat Actors}{11}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Phase 1 — Reconnaissance and Probing}{12}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}The Intelligence Gathering}{12}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}Why This Phase Is the Most Critical}{12}{subsubsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.4}Access and Privilege Escalation}{12}{subsection.6.4}%
+\contentsline {subsubsection}{\numberline {6.4.1}The Entry Point: Okta}{12}{subsubsection.6.4.1}%
+\contentsline {subsubsection}{\numberline {6.4.2}Lateral Movement: From Cloud to Physical Operations}{13}{subsubsection.6.4.2}%
+\contentsline {subsubsection}{\numberline {6.4.3}Data Exfiltration: The Double-Extortion Setup}{13}{subsubsection.6.4.3}%
+\contentsline {subsubsection}{\numberline {6.4.4}The Ransomware Deployment}{14}{subsubsection.6.4.4}%
+\contentsline {subsection}{\numberline {6.5}Phase 3 — Covering Traces of the Attack}{14}{subsection.6.5}%
+\contentsline {subsubsection}{\numberline {6.5.1}The Backdoor Architecture}{14}{subsubsection.6.5.1}%
+\contentsline {subsubsection}{\numberline {6.5.2}Escalation Upon Detection: Attacking the Responders}{14}{subsubsection.6.5.2}%
+\contentsline {subsubsection}{\numberline {6.5.3}Attribution and Legal Aftermath}{15}{subsubsection.6.5.3}%
+\contentsline {subsection}{\numberline {6.6}Impact Analysis}{15}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}Mapping to the CIA Triad}{15}{subsection.6.7}%
+\contentsline {subsection}{\numberline {6.8}Defensive Lessons}{18}{subsection.6.8}%
+\contentsline {section}{\numberline {7}Defense strategies and Risk mitigation}{20}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Overview of Defense Strategies}{20}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Defense-in-Depth Model}{20}{subsection.7.2}%
+\contentsline {subsubsection}{\numberline {7.2.1}Concept of Defense-in-Depth}{20}{subsubsection.7.2.1}%
+\contentsline {subsubsection}{\numberline {7.2.2}Integration of the AAA Access Control Framework}{21}{subsubsection.7.2.2}%
+\contentsline {subsection}{\numberline {7.3}Enhancing Access Control and User Authentication}{21}{subsection.7.3}%
+\contentsline {subsubsection}{\numberline {7.3.1}Role of Authentication in Preventing Attacks}{21}{subsubsection.7.3.1}%
+\contentsline {subsubsection}{\numberline {7.3.2}Weaknesses of Single-Factor Authentication (SFA) and Common Attack Methods}{21}{subsubsection.7.3.2}%
+\contentsline {subsubsection}{\numberline {7.3.3}Levels of Upgrading Authentication Strategy}{22}{subsubsection.7.3.3}%
+\contentsline {subsubsection}{\numberline {7.3.4}Real-world Case Study: Security Transformation at Google}{22}{subsubsection.7.3.4}%
+\contentsline {subsection}{\numberline {7.4}Patch Management Process and Risk Reduction}{23}{subsection.7.4}%
+\contentsline {subsubsection}{\numberline {7.4.1}Concept and Importance of Patch Management}{23}{subsubsection.7.4.1}%
+\contentsline {subsubsection}{\numberline {7.4.2}Standard Patch Management Process}{23}{subsubsection.7.4.2}%
+\contentsline {subsubsection}{\numberline {7.4.3}Real-world Case Study: WannaCry Ransomware Disaster}{23}{subsubsection.7.4.3}%
+\contentsline {subsection}{\numberline {7.5}Data Backup Strategy and the 3-2-1 Rule}{24}{subsection.7.5}%
+\contentsline {subsubsection}{\numberline {7.5.1}Importance of Backup in Security}{24}{subsubsection.7.5.1}%
+\contentsline {subsubsection}{\numberline {7.5.2}Gold Standard: The 3-2-1 Backup Rule}{24}{subsubsection.7.5.2}%
+\contentsline {subsubsection}{\numberline {7.5.3}Enhanced Defense: Immutable and Air-gapped Backup}{24}{subsubsection.7.5.3}%
+\contentsline {subsubsection}{\numberline {7.5.4}Core Benefits and Practical Application}{24}{subsubsection.7.5.4}%
+\contentsline {subsection}{\numberline {7.6}Incident Response Lifecycle}{25}{subsection.7.6}%
+\contentsline {subsubsection}{\numberline {7.6.1}Importance of Incident Response}{25}{subsubsection.7.6.1}%
+\contentsline {subsubsection}{\numberline {7.6.2}Six Phases of the Incident Response Lifecycle}{25}{subsubsection.7.6.2}%
+\contentsline {subsubsection}{\numberline {7.6.3}Real-world Example (Ransomware Response Scenario)}{25}{subsubsection.7.6.3}%
+\contentsline {subsection}{\numberline {7.7}User Awareness and Security Recommendations}{26}{subsection.7.7}%
+\contentsline {subsubsection}{\numberline {7.7.1}Humans: The Weakest Link}{26}{subsubsection.7.7.1}%
+\contentsline {subsubsection}{\numberline {7.7.2}Common Risky Behaviors}{26}{subsubsection.7.7.2}%
+\contentsline {subsubsection}{\numberline {7.7.3}Recommendations and Solutions}{26}{subsubsection.7.7.3}%
+\contentsline {subsection}{\numberline {7.8}Future Trends and Conclusion}{26}{subsection.7.8}%
+\contentsline {subsubsection}{\numberline {7.8.1}Emerging Cybersecurity Threats}{26}{subsubsection.7.8.1}%
+\contentsline {subsubsection}{\numberline {7.8.2}Overall Conclusion}{27}{subsubsection.7.8.2}%
+\contentsline {section}{\numberline {8}Future Trends in Malicious Software}{28}{section.8}%
+\contentsline {section}{\numberline {9}Conclusion}{29}{section.9}%
+\contentsline {section}{References}{30}{section*.9}%

@@ -25,9 +25,9 @@ BEGIN EXECUTE IMMEDIATE 'DROP FUNCTION VPD_DONTHUOC_FN'; EXCEPTION WHEN OTHERS T
 /
 
 CREATE OR REPLACE FUNCTION APP_CURRENT_MANV
-RETURN NUMBER
+RETURN VARCHAR2
 AS
-    v_manv NUMBER;
+    v_manv NHANVIEN.MANV%TYPE;
 BEGIN
     SELECT MANV
     INTO v_manv
@@ -62,7 +62,7 @@ CREATE OR REPLACE FUNCTION VPD_HSBA_FN(p_schema VARCHAR2, p_object VARCHAR2)
 RETURN VARCHAR2
 AS
     v_role NVARCHAR2(50);
-    v_manv NUMBER;
+    v_manv NHANVIEN.MANV%TYPE;
 BEGIN
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
@@ -70,7 +70,10 @@ BEGIN
     IF v_role = N'Điều phối viên' THEN
         RETURN '1=1';
     ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        RETURN 'MABS = ' || TO_CHAR(v_manv);
+        IF v_manv IS NULL THEN
+            RETURN '1=0';
+        END IF;
+        RETURN 'MABS = ''' || REPLACE(v_manv, '''', '''''') || '''';
     END IF;
 
     RETURN '1=1';
@@ -81,7 +84,7 @@ CREATE OR REPLACE FUNCTION VPD_BENHNHAN_FN(p_schema VARCHAR2, p_object VARCHAR2)
 RETURN VARCHAR2
 AS
     v_role NVARCHAR2(50);
-    v_manv NUMBER;
+    v_manv NHANVIEN.MANV%TYPE;
 BEGIN
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
@@ -89,7 +92,10 @@ BEGIN
     IF v_role = N'Điều phối viên' THEN
         RETURN '1=1';
     ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        RETURN 'MABN IN (SELECT MABN FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
+        IF v_manv IS NULL THEN
+            RETURN '1=0';
+        END IF;
+        RETURN 'MABN IN (SELECT MABN FROM HSBA WHERE MABS = ''' || REPLACE(v_manv, '''', '''''') || ''')';
     END IF;
 
     RETURN 'USERNAME = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
@@ -100,7 +106,7 @@ CREATE OR REPLACE FUNCTION VPD_HSBA_DV_FN(p_schema VARCHAR2, p_object VARCHAR2)
 RETURN VARCHAR2
 AS
     v_role NVARCHAR2(50);
-    v_manv NUMBER;
+    v_manv NHANVIEN.MANV%TYPE;
 BEGIN
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
@@ -108,7 +114,10 @@ BEGIN
     IF v_role = N'Điều phối viên' THEN
         RETURN '1=1';
     ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
+        IF v_manv IS NULL THEN
+            RETURN '1=0';
+        END IF;
+        RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ''' || REPLACE(v_manv, '''', '''''') || ''')';
     END IF;
 
     RETURN '1=1';
@@ -119,7 +128,7 @@ CREATE OR REPLACE FUNCTION VPD_DONTHUOC_FN(p_schema VARCHAR2, p_object VARCHAR2)
 RETURN VARCHAR2
 AS
     v_role NVARCHAR2(50);
-    v_manv NUMBER;
+    v_manv NHANVIEN.MANV%TYPE;
 BEGIN
     v_role := APP_CURRENT_ROLE();
     v_manv := APP_CURRENT_MANV();
@@ -127,7 +136,10 @@ BEGIN
     IF v_role = N'Điều phối viên' THEN
         RETURN '1=1';
     ELSIF v_role = N'Bác sĩ/Y sĩ' THEN
-        RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ' || TO_CHAR(v_manv) || ')';
+        IF v_manv IS NULL THEN
+            RETURN '1=0';
+        END IF;
+        RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ''' || REPLACE(v_manv, '''', '''''') || ''')';
     END IF;
 
     RETURN '1=1';

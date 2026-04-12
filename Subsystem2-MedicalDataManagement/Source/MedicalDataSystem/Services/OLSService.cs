@@ -21,7 +21,7 @@ public class OLSService
                 SELECT
                     NVL(CHUYENKHOA, ''),
                     CASE
-                        WHEN USERNAME IN ('NV000001', 'NV000002', 'NV000003') THEN 'MULTI_SITE'
+                        WHEN USERNAME IN ('990000000001', '990000000002', '990000000003') THEN 'MULTI_SITE'
                         ELSE 'UNKNOWN'
                     END AS LOCATION_CODE,
                     CASE

@@ -33,9 +33,9 @@ public partial class LoginForm : Form
             AutoSize = true
         };
 
-        layout.Controls.Add(new Label { Text = "Oracle Username", AutoSize = true }, 0, 0);
+        layout.Controls.Add(new Label { Text = "Username (CCCD)", AutoSize = true }, 0, 0);
         layout.Controls.Add(_usernameTextBox, 1, 0);
-        layout.Controls.Add(new Label { Text = "Password", AutoSize = true }, 0, 1);
+        layout.Controls.Add(new Label { Text = "Password (CCCD)", AutoSize = true }, 0, 1);
         layout.Controls.Add(_passwordTextBox, 1, 1);
         layout.Controls.Add(new Label { Text = "Data Source", AutoSize = true }, 0, 2);
         layout.Controls.Add(_dataSourceTextBox, 1, 2);
@@ -55,13 +55,13 @@ public partial class LoginForm : Form
 
         if (!_validationService.ValidateUsername(username))
         {
-            ShowStatus("Enter a valid Oracle username.");
+            ShowStatus("Username must be a 12-digit CCCD.");
             return;
         }
 
         if (!_validationService.ValidatePassword(password))
         {
-            ShowStatus("Enter the Oracle password.");
+            ShowStatus("Password must be a 12-digit CCCD.");
             return;
         }
 

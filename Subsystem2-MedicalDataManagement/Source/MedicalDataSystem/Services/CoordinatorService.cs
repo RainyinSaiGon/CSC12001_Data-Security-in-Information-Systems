@@ -44,16 +44,17 @@ public class CoordinatorService
             command.CommandText = """
                 INSERT INTO BENHNHAN (
                     TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN,
-                    TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME
+                    TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME, PASSWORD_HASH
                 ) VALUES (
-                    :tenbn, :phai, :ngaysinh, :cccd, :sonha, :tenduong, :quanhuyen,
-                    :tinhtp, :tiensubenh, :tiensubenhgd, :diungthuoc, :username
+                    :tenbn, :phai, TRUNC(:ngaysinh), :cccd, :sonha, :tenduong, :quanhuyen,
+                    :tinhtp, :tiensubenh, :tiensubenhgd, :diungthuoc, :username, :password_hash
                 )
                 """;
+            string normalizedCccd = patient.CCCD.Trim();
             command.Parameters.Add(new OracleParameter("tenbn", patient.TENBN));
             command.Parameters.Add(new OracleParameter("phai", patient.PHAI));
             command.Parameters.Add(new OracleParameter("ngaysinh", patient.NGAYSINH));
-            command.Parameters.Add(new OracleParameter("cccd", patient.CCCD));
+            command.Parameters.Add(new OracleParameter("cccd", normalizedCccd));
             command.Parameters.Add(new OracleParameter("sonha", patient.SONHA));
             command.Parameters.Add(new OracleParameter("tenduong", patient.TENDUONG));
             command.Parameters.Add(new OracleParameter("quanhuyen", patient.QUANHUYEN));
@@ -61,7 +62,8 @@ public class CoordinatorService
             command.Parameters.Add(new OracleParameter("tiensubenh", patient.TIENSUBENH));
             command.Parameters.Add(new OracleParameter("tiensubenhgd", patient.TIENSUBENHGD));
             command.Parameters.Add(new OracleParameter("diungthuoc", patient.DIUNGTHUOC));
-            command.Parameters.Add(new OracleParameter("username", patient.USERNAME));
+            command.Parameters.Add(new OracleParameter("username", normalizedCccd));
+            command.Parameters.Add(new OracleParameter("password_hash", BCrypt.Net.BCrypt.HashPassword(normalizedCccd)));
             return command.ExecuteNonQuery() == 1;
         });
     }
@@ -75,8 +77,9 @@ public class CoordinatorService
                 UPDATE BENHNHAN
                 SET TENBN = :tenbn,
                     PHAI = :phai,
-                    NGAYSINH = :ngaysinh,
+                    NGAYSINH = TRUNC(:ngaysinh),
                     CCCD = :cccd,
+                    USERNAME = :username,
                     SONHA = :sonha,
                     TENDUONG = :tenduong,
                     QUANHUYEN = :quanhuyen,
@@ -90,6 +93,7 @@ public class CoordinatorService
             command.Parameters.Add(new OracleParameter("phai", patient.PHAI));
             command.Parameters.Add(new OracleParameter("ngaysinh", patient.NGAYSINH));
             command.Parameters.Add(new OracleParameter("cccd", patient.CCCD));
+            command.Parameters.Add(new OracleParameter("username", patient.CCCD));
             command.Parameters.Add(new OracleParameter("sonha", patient.SONHA));
             command.Parameters.Add(new OracleParameter("tenduong", patient.TENDUONG));
             command.Parameters.Add(new OracleParameter("quanhuyen", patient.QUANHUYEN));
@@ -104,7 +108,7 @@ public class CoordinatorService
 
     public bool AssignDoctorToPatient(string doctorId, string patientId)
     {
-        return CreateMedicalRecord(int.Parse(patientId), int.Parse(doctorId), string.Empty);
+        return CreateMedicalRecord(patientId, doctorId, string.Empty);
     }
 
     public bool AssignTechnicianToService(string technicianId, string serviceId)
@@ -115,10 +119,10 @@ public class CoordinatorService
             return false;
         }
 
-        return AssignTechnician(int.Parse(parts[0]), parts[1], DateTime.Parse(parts[2]), int.Parse(technicianId));
+        return AssignTechnician(int.Parse(parts[0]), parts[1], DateTime.Parse(parts[2]), technicianId);
     }
 
-    public bool CreateMedicalRecord(int patientId, int doctorId, string departmentCode)
+    public bool CreateMedicalRecord(string patientId, string doctorId, string departmentCode)
     {
         return _connectionService.Execute(connection =>
         {
@@ -134,7 +138,7 @@ public class CoordinatorService
         });
     }
 
-    public bool AssignTechnician(int medicalRecordId, string serviceType, DateTime serviceDate, int technicianId)
+    public bool AssignTechnician(int medicalRecordId, string serviceType, DateTime serviceDate, string technicianId)
     {
         return _connectionService.Execute(connection =>
         {
@@ -197,7 +201,7 @@ public class CoordinatorService
         {
             using var command = connection.CreateCommand();
             command.CommandText = """
-                SELECT MANV, HOTEN, PHAI, NGAYSINH, CMND, QUEQUAN, SODT, VAITRO, CHUYENKHOA, USERNAME
+                SELECT MANV, HOTEN, PHAI, NGAYSINH, CCCD, QUEQUAN, SODT, VAITRO, CHUYENKHOA, USERNAME
                 FROM NHANVIEN
                 WHERE CASE
                     WHEN VAITRO = N'Điều phối viên' THEN 'COORDINATOR'
@@ -216,11 +220,11 @@ public class CoordinatorService
             {
                 items.Add(new Staff
                 {
-                    MANV = reader.GetInt32(0),
+                    MANV = reader.GetString(0),
                     HOTEN = reader.GetString(1),
                     PHAI = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
                     NGAYSINH = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
-                    CMND = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    CCCD = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
                     QUEQUAN = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
                     SODT = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
                     VAITRO = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
@@ -237,7 +241,7 @@ public class CoordinatorService
     {
         return new Patient
         {
-            MABN = reader.GetInt32(0),
+            MABN = reader.GetString(0),
             TENBN = reader.GetString(1),
             PHAI = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
             NGAYSINH = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
