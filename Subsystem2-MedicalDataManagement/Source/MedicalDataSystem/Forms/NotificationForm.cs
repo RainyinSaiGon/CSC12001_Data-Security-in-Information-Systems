@@ -28,6 +28,8 @@ public partial class NotificationForm : Form
             TextAlign = ContentAlignment.MiddleLeft
         };
 
+        _grid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_grid);
+
         Controls.Add(_grid);
         Controls.Add(header);
     }
@@ -42,6 +44,26 @@ public partial class NotificationForm : Form
         catch (Exception ex)
         {
             MessageBox.Show(this, ex.Message, "Notifications", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private static void ApplyVietnameseHeaders(DataGridView grid)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MATHONGBAO"] = "Mã Thông Báo",
+            ["NOIDUNG"] = "Nội Dung",
+            ["NGAYGIO"] = "Ngày Giờ",
+            ["DIADIEM"] = "Địa Điểm"
+        };
+
+        foreach (DataGridViewColumn column in grid.Columns)
+        {
+            string key = string.IsNullOrWhiteSpace(column.DataPropertyName) ? column.Name : column.DataPropertyName;
+            if (headers.TryGetValue(key, out string? text))
+            {
+                column.HeaderText = text;
+            }
         }
     }
 }

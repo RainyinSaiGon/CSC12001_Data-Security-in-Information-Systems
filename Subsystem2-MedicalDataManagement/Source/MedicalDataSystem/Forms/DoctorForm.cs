@@ -66,6 +66,8 @@ public partial class DoctorForm : BaseMedicalForm
 
         _patientsGrid.DataSource = _patientsBindingSource;
         _recordsGrid.DataSource = _recordsBindingSource;
+        _patientsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_patientsGrid);
+        _recordsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_recordsGrid);
 
         var updateRecordButton = new Button
         {
@@ -321,6 +323,42 @@ public partial class DoctorForm : BaseMedicalForm
         _patientsBindingSource.DataSource = _allPatients
             .Where(p => (p.CCCD ?? string.Empty).Contains(keyword, StringComparison.OrdinalIgnoreCase))
             .ToList();
+    }
+
+    private static void ApplyVietnameseHeaders(DataGridView grid)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MABN"] = "Mã Bệnh Nhân",
+            ["TENBN"] = "Tên Bệnh Nhân",
+            ["PHAI"] = "Giới Tính",
+            ["NGAYSINH"] = "Ngày Sinh",
+            ["CCCD"] = "CCCD",
+            ["SONHA"] = "Số Nhà",
+            ["TENDUONG"] = "Tên Đường",
+            ["QUANHUYEN"] = "Quận/Huyện",
+            ["TINHTP"] = "Tỉnh/TP",
+            ["TIENSUBENH"] = "Tiền Sử Bệnh",
+            ["TIENSUBENHGD"] = "Tiền Sử Bệnh GĐ",
+            ["DIUNGTHUOC"] = "Dị Ứng Thuốc",
+            ["USERNAME"] = "Tên Đăng Nhập",
+            ["MAHSBA"] = "Mã Hồ Sơ",
+            ["NGAY"] = "Ngày Khám",
+            ["CHANDOAN"] = "Chẩn Đoán",
+            ["DIEUTRI"] = "Điều Trị",
+            ["KETLUAN"] = "Kết Luận",
+            ["MABS"] = "Mã Bác Sĩ",
+            ["MAKHOA"] = "Mã Khoa"
+        };
+
+        foreach (DataGridViewColumn column in grid.Columns)
+        {
+            string key = string.IsNullOrWhiteSpace(column.DataPropertyName) ? column.Name : column.DataPropertyName;
+            if (headers.TryGetValue(key, out string? text))
+            {
+                column.HeaderText = text;
+            }
+        }
     }
 
     private void ApplyRecordFilter()

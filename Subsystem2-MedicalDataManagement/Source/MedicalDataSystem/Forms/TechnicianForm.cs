@@ -50,6 +50,7 @@ public partial class TechnicianForm : BaseMedicalForm
         _servicesSearchFieldComboBox.SelectedIndexChanged += (_, _) => ApplyServicesFilter();
 
         _servicesGrid.DataSource = _servicesBindingSource;
+        _servicesGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_servicesGrid);
 
         var scrollHost = new Panel
         {
@@ -307,6 +308,27 @@ public partial class TechnicianForm : BaseMedicalForm
                 _ => true
             })
             .ToList();
+    }
+
+    private static void ApplyVietnameseHeaders(DataGridView grid)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MAHSBA"] = "Mã Hồ Sơ",
+            ["LOAIDV"] = "Loại Dịch Vụ",
+            ["NGAYDV"] = "Ngày Dịch Vụ",
+            ["KETQUA"] = "Kết Quả",
+            ["MAKTV"] = "Mã Kỹ Thuật Viên"
+        };
+
+        foreach (DataGridViewColumn column in grid.Columns)
+        {
+            string key = string.IsNullOrWhiteSpace(column.DataPropertyName) ? column.Name : column.DataPropertyName;
+            if (headers.TryGetValue(key, out string? text))
+            {
+                column.HeaderText = text;
+            }
+        }
     }
 
     private void SaveResult()

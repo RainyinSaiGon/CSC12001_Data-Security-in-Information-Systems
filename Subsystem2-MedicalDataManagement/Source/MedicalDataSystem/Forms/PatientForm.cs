@@ -66,6 +66,8 @@ public partial class PatientForm : BaseMedicalForm
         ConfigureGrid(_prescriptionsGrid);
         _recordsGrid.DataSource = _recordsBindingSource;
         _prescriptionsGrid.DataSource = _prescriptionsBindingSource;
+        _recordsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_recordsGrid);
+        _prescriptionsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_prescriptionsGrid);
 
         _recordsDateFilterPicker.Checked = false;
         _prescriptionsDateFilterPicker.Checked = false;
@@ -344,6 +346,33 @@ public partial class PatientForm : BaseMedicalForm
         _recordsBindingSource.DataSource = _allRecords
             .Where(r => r.NGAY.Date == target)
             .ToList();
+    }
+
+    private static void ApplyVietnameseHeaders(DataGridView grid)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MAHSBA"] = "Mã Hồ Sơ",
+            ["MABN"] = "Mã Bệnh Nhân",
+            ["NGAY"] = "Ngày Khám",
+            ["CHANDOAN"] = "Chẩn Đoán",
+            ["DIEUTRI"] = "Điều Trị",
+            ["KETLUAN"] = "Kết Luận",
+            ["MABS"] = "Mã Bác Sĩ",
+            ["MAKHOA"] = "Mã Khoa",
+            ["NGAYDT"] = "Ngày Điều Trị",
+            ["TENTHUOC"] = "Tên Thuốc",
+            ["LIEUDUNG"] = "Liều Dùng"
+        };
+
+        foreach (DataGridViewColumn column in grid.Columns)
+        {
+            string key = string.IsNullOrWhiteSpace(column.DataPropertyName) ? column.Name : column.DataPropertyName;
+            if (headers.TryGetValue(key, out string? text))
+            {
+                column.HeaderText = text;
+            }
+        }
     }
 
     private void ApplyPrescriptionDateFilter()

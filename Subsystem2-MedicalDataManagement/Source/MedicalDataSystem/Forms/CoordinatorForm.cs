@@ -134,6 +134,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         _cccdSearchTextBox.TextChanged += (_, _) => ApplyPatientFilter();
 
         _patientsGrid.DataSource = _patientsBindingSource;
+        _patientsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_patientsGrid);
 
         _patientsGrid.BackgroundColor = Color.White;
         _patientsGrid.BorderStyle = BorderStyle.None;
@@ -404,6 +405,35 @@ public partial class CoordinatorForm : BaseMedicalForm
         _patientsBindingSource.DataSource = _allPatients
             .Where(p => (p.CCCD ?? string.Empty).Contains(keyword, StringComparison.OrdinalIgnoreCase))
             .ToList();
+    }
+
+    private static void ApplyVietnameseHeaders(DataGridView grid)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MABN"] = "Mã Bệnh Nhân",
+            ["TENBN"] = "Tên Bệnh Nhân",
+            ["PHAI"] = "Giới Tính",
+            ["NGAYSINH"] = "Ngày Sinh",
+            ["CCCD"] = "CCCD",
+            ["SONHA"] = "Số Nhà",
+            ["TENDUONG"] = "Tên Đường",
+            ["QUANHUYEN"] = "Quận/Huyện",
+            ["TINHTP"] = "Tỉnh/TP",
+            ["TIENSUBENH"] = "Tiền Sử Bệnh",
+            ["TIENSUBENHGD"] = "Tiền Sử Bệnh GĐ",
+            ["DIUNGTHUOC"] = "Dị Ứng Thuốc",
+            ["USERNAME"] = "Tên Đăng Nhập"
+        };
+
+        foreach (DataGridViewColumn column in grid.Columns)
+        {
+            string key = string.IsNullOrWhiteSpace(column.DataPropertyName) ? column.Name : column.DataPropertyName;
+            if (headers.TryGetValue(key, out string? text))
+            {
+                column.HeaderText = text;
+            }
+        }
     }
 
     private void AddPatient()
