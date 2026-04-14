@@ -308,12 +308,13 @@ public partial class PatientForm : BaseMedicalForm
 
     private void LoadData()
     {
-        if (string.IsNullOrWhiteSpace(_session.PatientId))
+        string? patientId = _session.PatientId;
+        if (string.IsNullOrWhiteSpace(patientId))
         {
             return;
         }
 
-        Patient? patient = _patientService.GetPatient(_session.PatientId);
+        Patient? patient = _patientService.GetPatient(patientId);
         if (patient is null)
         {
             return;
@@ -328,8 +329,8 @@ public partial class PatientForm : BaseMedicalForm
         _tiensuGiaDinhTextBox.Text = patient.TIENSUBENHGD;
         _diungTextBox.Text = patient.DIUNGTHUOC;
 
-        _allRecords = _patientService.GetMyMedicalRecords(_session.PatientId.Value.ToString());
-        _allPrescriptions = _patientService.GetMyPrescriptions(_session.PatientId.Value.ToString());
+        _allRecords = _patientService.GetMyMedicalRecords(patientId);
+        _allPrescriptions = _patientService.GetMyPrescriptions(patientId);
         ApplyRecordDateFilter();
         ApplyPrescriptionDateFilter();
     }

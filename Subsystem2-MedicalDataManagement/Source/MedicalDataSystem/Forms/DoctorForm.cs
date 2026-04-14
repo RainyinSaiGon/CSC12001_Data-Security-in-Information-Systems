@@ -298,12 +298,12 @@ public partial class DoctorForm : BaseMedicalForm
 
     private void RefreshData()
     {
-        if (string.IsNullOrWhiteSpace(_session.StaffId))
+        string? doctorId = _session.StaffId;
+        if (string.IsNullOrWhiteSpace(doctorId))
         {
             return;
         }
 
-        string doctorId = _session.StaffId.Value.ToString();
         _allPatients = _doctorService.GetAssignedPatients(doctorId);
         _allRecords = _doctorService.GetAssignedMedicalRecords(doctorId);
         ApplyPatientFilter();

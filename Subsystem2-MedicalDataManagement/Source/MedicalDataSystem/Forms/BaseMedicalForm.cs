@@ -6,6 +6,8 @@ namespace MedicalDataSystem.Forms
 {
     public partial class BaseMedicalForm : Form
     {
+        private readonly Button _logoutButton = new();
+
         public BaseMedicalForm()
         {
             // InitializeComponent();
@@ -14,15 +16,13 @@ namespace MedicalDataSystem.Forms
 
         private void SetupBaseUi()
         {
-            Button btnLogout = new Button
-            {
-                Text = "Đăng xuất",
-                Size = new Size(100, 30),
-                Location = new Point(this.ClientSize.Width - 110, this.ClientSize.Height - 40),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                BackColor = Color.LightCoral
-            };
-            btnLogout.Click += (s, e) => {
+            _logoutButton.Text = "Đăng xuất";
+            _logoutButton.Size = new Size(100, 30);
+            _logoutButton.Location = new Point(this.ClientSize.Width - 110, this.ClientSize.Height - 40);
+            _logoutButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            _logoutButton.BackColor = Color.LightCoral;
+
+            _logoutButton.Click += (s, e) => {
                 if (MessageBox.Show("Bạn có muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     
@@ -31,7 +31,18 @@ namespace MedicalDataSystem.Forms
                     this.Close(); // Đóng Form hiện tại
                 }
             };
-            this.Controls.Add(btnLogout);
+
+            this.Controls.Add(_logoutButton);
+            _logoutButton.BringToFront();
+        }
+
+        protected override void OnControlAdded(ControlEventArgs e)
+        {
+            base.OnControlAdded(e);
+            if (!ReferenceEquals(e.Control, _logoutButton))
+            {
+                _logoutButton.BringToFront();
+            }
         }
     }
 }

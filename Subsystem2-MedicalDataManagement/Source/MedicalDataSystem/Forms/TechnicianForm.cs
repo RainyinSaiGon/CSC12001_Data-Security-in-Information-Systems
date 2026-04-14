@@ -276,12 +276,13 @@ public partial class TechnicianForm : BaseMedicalForm
 
     private void RefreshData()
     {
-        if (string.IsNullOrWhiteSpace(_session.StaffId))
+        string? staffId = _session.StaffId;
+        if (string.IsNullOrWhiteSpace(staffId))
         {
             return;
         }
 
-        _allServices = _technicianService.GetAssignedServices(_session.StaffId.Value.ToString());
+        _allServices = _technicianService.GetAssignedServices(staffId);
         ApplyServicesFilter();
     }
 

@@ -119,11 +119,11 @@ public partial class CoordinatorForm : BaseMedicalForm
         _serviceTypeTextBox.Dock = DockStyle.Fill;
         _serviceTypeTextBox.PlaceholderText = "Loại dịch vụ";
         _doctorComboBox.Dock = DockStyle.Fill;
-        _doctorComboBox.DropDownStyle = ComboBoxStyle.DropDown;
+        _doctorComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
         _doctorComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         _doctorComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
         _technicianComboBox.Dock = DockStyle.Fill;
-        _technicianComboBox.DropDownStyle = ComboBoxStyle.DropDown;
+        _technicianComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
         _technicianComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         _technicianComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
         _serviceDatePicker.Dock = DockStyle.Fill;
@@ -470,6 +470,18 @@ public partial class CoordinatorForm : BaseMedicalForm
         try
         {
             string patientId = _patientIdTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(patientId))
+            {
+                MessageBox.Show(this, "Vui lòng nhập mã bệnh nhân.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (_doctorComboBox.SelectedValue is null)
+            {
+                MessageBox.Show(this, "Vui lòng chọn bác sĩ từ danh sách.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string doctorId = _doctorComboBox.SelectedValue?.ToString() ?? string.Empty;
             _coordinatorService.CreateMedicalRecord(patientId, doctorId, string.Empty);
             MessageBox.Show(this, "Đã tạo hồ sơ và phân công bác sĩ.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -484,7 +496,18 @@ public partial class CoordinatorForm : BaseMedicalForm
     {
         try
         {
-            int recordId = int.Parse(_recordIdTextBox.Text);
+            if (!int.TryParse(_recordIdTextBox.Text, out int recordId))
+            {
+                MessageBox.Show(this, "Mã hồ sơ không hợp lệ.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (_technicianComboBox.SelectedValue is null)
+            {
+                MessageBox.Show(this, "Vui lòng chọn kỹ thuật viên từ danh sách.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string technicianId = _technicianComboBox.SelectedValue?.ToString() ?? string.Empty;
             _coordinatorService.AssignTechnician(recordId, _serviceTypeTextBox.Text.Trim(), _serviceDatePicker.Value, technicianId);
             MessageBox.Show(this, "Đã phân công kỹ thuật viên.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);

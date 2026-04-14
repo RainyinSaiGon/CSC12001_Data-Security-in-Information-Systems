@@ -13,9 +13,10 @@ partial class CoordinatorForm
     /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
+        if (disposing)
         {
-            components.Dispose();
+            _patientsBindingSource?.Dispose();
+            components?.Dispose();
         }
         base.Dispose(disposing);
     }

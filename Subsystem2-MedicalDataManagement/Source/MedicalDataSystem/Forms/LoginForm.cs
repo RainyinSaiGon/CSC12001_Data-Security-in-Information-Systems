@@ -206,7 +206,7 @@ public partial class LoginForm : Form
             Text = "👁",
             Dock = DockStyle.Fill,
             FlatStyle = FlatStyle.Flat,
-            Margin = Padding.Empty,
+            Margin = new Padding(0, 0, 24, 0),
             BackColor = Color.FromArgb(248, 250, 252),
             Font = new Font("Segoe UI Emoji", 10)
         };
