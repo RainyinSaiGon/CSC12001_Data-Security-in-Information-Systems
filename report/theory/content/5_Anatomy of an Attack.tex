@@ -1,0 +1,175 @@
+\section{Anatomy of an Attack}
+
+In order to develop practical and efficacious countermeasures, it is essential that the objectives, the key targets, and the characteristics of an attack must be known.
+
+\subsection{What Motivates Attackers?}
+
+Contrary to popular belief, today's attackers are not merely socially marginalised individuals driven by thrill-seeking impulses or amateur experimentation. There is much more complexity to the reasons behind attacks, namely:
+
+\begin{itemize}
+  \item Monetary gain:
+  \begin{itemize}
+    \item Objective: To generate illicit profit through theft or extortion.
+    \item A real-life example: Hieu Ngo Minh, also known as Hieu PC, a Vietnamese hacker who was formerly involved in identity-theft operations, stole and sold large volumes of personally identifiable information, including millions of U.S. Social Security numbers by exploiting the vulnerabilities of the systems. His activities generated substantial illegal profits and caused significant financial damage. In his 20s, he made roughly \$100,000 just by hacking and selling [9]. He later admitted that he was motivated by financial pressure and his own greed.
+  \end{itemize}
+  [10]
+
+  \item Attention-seeking behaviours or notoriety gain:
+  \begin{itemize}
+    \item Objective: Mainly to achieve fame and recognition in cyberspace.
+    \item A real-life example: The hacker group LulzSec carried out a high-profile cyberattack in 2011 targeting organisation of Sony using an SQL injection attack – which exploits flaws in the handing of data input for databases to take control of a system – against the studio's website. Rather than focusing on financial profit, the group aimed to embarrass companies and demonstrate security flaws to gain notoriety. Their attacks exposed millions of users' data and generated widespread media coverage.
+  \end{itemize}
+  [11]
+
+  \item The imposition of beliefs or systems on others:
+  \begin{itemize}
+    \item Objective: To promote political, social, or ideological agendas by influencing public opinion.
+    \item A real-life example: Anonymous is an international collective, a group of hacktivists that distorts the line between activism and cybercrime. Over the years, Anonymous has executed campaigns targeting a variety of organisations such as PayPal and Sony, in response to perceived injustices or threats to free speech. Significant campaigns include Project Chanology, Operation Payback, and more recent actions in support of the Black Lives Matter movement following George Floyd's death, which used the technique of DDoS attacks to overwhelm the targeted websites.
+  \end{itemize}
+  [12] [13]
+
+  \item Personal anger:
+  \begin{itemize}
+    \item Objective: To exact revenge due to personal conflicts.
+    \item A real-life example: In 2000, the Maroochy Water Services attack in Australia involved a former employee, Vitek Boden, who used his insider knowledge of SCADA systems to manipulate sewage infrastructure. He left his job after a rocky relationship with his employer and was denied a job position after applying for the Maroochy Shire Council. As a former insider, he stole a specialized radio transmitter (a PDS compact 500) and a laptop loaded with the facility's proprietary control software. He drove his car around the facility's physical perimeter and used the radio system to intercept the plant's unsecured intra-network radio signals. He then masqueraded as a legitimate pumping station, injecting false commands directly into the Programmable Logic Controllers (PLCs) to alter pump configurations, disable system alarms, and force the sewage overflow. His actions released hundreds of thousands of litres of sewage into local waterways and thus causing pollution.
+  \end{itemize}
+  [14]
+
+  \item Nation-state cyberwarfare:
+  \begin{itemize}
+    \item Objective: To achieve strategic geopolitical or military advantages by disrupting critical infrastructure or intelligence capabilities.
+    \item A real-life example: Stuxnet (2010) is widely considered the first digital weapon used for cyberwarfare. It was a sophisticated computer worm, allegedly developed by the United States and Israel, designed specifically to target Iran's nuclear program. It specifically infected computers controlling the centrifuges at the Natanz nuclear facility, causing them to operate irregularly and degrade faster than normal, thus hindering uranium enrichment efforts.
+  \end{itemize}
+  [15] [16]
+
+  \item Economic espionage:
+  \begin{itemize}
+    \item Objective: To obtain intellectual property, trade secrets, or sensitive business information for economic or technological advantage.
+    \item A real-life example: In 2026, a former Google engineer, Linwei Ding, was convicted of economic espionage after stealing more than 2,000 confidential AI-related documents while employed at the company. Prosecutors stated that the stolen information contained sensitive trade secrets that could benefit two Chinese companies he was secretly working for. He did not have to "hack" into Google; as a software engineer, he already possessed authorized access to the supercomputing data center infrastructure.
+  \end{itemize}
+  [17] [18]
+\end{itemize}
+
+\subsection{The Purpose of an Attack}
+
+There are four primary purposes of an attack:
+
+\begin{itemize}
+  \item Denial of availability: To prevent legitimate users from accessing a system or data.
+  \item Data modification: To modify, delete, or overwrite files on a local or network drive. Alternatively, the goals might be the modification of system settings or browser security settings.
+  \item Data export (exfiltration): To steal information and transfer it to external destination.
+  \item Launch point: To target a device as a launch point to infect and target other devices as part of a greater attack plan.
+\end{itemize}
+
+\subsection{Types of Attacks}
+
+\subsubsection{Unstructured Attacks}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item Frequently executed by moderately skilled attackers targeting network resources.
+    \item Limited planning.
+    \item Utilising existing scripts, toolkits, or automated exploits available on the Internet to scan for known vulnerabilities.
+  \end{itemize}
+  \item Motivation: To achieve personal gratification, such as the thrill of overcoming security measures, gaining illegal access, or earning recognition within hacker communities.
+  \item Target: Publicly accessible network resources, vulnerable websites, or systems discovered through automated scanning for known weaknesses.
+  \item Impact: Unstructured attacks may lead to website defacement, accidental system crashes, data exposure, or the discovery of unintended vulnerabilities that can later be exploited through more organised attacks.
+  \item A case in point: The "Mafiaboy" DDoS Attacks (2000), Michael Calce, a 15-year-old Canadian high school student known as "Mafiaboy," launched a series of massive Denial-of-Service attacks against major industry giants, including Yahoo!, CNN, eBay, and Amazon.
+\end{itemize}
+
+[19]
+
+\subsubsection{Structured attacks}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item Carefully planned and methodical in nature.
+    \item Typically carried out by highly skilled attackers or organised groups.
+    \item Involve sophisticated hacking techniques to identify, probe, penetrate, and carry out malicious activities.
+  \end{itemize}
+  \item Motivation: Financial gain, political or ideological objectives, retaliation, or strategic advantage.
+  \item Target: Specific and high-value targets, such as government agencies, large enterprises, critical infrastructure, or individuals with privileged access.
+  \item Impact: Can lead to severe and long-term consequences, including large-scale data breaches, service disruption, financial losses, and compromise of critical systems.
+  \item A case in point: Carried out by a highly sophisticated sponsored group (identified as Nobelium/APT29), the attackers compromised the build system of the SolarWinds Orion platform. By injecting the "Sunburst" backdoor into legitimate software updates, they successfully infiltrated over 18,000 organisations, including high-value targets such as government departments, namely Homeland Security, State, Commerce and Treasury were affected. The attack remained undetected for months, which is the manifestation of the extreme planning and patience characteristic of a typical structured threat.
+\end{itemize}
+
+[20] [21]
+
+\subsubsection{Direct Attacks}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item Executed in real time, where attackers interact directly with the target system.
+    \item Might involve remote logon attempts, password guessing, session hijacking, or exploitation of known software vulnerabilities.
+    \item Can be either unstructured or structured, depending on the attacker's skill level and planning.
+  \end{itemize}
+  \item Motivation: Varies from personal gratification and experimentation to financial gain, disruption, or preparation for larger coordinated attacks.
+  \item Target: Specific organisations, individual systems, or classes of targets such as networks running particular hardware, operating systems, or vulnerable services.
+  \item Impact: Direct attacks may result in website defacement, unauthorised access, malware implantation, or the compromise of internal network resources, potentially enabling further attacks.
+  \item A case in point: The MOVEit Transfer exploit (2023), where attackers (CL0P) exploited a vulnerability in file-transfer software to directly access sensitive data from organisations worldwide. This zero-day vulnerability enabled attackers to exploit public-facing servers via SQL injection, facilitating unauthorised file theft.
+\end{itemize}
+
+[22]
+
+\subsubsection{Indirect Attacks}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item Executed by preprogrammed malicious code such as worms or viruses.
+    \item Propagate automatically and indiscriminately without direct interaction from the attacker.
+    \item Often exploit specific software vulnerabilities, but spread widely across networks and systems.
+  \end{itemize}
+  \item Motivation: To achieve large-scale disruption, widespread infection, or to amplify the impact of an attack with minimal ongoing attacker involvement.
+  \item Target: Broad and non-specific targets, including any vulnerable systems or networks.
+  \item Impact: Can lead to rapid and widespread system compromise, network congestion, denial of service, data loss, and increased recovery costs for affected organisations.
+  \item A case in point: The WannaCry ransomware worm (2017), which exploited the EternalBlue vulnerability in Microsoft Windows systems. Once released, the malware propagated automatically across networks without requiring continuous attacker interaction, encrypting victims' files and demanding ransom payments in cryptocurrency. The attack rapidly spread across more than 150 countries, disrupting hospitals, transportation services, and businesses worldwide.
+\end{itemize}
+
+[23] [24]
+
+\subsection{Phases of an Attack}
+
+\subsubsection{Reconnaissance and Probing}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item The most important phase.
+    \item The initial information-gathering phase where attackers identify potential entry points and vulnerabilities.
+    \item Involves techniques such as DNS lookups, ICMP probing, SNMP queries, port scanning, and vulnerability assessment tools.
+    \item May also include collecting publicly available information about organisations, infrastructure, and personnel.
+  \end{itemize}
+  \item Objective: To build a detailed profile of the target environment, including operating systems, open ports, network topology, and exposed services.
+  \item Impact: Even without direct intrusion, reconnaissance activities can expose sensitive operational details and increase the likelihood of a successful attack.
+\end{itemize}
+
+\subsubsection{Access and Privilege Escalation}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item Attackers attempt to gain unauthorised entry through exploits, stolen credentials, rogue wireless access points, or legacy remote-access services.
+    \item Techniques include password capturing, cracking, and deploying Remote Access Trojans (RATs) to maintain persistence.
+    \item Privilege escalation is often performed to obtain administrative-level control.
+  \end{itemize}
+  \item Objective: To establish a stable foothold within the target system and expand control across the network.
+  \item Impact: Successful access may lead to malware installation, lateral movement, data theft, or long-term system compromise.
+\end{itemize}
+
+\subsubsection{Covering Traces of the Attack}
+
+\begin{itemize}
+  \item Characteristics:
+  \begin{itemize}
+    \item Attackers attempt to erase or modify logs, remove malicious files, and restore systems to a preattack state to avoid detection.
+    \item May involve disabling monitoring tools or bypassing auditing mechanisms.
+  \end{itemize}
+  \item Objective: To conceal attacker activity and prolong unauthorised access.
+  \item Impact: Makes incident response and forensic investigation significantly more difficult, increasing organisational risk.
+\end{itemize}
+
+[8]

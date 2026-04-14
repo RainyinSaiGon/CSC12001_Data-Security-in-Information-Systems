@@ -308,12 +308,12 @@ public partial class PatientForm : BaseMedicalForm
 
     private void LoadData()
     {
-        if (_session.PatientId is null)
+        if (string.IsNullOrWhiteSpace(_session.PatientId))
         {
             return;
         }
 
-        Patient? patient = _patientService.GetPatient(_session.PatientId.Value.ToString());
+        Patient? patient = _patientService.GetPatient(_session.PatientId);
         if (patient is null)
         {
             return;
@@ -391,14 +391,14 @@ public partial class PatientForm : BaseMedicalForm
 
     private void SaveProfile()
     {
-        if (_session.PatientId is null)
+        if (string.IsNullOrWhiteSpace(_session.PatientId))
         {
             return;
         }
 
         var patient = new Patient
         {
-            MABN = _session.PatientId.Value,
+            MABN = _session.PatientId,
             SONHA = _sonhaTextBox.Text.Trim(),
             TENDUONG = _tenduongTextBox.Text.Trim(),
             QUANHUYEN = _quanhuyenTextBox.Text.Trim(),

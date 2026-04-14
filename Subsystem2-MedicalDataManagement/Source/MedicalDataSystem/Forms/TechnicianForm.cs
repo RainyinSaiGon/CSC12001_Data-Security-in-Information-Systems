@@ -276,7 +276,7 @@ public partial class TechnicianForm : BaseMedicalForm
 
     private void RefreshData()
     {
-        if (_session.StaffId is null)
+        if (string.IsNullOrWhiteSpace(_session.StaffId))
         {
             return;
         }

@@ -1,0 +1,53 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 6 items.
+The style file: unsrt.bst
+Reallocating 'name_of_file' (item size: 1) to 4 items.
+Database file #1: ref.bib
+Warning--empty institution in oldref45
+Warning--empty institution in oldref47
+Warning--empty institution in oldref60
+Warning--empty institution in oldref61
+You've used 89 entries,
+            1791 wiz_defined-function locations,
+            738 strings with 14362 characters,
+and the built_in function-call counts, 11867 in all, are:
+= -- 1025
+> -- 402
+< -- 2
++ -- 190
+- -- 101
+* -- 157
+:= -- 1905
+add.period$ -- 276
+call.type$ -- 89
+change.case$ -- 96
+chr.to.int$ -- 0
+cite$ -- 93
+duplicate$ -- 486
+empty$ -- 1555
+format.name$ -- 101
+if$ -- 2806
+int.to.chr$ -- 0
+int.to.str$ -- 89
+missing$ -- 12
+newline$ -- 457
+num.names$ -- 89
+pop$ -- 489
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 260
+stack$ -- 0
+substring$ -- 0
+swap$ -- 82
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 4
+while$ -- 89
+width$ -- 91
+write$ -- 918
+(There were 4 warnings)

@@ -321,13 +321,13 @@ public partial class LoginForm : Form
 
         if (!_validationService.ValidateUsername(username))
         {
-            ShowStatus("Enter a valid Oracle username.");
+            ShowStatus("Username must be a 12-digit CCCD.");
             return;
         }
 
         if (!_validationService.ValidatePassword(password))
         {
-            ShowStatus("Enter the Oracle password.");
+            ShowStatus("Password must be a 12-digit CCCD.");
             return;
         }
 

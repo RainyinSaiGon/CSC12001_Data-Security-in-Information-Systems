@@ -35,7 +35,7 @@ public class TechnicianService
                     LOAIDV = reader.GetString(1),
                     NGAYDV = reader.GetDateTime(2),
                     KETQUA = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                    MAKTV = reader.IsDBNull(4) ? 0 : reader.GetInt32(4)
+                    MAKTV = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
                 });
             }
 

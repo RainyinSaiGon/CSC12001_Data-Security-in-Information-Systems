@@ -32,7 +32,7 @@ public class PatientService
 
             return new Patient
             {
-                MABN = reader.GetInt32(0),
+                MABN = reader.GetString(0),
                 TENBN = reader.GetString(1),
                 PHAI = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
                 NGAYSINH = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
@@ -94,12 +94,12 @@ public class PatientService
                 items.Add(new MedicalRecord
                 {
                     MAHSBA = reader.GetInt32(0),
-                    MABN = reader.GetInt32(1),
+                    MABN = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                     NGAY = reader.GetDateTime(2),
                     CHANDOAN = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
                     DIEUTRI = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
                     KETLUAN = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                    MABS = reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                    MABS = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
                     MAKHOA = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
                 });
             }
