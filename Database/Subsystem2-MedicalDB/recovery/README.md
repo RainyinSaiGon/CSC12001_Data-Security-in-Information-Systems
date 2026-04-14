@@ -237,6 +237,97 @@ Expected:
 	- `D:\oracle-backup\logical\auto_logical_*.dmp`
 
 ## Optional Cleanup For Re-Test
+  
+---
+
+
+## Bật Flashback Database (Oracle XE/Standard/Enterprise)
+
+### Quy trình chuẩn bật Flashback Database
+
+1. **Tạo thư mục Recovery Area trên Windows:**
+	- Ví dụ: `D:\oracle-backup\fra`
+	- Đảm bảo thư mục này tồn tại trước khi cấu hình trong Oracle.
+
+2. **Cấu hình Recovery Area và dung lượng:**
+	```sql
+	ALTER SYSTEM SET db_recovery_file_dest = 'D:/oracle-backup/fra' SCOPE=BOTH;
+	ALTER SYSTEM SET db_recovery_file_dest_size = 10G SCOPE=BOTH;
+	```
+	- Nếu gặp lỗi `ORA-01263` hoặc `O/S-Error: (OS 2)`, hãy kiểm tra lại đường dẫn và tạo thư mục đúng trên hệ điều hành.
+
+3. **Tắt database và khởi động lại ở chế độ MOUNT:**
+	```sql
+	SHUTDOWN IMMEDIATE;
+	STARTUP MOUNT;
+	```
+
+4. **Bật Flashback Database:**
+	```sql
+	ALTER DATABASE FLASHBACK ON;
+	```
+	- Nếu gặp lỗi `ORA-38709: Recovery Area is not enabled`, hãy kiểm tra lại bước 2.
+
+5. **Mở lại database:**
+	```sql
+	ALTER DATABASE OPEN;
+	```
+
+### Lưu ý
+- Thực hiện từng lệnh một, không nên chạy block nhiều lệnh cùng lúc.
+- Nếu instance đang chạy, phải shutdown hoàn toàn trước khi STARTUP MOUNT.
+- Có thể kiểm tra trạng thái instance bằng:
+  ```sql
+  SELECT status FROM v$instance;
+  ```
+- Nếu dùng Oracle XE, tính năng Flashback Database vẫn hỗ trợ nhưng cần đúng quy trình như trên.
+
+---
+
+### Why can't I find the backup job in Windows Task Scheduler?
+
+The automatic backup jobs (e.g., `MED_AUTO_LOGICAL_BACKUP_JOB`) are managed by Oracle's internal `DBMS_SCHEDULER`, not by Windows Task Scheduler. You will not see these jobs in the Windows Task Scheduler interface. To view or manage these jobs, use Oracle tools (SQL*Plus, SQLcl, SQL Developer) and query Oracle's scheduler tables:
+
+```sql
+SELECT job_name, enabled, state, last_start_date, next_run_date
+FROM dba_scheduler_jobs
+WHERE job_name = 'MED_AUTO_LOGICAL_BACKUP_JOB';
+```
+Or, for user-owned jobs:
+```sql
+SELECT job_name, enabled, state, last_start_date, next_run_date
+FROM user_scheduler_jobs
+WHERE job_name = 'MED_AUTO_LOGICAL_BACKUP_JOB';
+```
+
+---
+
+### ORA-03001: unimplemented feature when enabling Flashback
+
+If you encounter this error when running:
+```sql
+alter database flashback on;
+```
+It means your Oracle edition or configuration does not support this feature, or you are not in the correct database state. 
+-- run in root 
+**Correct steps to enable Flashback Database:**
+1. Ensure your database is in ARCHIVELOG mode.
+2. Configure a flash recovery area:
+	```sql
+	ALTER SYSTEM SET db_recovery_file_dest = 'D:/oracle-backup/flash_recovery_area';
+	ALTER SYSTEM SET db_recovery_file_dest_size = 10G;
+	```
+3. Restart the database in MOUNT mode:
+	```sql
+	SHUTDOWN IMMEDIATE;
+	STARTUP MOUNT;
+	ALTER DATABASE FLASHBACK ON;
+	ALTER DATABASE OPEN;
+	```
+
+If you are using Oracle XE or a version/edition that does not support Flashback Database, this command will not work.
+
+Check your Oracle version and edition if you need this feature.
 If you need a clean scheduler state before re-running scripts:
 
 ```sql
