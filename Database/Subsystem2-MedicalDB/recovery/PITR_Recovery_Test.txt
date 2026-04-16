@@ -1,10 +1,11 @@
 -- Đóng PDB trước khi phục hồi
 ALTER PLUGGABLE DATABASE XEPDB1 CLOSE IMMEDIATE;
+SHUTDOWN IMMEDIATE;
+STARTUP MOUNT;
 
 -- RMAN script (lưu thành file: pitr_recover_rman.rman)
 -- Chạy trong RMAN:
 -- rman target /
--- RMAN> @pitr_recover_rman.rman
 
 RUN {
   SET UNTIL TIME "TO_DATE('2026-04-14 21:06:00', 'YYYY-MM-DD HH24:MI:SS')";
@@ -13,4 +14,5 @@ RUN {
 }
 
 -- Sau khi recover xong, mở lại PDB
-ALTER PLUGGABLE DATABASE XEPDB1 OPEN RESETLOGS;
+ALTER DATABASE OPEN RESETLOGS;
+ALTER SESSION SET CONTAINER = XEPDB1;

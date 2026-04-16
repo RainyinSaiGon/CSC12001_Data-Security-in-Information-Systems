@@ -1,0 +1,1 @@
+impdp system/<mật khẩu sys>@localhost:1521/xepdb1 directory=MEDICAL_BACKUP_DIR dumpfile=<your_file_name>.DMP schemas=HOSPITAL_ADMIN table_exists_action=replace exclude=PROCACT_INSTANCE nologfile=yes
