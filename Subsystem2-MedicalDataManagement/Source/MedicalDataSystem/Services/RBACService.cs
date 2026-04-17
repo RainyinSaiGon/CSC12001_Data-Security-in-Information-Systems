@@ -382,6 +382,14 @@ public class RBACService
                 return false;
             }
 
+            string mandatoryRole = GetMandatoryRoleForUser(connection, transaction, safeUsername);
+            if (!string.IsNullOrWhiteSpace(mandatoryRole) && string.Equals(mandatoryRole, normalizedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                LastErrorMessage = $"Cannot revoke base role {normalizedRole} of user {safeUsername}.";
+                transaction.Rollback();
+                return false;
+            }
+
             ExecuteNonQuery(connection, transaction, $"REVOKE {normalizedRole} FROM {safeUsername}");
             LastRoleOperation = "REVOKED";
             transaction.Commit();
@@ -559,6 +567,68 @@ public class RBACService
         command.Parameters.Add(new OracleParameter("roleName", roleName.Trim().ToUpperInvariant()));
         int count = Convert.ToInt32(command.ExecuteScalar());
         return count > 0;
+    }
+
+    private static string GetMandatoryRoleForUser(OracleConnection connection, OracleTransaction transaction, string username)
+    {
+        const string staffSql = """
+            SELECT n.VAITRO
+            FROM NHANVIEN n
+            WHERE UPPER(n.USERNAME) = :username
+            FETCH FIRST 1 ROWS ONLY
+            """;
+
+        using (var staffCommand = connection.CreateCommand())
+        {
+            staffCommand.Transaction = transaction;
+            staffCommand.CommandText = staffSql;
+            staffCommand.Parameters.Add(new OracleParameter("username", username));
+            object? staffRole = staffCommand.ExecuteScalar();
+            if (staffRole is not null && staffRole != DBNull.Value)
+            {
+                return MapStaffBusinessRoleToOracleRole(staffRole.ToString() ?? string.Empty);
+            }
+        }
+
+        const string patientSql = """
+            SELECT COUNT(*)
+            FROM BENHNHAN b
+            WHERE UPPER(b.USERNAME) = :username
+            """;
+
+        using var patientCommand = connection.CreateCommand();
+        patientCommand.Transaction = transaction;
+        patientCommand.CommandText = patientSql;
+        patientCommand.Parameters.Add(new OracleParameter("username", username));
+        int patientCount = Convert.ToInt32(patientCommand.ExecuteScalar());
+        return patientCount > 0 ? "BENH_NHAN" : string.Empty;
+    }
+
+    private static string MapStaffBusinessRoleToOracleRole(string businessRole)
+    {
+        string normalized = (businessRole ?? string.Empty).Trim().ToUpperInvariant();
+
+        if (normalized.Contains("ĐIỀU PHỐI") || normalized.Contains("DIEU PHOI") || normalized.Replace(" ", string.Empty).Contains("DIEUPHOI"))
+        {
+            return "DIEU_PHOI_VIEN";
+        }
+
+        if (normalized.Contains("BÁC SĨ") || normalized.Contains("Y SĨ") || normalized.Contains("BAC SI") || normalized.Contains("Y SI") || normalized.Contains("BACSI") || normalized.Contains("YSI"))
+        {
+            return "BAC_SI_Y_SI";
+        }
+
+        if (normalized.Contains("KỸ THUẬT") || normalized.Contains("KY THUAT") || normalized.Replace(" ", string.Empty).Contains("KYTHUAT"))
+        {
+            return "KY_THUAT_VIEN";
+        }
+
+        if (normalized.Contains("BỆNH NHÂN") || normalized.Contains("BENH NHAN") || normalized.Replace(" ", string.Empty).Contains("BENHNHAN"))
+        {
+            return "BENH_NHAN";
+        }
+
+        return string.Empty;
     }
 
     private static string NormalizeAndValidateOracleUsername(string username)

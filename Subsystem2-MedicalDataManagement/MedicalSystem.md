@@ -7,8 +7,44 @@ Medical Data Management System là ứng dụng C# Windows Forms phục vụ qu�
 Mục tiêu chính:
 
 - Quản lý bệnh nhân, hồ sơ bệnh án, đơn thuốc, dịch vụ cận lâm sàng.
-- Hỗ trợ nhiều vai trò: điều phối viên, bác sĩ, kỹ thuật viên, bệnh nhân.
+- Hỗ trợ nhiều vai trò: quản trị hệ thống (ADMIN), điều phối viên, bác sĩ, kỹ thuật viên, bệnh nhân.
 - Kết hợp cơ chế bảo mật dữ liệu theo vai trò (RBAC), theo dòng dữ liệu (VPD) và thông báo theo nhãn (OLS).
+
+## 1.1 Context cho GPT (Services + UI/UX hiện tại)
+
+### Services
+
+- Kiến trúc service đang là `Form -> Service -> OracleConnectionService -> Oracle`.
+- `OracleConnectionService` là điểm vào chung cho truy vấn Oracle, chuẩn hóa mở kết nối và hàm `Execute(...)`.
+- `AuthenticationService` xác thực user Oracle và map sang `UserSession` theo role ứng dụng; có nhánh ADMIN để mở dashboard quản trị.
+- `UserService` phục vụ màn hình ADMIN (tab Users):
+  - `GetPatientUsersByCccd(...)` tìm bệnh nhân theo CCCD.
+  - `GetStaffUsersByCmnd(...)` tìm nhân viên theo CMND.
+  - Dữ liệu account lấy từ `DBA_ROLE_PRIVS` + `DBA_USERS`, dữ liệu nghiệp vụ lấy từ `BENHNHAN`/`NHANVIEN`.
+- Các service nghiệp vụ chính theo role:
+  - `CoordinatorService`: thêm bệnh nhân, tạo hồ sơ, phân công bác sĩ/kỹ thuật viên.
+  - `DoctorService`: cập nhật chẩn đoán/điều trị, kê đơn, chỉ định dịch vụ.
+  - `TechnicianService`: xem dịch vụ được giao và cập nhật kết quả.
+  - `PatientService`: xem/cập nhật hồ sơ cá nhân, xem bệnh án và đơn thuốc của chính bệnh nhân.
+- Nhóm bảo mật:
+  - `RBACService` kiểm tra quyền theo role.
+  - `VPDService` phản ánh dữ liệu nhìn thấy theo user hiện tại.
+  - `OLSService` lấy thông báo theo nhãn OLS.
+  - `AuditService` đọc log audit database.
+
+### UI/UX
+
+- UI là WinForms theo mô hình role-based: sau login, điều hướng trực tiếp đến form phù hợp với role.
+- `LoginForm` là entry point, validate input trước khi gọi authenticate.
+- `AdminForm` có tab `Users` gồm 2 sub-tab:
+  - `BN`: tìm theo CCCD, hiển thị đầy đủ thông tin bệnh nhân + trạng thái tài khoản Oracle.
+  - `NV`: tìm theo CMND, hiển thị thông tin nhân viên + trạng thái tài khoản Oracle.
+- UX của tab BN hiện theo hướng search-first để tránh tải dữ liệu lớn:
+  - Chỉ query khi có CCCD hợp lệ.
+  - Tối ưu truy vấn để giảm độ trễ trên tập dữ liệu bệnh nhân lớn.
+  - Giới hạn số dòng trả về để giữ UI mượt.
+- Các form nghiệp vụ còn lại (`CoordinatorForm`, `DoctorForm`, `TechnicianForm`, `PatientForm`) dùng `DataGridView` + hành động theo workflow đặc thù từng vai trò, và mở `NotificationForm` khi cần xem thông báo.
+- Thực tế vận hành: hiệu năng phụ thuộc mạnh vào chỉ mục DB, chính sách VPD, và cấu hình autosize của `DataGridView` khi hiển thị nhiều cột dài.
 
 ## 2. Cách tổ chức thư mục
 
@@ -42,19 +78,12 @@ Tổ chức này giúp tách rõ UI, dữ liệu và logic xử lý để dễ b
 - Chứa logic truy vấn/cập nhật dữ liệu, phân quyền và xác thực.
 - Tập trung các thao tác CRUD, validation, authentication để Form không chứa SQL.
 
-## 4. Mô tả chi tiết từng file
-
-### Forms (CHI TIẾT TỪNG FILE)
-
 #### CoordinatorForm
 
 - Chức năng chính:
   - Dashboard cho điều phối viên: thêm bệnh nhân, tạo hồ sơ bệnh án, phân công bác sĩ, phân công kỹ thuật viên cho dịch vụ.
-- Các control quan trọng (button, textbox, datagridview...):
   - `_patientsGrid` (`DataGridView`): danh sách bệnh nhân.
-  - `_doctorComboBox`, `_technicianComboBox` (`ComboBox`): chọn nhân sự.
   - `_nameTextBox`, `_cccdTextBox`, `_addressTextBox`, `_medicalHistoryTextBox`, `_familyHistoryTextBox`, `_allergyTextBox`.
-  - `_patientIdTextBox`, `_recordIdTextBox`, `_serviceTypeTextBox`, `_serviceDatePicker`.
   - Button: `Add patient`, `Refresh`, `Create record + assign doctor`, `Assign technician`, `Notifications`.
 - Các sự kiện chính:
   - `addButton.Click` -> `AddPatient()`.
@@ -63,25 +92,17 @@ Tổ chức này giúp tách rõ UI, dữ liệu và logic xử lý để dễ b
   - `assignTechnicianButton.Click` -> `AssignTechnician()`.
   - `notificationsButton.Click` -> mở `NotificationForm`.
 - Các phương thức xử lý:
-  - `BuildUi()`: dựng toàn bộ layout và gắn sự kiện.
-  - `LoadReferenceData()`: nạp danh sách bác sĩ/kỹ thuật viên từ service.
   - `RefreshPatients()`: tải danh sách bệnh nhân.
   - `AddPatient()`: parse địa chỉ, tạo `Patient`, gọi `CoordinatorService.AddPatient`.
-  - `CreateRecord()`: tạo hồ sơ bệnh án và gán bác sĩ.
   - `AssignTechnician()`: gán kỹ thuật viên cho dịch vụ trong hồ sơ.
 - Luồng hoạt động:
   - Người dùng nhập thông tin bệnh nhân -> nhấn `Add patient` -> Form tạo object `Patient` -> gọi `CoordinatorService.AddPatient` -> insert vào `BENHNHAN` -> reload grid.
   - Người dùng nhập `Patient ID` + chọn bác sĩ -> nhấn tạo hồ sơ -> gọi `CreateMedicalRecord` -> insert `HSBA`.
-  - Người dùng nhập `Record ID`, loại dịch vụ, ngày, chọn kỹ thuật viên -> nhấn `Assign technician` -> gọi `AssignTechnician` (MERGE `HSBA_DV`) -> hiện thông báo thành công/thất bại.
-- Tương tác với:
-  - Service: `CoordinatorService`, `OracleConnectionService` (gián tiếp qua `CoordinatorService`), `OLSService` (qua `NotificationForm`).
   - Model: `UserSession`, `Patient`, `Staff`.
   - Form khác: `NotificationForm`.
 
 #### DoctorForm
 
-- Chức năng chính:
-  - Dashboard bác sĩ: xem bệnh nhân được phân công, cập nhật chẩn đoán/điều trị/kết luận, chỉ định dịch vụ, lưu đơn thuốc.
 - Các control quan trọng (button, textbox, datagridview...):
   - `_patientsGrid`: danh sách bệnh nhân theo bác sĩ.
   - `_recordsGrid`: danh sách hồ sơ bệnh án theo bác sĩ.
@@ -90,22 +111,16 @@ Tổ chức này giúp tách rõ UI, dữ liệu và logic xử lý để dễ b
   - `_prescriptionNameTextBox`, `_prescriptionDoseTextBox`, `_prescriptionDatePicker`.
   - Button: `Update record`, `Order service`, `Save prescription`, `Notifications`.
 - Các sự kiện chính:
-  - `updateRecordButton.Click` -> `UpdateRecord()`.
   - `addServiceButton.Click` -> `AddService()`.
-  - `savePrescriptionButton.Click` -> `SavePrescription()`.
   - `notificationsButton.Click` -> mở `NotificationForm`.
 - Các phương thức xử lý:
   - `BuildUi()`: dựng layout bác sĩ.
-  - `RefreshData()`: nạp bệnh nhân và hồ sơ theo `StaffId`.
   - `UpdateRecord()`: tạo `MedicalRecord`, gọi `DoctorService.UpdateMedicalRecord`.
   - `AddService()`: tạo `DiagnosticService`, gọi `DoctorService.OrderDiagnosticService`.
-  - `SavePrescription()`: tạo `Prescription`, gọi `DoctorService.UpdatePrescription`.
 - Luồng hoạt động:
   - Bác sĩ mở màn hình -> `RefreshData()` gọi `GetAssignedPatients` và `GetAssignedMedicalRecords` -> bind lên 2 grid.
-  - Bác sĩ nhập `Record ID` và chẩn đoán -> nhấn cập nhật -> cập nhật `HSBA`.
   - Bác sĩ nhập dịch vụ cận lâm sàng -> nhấn `Order service` -> insert vào `HSBA_DV`.
   - Bác sĩ nhập thuốc/liều dùng/ngày -> `Save prescription` -> MERGE vào `DONTHUOC` (tạo mới hoặc cập nhật liều).
-- Tương tác với:
   - Service: `DoctorService`, `VPDService` (khởi tạo kèm), `OracleConnectionService`, `OLSService` (qua `NotificationForm`).
   - Model: `UserSession`, `Patient`, `MedicalRecord`, `DiagnosticService`, `Prescription`.
   - Form khác: `NotificationForm`.
@@ -113,9 +128,7 @@ Tổ chức này giúp tách rõ UI, dữ liệu và logic xử lý để dễ b
 #### LoginForm
 
 - Chức năng chính:
-  - Đăng nhập Oracle user, kiểm tra input cơ bản, xác định role và chuyển sang form đúng vai trò.
 - Các control quan trọng (button, textbox, datagridview...):
-  - `_usernameTextBox`, `_passwordTextBox`, `_dataSourceTextBox`.
   - `_loginButton`, `_statusLabel`.
   - Layout chính: `TableLayoutPanel`.
 - Các sự kiện chính:
@@ -123,23 +136,16 @@ Tổ chức này giúp tách rõ UI, dữ liệu và logic xử lý để dễ b
 - Các phương thức xử lý:
   - `BuildUi()`: dựng form đăng nhập, nạp mặc định `ORACLE_DATA_SOURCE`.
   - `HandleLogin(...)`: validate input, gọi authenticate, điều hướng form theo role.
-  - `ShowStatus(message)`: hiển thị lỗi/trạng thái đăng nhập.
 - Luồng hoạt động:
   - Người dùng nhập username/password/data source -> bấm login.
   - Form gọi `ValidationService.ValidateUsername/ValidatePassword`.
   - Nếu hợp lệ -> gọi `AuthenticationService.Authenticate`.
   - Service truy vấn `V_SELF_NHANVIEN` hoặc `V_SELF_BENHNHAN` để tạo `UserSession`.
   - Form switch theo `session.Role` để mở `CoordinatorForm`/`DoctorForm`/`TechnicianForm`/`PatientForm`.
-  - Form login ẩn đi, form mới đóng thì login đóng theo.
-- Tương tác với:
-  - Service: `ValidationService`, `AuthenticationService`.
-  - Model: `UserSession`.
   - Form khác: `CoordinatorForm`, `DoctorForm`, `TechnicianForm`, `PatientForm`.
 
 #### MainForm
 
-- Chức năng chính:
-  - Form khung chính, hiện tại đóng vai trò placeholder/dispatcher (chưa chứa logic nghiệp vụ cụ thể).
 - Các control quan trọng (button, textbox, datagridview...):
   - Chưa có control nghiệp vụ riêng trong file `.cs`.
 - Các sự kiện chính:

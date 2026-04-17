@@ -131,6 +131,7 @@ public class AdminForm : Form
     private readonly Button _staffRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
     private readonly ComboBox _grantRoleCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly Button _grantRoleButton = new() { Text = "Grant Role", Width = 110, Height = 30, Enabled = false };
+    private readonly Button _revokeUserButton = new() { Text = "Revoke User", Width = 110, Height = 30, Enabled = false };
     private readonly Label _grantRoleHintLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0), Text = "Chon nhan vien de grant role." };
     private readonly DataGridView _roleGrid = new()
     {
@@ -350,6 +351,8 @@ public class AdminForm : Form
 
         _grantRoleButton.Click -= HandleGrantRoleClick;
         _grantRoleButton.Click += HandleGrantRoleClick;
+        _revokeUserButton.Click -= HandleRevokeUserClick;
+        _revokeUserButton.Click += HandleRevokeUserClick;
 
         var grantPanel = new FlowLayoutPanel
         {
@@ -361,6 +364,7 @@ public class AdminForm : Form
         grantPanel.Controls.Add(new Label { Text = "Grant role:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
         grantPanel.Controls.Add(_grantRoleCombo);
         grantPanel.Controls.Add(_grantRoleButton);
+        grantPanel.Controls.Add(_revokeUserButton);
         grantPanel.Controls.Add(_grantRoleHintLabel);
 
         var profileLayout = new TableLayoutPanel
@@ -535,6 +539,7 @@ public class AdminForm : Form
     private TabPage BuildCreateUserSubTab()
     {
         var tab = new TabPage("Create User");
+        tab.AutoScroll = true;
 
         _createUserTypeCombo.Items.Clear();
         _createUserTypeCombo.Items.AddRange(new object[] { "STAFF", "PATIENT" });
@@ -582,16 +587,20 @@ public class AdminForm : Form
 
         var commonLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.Top,
             ColumnCount = 4,
             RowCount = 3,
             Padding = new Padding(8),
-            AutoSize = true
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink
         };
         commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        commonLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        commonLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        commonLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
         commonLayout.Controls.Add(new Label { Text = "UserType", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
         commonLayout.Controls.Add(_createUserTypeCombo, 1, 0);
@@ -611,8 +620,10 @@ public class AdminForm : Form
         var commonGroup = new GroupBox
         {
             Text = "Common Information",
-            Dock = DockStyle.Fill,
-            Padding = new Padding(8)
+            Dock = DockStyle.Top,
+            Padding = new Padding(8),
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink
         };
         commonGroup.Controls.Add(commonLayout);
 
@@ -636,10 +647,12 @@ public class AdminForm : Form
 
         var actionPanel = new Panel
         {
-            Dock = DockStyle.Fill,
-            Padding = new Padding(8)
+            Dock = DockStyle.Top,
+            Padding = new Padding(8),
+            Height = 52
         };
-        _createUserButton.Anchor = AnchorStyles.Left;
+        _createUserButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _createUserButton.Location = new Point(8, 8);
         actionPanel.Controls.Add(_createUserButton);
 
         var flowGroup = new GroupBox
@@ -652,16 +665,18 @@ public class AdminForm : Form
 
         var rootLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.Top,
             ColumnCount = 1,
             RowCount = 5,
-            Padding = new Padding(8)
+            Padding = new Padding(8),
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink
         };
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rootLayout.Controls.Add(commonGroup, 0, 0);
         rootLayout.Controls.Add(staffGroup, 0, 1);
         rootLayout.Controls.Add(patientGroup, 0, 2);
@@ -1347,10 +1362,14 @@ public class AdminForm : Form
     {
         _selectedProfile = profile;
         bool canGrant = profile is not null && string.Equals(profile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(profile.Username);
+        bool canRevokeUser = profile is not null && !string.IsNullOrWhiteSpace(profile.Username);
         _grantRoleButton.Enabled = canGrant;
+        _revokeUserButton.Enabled = canRevokeUser;
         _grantRoleHintLabel.Text = canGrant
             ? $"Dang chon: {profile!.Username}"
-            : "Chi grant role khi dang hien profile STAFF.";
+            : canRevokeUser
+                ? $"Dang chon: {profile!.Username} (chi revoke user, khong grant role)"
+                : "Chi grant role khi dang hien profile STAFF.";
 
         if (profile is null)
         {
@@ -1433,6 +1452,70 @@ public class AdminForm : Form
         ReloadSelectedProfile($"Cap nhat role cho user: {_selectedProfile.Username} (GRANTED)");
     }
 
+    private void HandleRevokeUserClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+
+        if (_selectedProfile is null || string.IsNullOrWhiteSpace(_selectedProfile.Username))
+        {
+            MessageBox.Show(this, "Hay tim user truoc khi revoke.", "Revoke User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        string username = _selectedProfile.Username;
+        if (MessageBox.Show(this, $"Revoke user {username}? Tai khoan se bi khoa va thu hoi quyen truy cap.", "Revoke User", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        bool revoked = _userService.RevokeUserAccess(username);
+        if (!revoked)
+        {
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Revoke user failed." : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Revoke User", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        string selectedUserType = _selectedProfile.UserType;
+        MessageBox.Show(this, $"Revoked user {username} successfully.", "Revoke User", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        ReloadSelectedProfile($"Da revoke user: {username}");
+
+        if (string.Equals(selectedUserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            RefreshStaffUsersPage();
+        }
+        else
+        {
+            RefreshPatientUsersPage();
+        }
+    }
+
+    private static string GetMandatoryRoleForProfile(UserSecurityProfileItem profile)
+    {
+        if (string.Equals(profile.UserType, "PATIENT", StringComparison.OrdinalIgnoreCase))
+        {
+            return "BENH_NHAN";
+        }
+
+        string businessRole = (profile.BusinessRole ?? string.Empty).Trim().ToUpperInvariant();
+        if (businessRole.Contains("ĐIỀU PHỐI") || businessRole.Contains("DIEU PHOI") || businessRole.Replace(" ", string.Empty).Contains("DIEUPHOI"))
+        {
+            return "DIEU_PHOI_VIEN";
+        }
+
+        if (businessRole.Contains("BÁC SĨ") || businessRole.Contains("Y SĨ") || businessRole.Contains("BAC SI") || businessRole.Contains("Y SI") || businessRole.Contains("BACSI") || businessRole.Contains("YSI"))
+        {
+            return "BAC_SI_Y_SI";
+        }
+
+        if (businessRole.Contains("KỸ THUẬT") || businessRole.Contains("KY THUAT") || businessRole.Replace(" ", string.Empty).Contains("KYTHUAT"))
+        {
+            return "KY_THUAT_VIEN";
+        }
+
+        return string.Empty;
+    }
+
     private void HandleRoleGridCellContentClick(object? sender, DataGridViewCellEventArgs e)
     {
         _ = sender;
@@ -1467,6 +1550,13 @@ public class AdminForm : Form
         string roleName = _roleGrid.Rows[e.RowIndex].Cells["RoleName"].Value?.ToString() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(roleName))
         {
+            return;
+        }
+
+        string mandatoryRole = GetMandatoryRoleForProfile(_selectedProfile);
+        if (!string.IsNullOrWhiteSpace(mandatoryRole) && string.Equals(mandatoryRole, roleName, StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(this, $"Khong duoc revoke role mac dinh {mandatoryRole} cua user.", "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 

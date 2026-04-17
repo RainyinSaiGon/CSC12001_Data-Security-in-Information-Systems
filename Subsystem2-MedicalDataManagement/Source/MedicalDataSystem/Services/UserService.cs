@@ -8,6 +8,13 @@ public sealed class UserService
     private readonly OracleConnectionService _connectionService;
     private readonly RBACService _rbacService;
     private readonly VPDService _vpdService;
+    private static readonly string[] RevocableRoles =
+    {
+        "DIEU_PHOI_VIEN",
+        "BAC_SI_Y_SI",
+        "KY_THUAT_VIEN",
+        "BENH_NHAN"
+    };
     public string LastErrorMessage { get; private set; } = string.Empty;
     public string LastRoleOperation { get; private set; } = string.Empty;
 
@@ -193,6 +200,66 @@ public sealed class UserService
         return ok;
     }
 
+    public bool RevokeUserAccess(string username)
+    {
+        LastErrorMessage = string.Empty;
+
+        string safeUsername;
+        try
+        {
+            safeUsername = NormalizeAndValidateOracleUsername(username);
+        }
+        catch (ArgumentException ex)
+        {
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+
+        using var connection = _connectionService.GetConnection();
+        using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            if (!UsernameExists(connection, transaction, safeUsername))
+            {
+                LastErrorMessage = $"Username {safeUsername} does not exist.";
+                transaction.Rollback();
+                return false;
+            }
+
+            foreach (string roleName in RevocableRoles)
+            {
+                if (HasRoleGrant(connection, transaction, safeUsername, roleName))
+                {
+                    ExecuteNonQuery(connection, transaction, $"REVOKE {roleName} FROM {safeUsername}");
+                }
+            }
+
+            if (HasSystemPrivilege(connection, transaction, safeUsername, "CREATE SESSION"))
+            {
+                ExecuteNonQuery(connection, transaction, $"REVOKE CREATE SESSION FROM {safeUsername}");
+            }
+
+            ExecuteNonQuery(connection, transaction, $"ALTER USER {safeUsername} ACCOUNT LOCK");
+
+            transaction.Commit();
+            LastRoleOperation = "USER_REVOKED";
+            return true;
+        }
+        catch (OracleException ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            TryRollback(transaction);
+            LastErrorMessage = ex.Message;
+            return false;
+        }
+    }
+
     private List<UserAccountItem> SearchUsers(string searchText, string sql)
     {
         string normalizedKeyword = NormalizeIdKeyword(searchText);
@@ -368,6 +435,24 @@ public sealed class UserService
         command.CommandText = sql;
         command.Parameters.Add(new OracleParameter("grantee", username.Trim().ToUpperInvariant()));
         command.Parameters.Add(new OracleParameter("roleName", roleName.Trim().ToUpperInvariant()));
+        int count = Convert.ToInt32(command.ExecuteScalar());
+        return count > 0;
+    }
+
+    private static bool HasSystemPrivilege(OracleConnection connection, OracleTransaction transaction, string username, string privilege)
+    {
+        const string sql = """
+            SELECT COUNT(*)
+            FROM DBA_SYS_PRIVS sp
+            WHERE sp.GRANTEE = :grantee
+              AND sp.PRIVILEGE = :privilege
+            """;
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.Parameters.Add(new OracleParameter("grantee", username.Trim().ToUpperInvariant()));
+        command.Parameters.Add(new OracleParameter("privilege", privilege.Trim().ToUpperInvariant()));
         int count = Convert.ToInt32(command.ExecuteScalar());
         return count > 0;
     }
