@@ -89,6 +89,20 @@ public class AdminForm : Form
         ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
         ScrollBars = ScrollBars.Both
     };
+    private readonly DataGridView dgvSessionAudit = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
     private readonly Button btnRefreshAudit = new() { Text = "Refresh Audit", Width = 120, Height = 30 };
 
     private readonly DataGridView _patientUsersGrid = new()
@@ -814,6 +828,14 @@ public class AdminForm : Form
         };
         standardGroup.Controls.Add(dgvStandardAudit);
 
+        var sessionGroup = new GroupBox
+        {
+            Text = "Session Audit (DBA_AUDIT_SESSION - login success)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        sessionGroup.Controls.Add(dgvSessionAudit);
+
         var fgaGroup = new GroupBox
         {
             Text = "FGA Audit (DBA_FGA_AUDIT_TRAIL)",
@@ -826,14 +848,16 @@ public class AdminForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3
+            RowCount = 4
         };
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 34));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
         rootLayout.Controls.Add(actionPanel, 0, 0);
-        rootLayout.Controls.Add(standardGroup, 0, 1);
-        rootLayout.Controls.Add(fgaGroup, 0, 2);
+        rootLayout.Controls.Add(sessionGroup, 0, 1);
+        rootLayout.Controls.Add(standardGroup, 0, 2);
+        rootLayout.Controls.Add(fgaGroup, 0, 3);
 
         tab.Controls.Add(rootLayout);
         RefreshAuditLogs();
@@ -842,6 +866,48 @@ public class AdminForm : Form
 
     private void ConfigureAuditGridsOnce()
     {
+        if (dgvSessionAudit.Columns.Count == 0)
+        {
+            dgvSessionAudit.AutoGenerateColumns = false;
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.Username),
+                Name = "Username",
+                HeaderText = "Username"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.UserHost),
+                Name = "UserHost",
+                HeaderText = "UserHost"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.Terminal),
+                Name = "Terminal",
+                HeaderText = "Terminal"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.LogonTime),
+                Name = "LogonTime",
+                HeaderText = "Logon Time",
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.LogoffTime),
+                Name = "LogoffTime",
+                HeaderText = "Logoff Time"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.SessionId),
+                Name = "SessionId",
+                HeaderText = "Session ID"
+            });
+        }
+
         if (dgvStandardAudit.Columns.Count == 0)
         {
             dgvStandardAudit.AutoGenerateColumns = false;
@@ -933,8 +999,22 @@ public class AdminForm : Form
     {
         try
         {
+            List<SessionAuditLog> sessionLogs = _auditService.GetSessionAuditLogs();
             List<AuditLog> standardLogs = _auditService.GetStandardAuditLogs();
             List<FgaAuditLog> fgaLogs = _auditService.GetFgaAuditLogs();
+
+            List<SessionAuditGridItem> sessionRows = sessionLogs
+                .OrderByDescending(item => item.LogonTime)
+                .Select(item => new SessionAuditGridItem
+                {
+                    Username = item.Username,
+                    UserHost = item.UserHost,
+                    Terminal = item.Terminal,
+                    LogonTime = item.LogonTime,
+                    LogoffTime = item.LogoffTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(active)",
+                    SessionId = item.SessionId
+                })
+                .ToList();
 
             List<StandardAuditGridItem> standardRows = standardLogs
                 .OrderByDescending(item => item.ActionTime)
@@ -962,16 +1042,18 @@ public class AdminForm : Form
                 })
                 .ToList();
 
+            dgvSessionAudit.DataSource = sessionRows;
             dgvStandardAudit.DataSource = standardRows;
             dgvFgaAudit.DataSource = fgaRows;
 
             HighlightStandardAuditRows();
             HighlightFgaAuditRows();
 
-            UpdateFooterStatus($"Audit: Loaded {standardRows.Count} standard logs and {fgaRows.Count} FGA logs.");
+            UpdateFooterStatus($"Audit: Loaded {sessionRows.Count} session logs, {standardRows.Count} standard logs and {fgaRows.Count} FGA logs.");
         }
         catch (Exception ex)
         {
+            dgvSessionAudit.DataSource = new List<SessionAuditGridItem>();
             dgvStandardAudit.DataSource = new List<StandardAuditGridItem>();
             dgvFgaAudit.DataSource = new List<FgaAuditGridItem>();
             UpdateFooterStatus("Audit: Load failed.");
@@ -1781,6 +1863,16 @@ public class AdminForm : Form
         public DateTime Time { get; set; }
         public int ReturnCode { get; set; }
         public string Status { get; set; } = string.Empty;
+    }
+
+    private sealed class SessionAuditGridItem
+    {
+        public string Username { get; set; } = string.Empty;
+        public string UserHost { get; set; } = string.Empty;
+        public string Terminal { get; set; } = string.Empty;
+        public DateTime LogonTime { get; set; }
+        public string LogoffTime { get; set; } = string.Empty;
+        public long SessionId { get; set; }
     }
 
     private sealed class FgaAuditGridItem

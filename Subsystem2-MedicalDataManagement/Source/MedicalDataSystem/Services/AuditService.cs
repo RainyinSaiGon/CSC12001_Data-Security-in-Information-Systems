@@ -126,6 +126,54 @@ public class AuditService
         });
     }
 
+    public List<SessionAuditLog> GetSessionAuditLogs()
+    {
+        const string sql = """
+            SELECT
+                USERNAME,
+                USERHOST,
+                TERMINAL,
+                RETURNCODE,
+                TO_CHAR(TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS LOGON_TIME,
+                TO_CHAR(LOGOFF_TIME, 'YYYY-MM-DD HH24:MI:SS') AS LOGOFF_TIME,
+                SESSIONID
+            FROM DBA_AUDIT_SESSION
+            WHERE RETURNCODE = 0
+            ORDER BY TIMESTAMP DESC
+            """;
+
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+
+            using var reader = command.ExecuteReader();
+            var logs = new List<SessionAuditLog>();
+
+            while (reader.Read())
+            {
+                string logonTimeRaw = reader.IsDBNull(4) ? string.Empty : reader.GetString(4);
+                string logoffTimeRaw = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
+
+                DateTime parsedLogonTime = ParseAuditTime(logonTimeRaw);
+                DateTime parsedLogoffTime = ParseAuditTime(logoffTimeRaw);
+
+                logs.Add(new SessionAuditLog
+                {
+                    Username = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+                    UserHost = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    Terminal = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                    ReturnCode = reader.IsDBNull(3) ? -1 : Convert.ToInt32(reader.GetDecimal(3)),
+                    LogonTime = parsedLogonTime,
+                    LogoffTime = parsedLogoffTime == DateTime.MinValue ? null : parsedLogoffTime,
+                    SessionId = reader.IsDBNull(6) ? 0 : Convert.ToInt64(reader.GetDecimal(6))
+                });
+            }
+
+            return logs;
+        });
+    }
+
     public List<(string User, DateTime Time, string Action, string Details)> GetAuditLogs(
         DateTime startDate,
         DateTime endDate,
