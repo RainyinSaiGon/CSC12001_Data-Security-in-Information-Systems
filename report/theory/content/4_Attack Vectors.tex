@@ -1,0 +1,29 @@
+\section{Attack Vectors}
+
+Attack vectors refer to the methods or pathways used by attackers to gain unauthorised access to systems, networks, or data. Understanding attack vectors is critical for analysing how attacks are initiated and for designing effective defensive strategies. Common attack vectors exploit human behaviour, technical vulnerabilities, or weaknesses in system availability.
+
+\subsection{Social Engineering and Phishing}
+
+Social engineering attacks exploit human psychology rather than technical vulnerabilities to gain access to sensitive information or systems. Attackers manipulate victims into revealing credentials, downloading malicious files, or performing actions that compromise security. Phishing is one of the most prevalent forms of social engineering and typically involves deceptive emails, messages, or websites that impersonate legitimate entities. These attacks often create a sense of urgency or authority to pressure victims into compliance. Due to their reliance on human error, social engineering and phishing attacks remain highly effective despite advancements in technical security controls.
+
+Real-world example: The Twilio Breach (2022). Attackers sent SMS messages to Twilio employees pretending to be the IT department, urging them to update their passwords or review new schedules. The texts contained the employee's actual names and legit-looking URLs leading to a fake Twilio sign-in page. Some workers tried to log in, revealing their user credentials [3].
+
+\subsection{Spam-Based Attacks}
+
+Spam-based attacks involve the mass distribution of unsolicited messages containing malicious links, attachments, or payloads. Unlike targeted phishing campaigns, spam-based attacks are typically indiscriminate and aim to infect a large number of systems with minimal effort. These attacks are commonly used to spread malware, ransomware, or trojans and often rely on at least some recipients interacting with the malicious content. Spam-based attacks are frequently used as an initial delivery mechanism in larger attack campaigns.
+
+Real-world example: The Emotet Botnet. Before its disruption, Emotet was the world's most dangerous malware distributor, largely spreading via massive spam campaigns containing malicious Word documents (fake invoices or shipping receipts). It served as the primary delivery mechanism for other ransomware like Ryuk [4].
+
+\subsection{Software Vulnerability Exploitation}
+
+Software vulnerability exploitation occurs when attackers take advantage of flaws in operating systems, applications, or network services. These vulnerabilities may arise from coding errors, misconfigurations, or outdated software lacking security patches. Attackers often use automated tools or exploit frameworks to identify and exploit known vulnerabilities, although advanced attackers may leverage zero-day vulnerabilities that have not yet been publicly disclosed. Successful exploitation can lead to unauthorized access, privilege escalation, or remote code execution.
+
+Real-world example: Log4Shell (CVE-2021-44228). Discovered in late 2021, this critical vulnerability affected Apache Log4j, a widely used logging library in Java applications. At the peak of Log4Shell activity, Check Point observed more than 100 attacks every minute, affecting more than 40\% of all business networks globally [5] [6].
+
+\subsection{Denial of Service (DoS/DDoS)}
+
+Denial of Service (DoS) and Distributed Denial of Service (DDoS) attacks aim to disrupt the availability of systems or services by overwhelming them with excessive traffic or resource requests. In a DDoS attack, multiple compromised systems, often part of a botnet, are used to amplify the attack's impact. These attacks do not necessarily involve data theft but can cause significant operational and financial damage by rendering services inaccessible to legitimate users.
+
+Real-world example: The Dyn Cyberattack (2016). The Mirai Botnet, composed of insecure IoT devices (cameras, routers), launched a massive DDoS attack against Dyn (a DNS provider). This attack successfully took down major platforms like Twitter, Netflix, and Reddit for hours, highlighting the power of volumetric attacks [7].
+
+[8]

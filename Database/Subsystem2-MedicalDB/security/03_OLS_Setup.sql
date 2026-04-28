@@ -3,8 +3,8 @@ SET SERVEROUTPUT ON;
 WHENEVER SQLERROR EXIT SQL.SQLCODE;
 
 PROMPT === Requirement 2 / OLS setup ===
-PROMPT Pass 1: create THONGBAO_OLS if it does not exist, then reconnect.
-PROMPT Pass 2: reconnect as the same user and rerun this script to finish labels/data setup.
+PROMPT Pass 1 - create THONGBAO_OLS if it does not exist, then reconnect.
+PROMPT Pass 2 - reconnect as the same user and rerun this script to finish labels/data setup.
 
 DECLARE
     v_role_enabled NUMBER := 0;
@@ -89,6 +89,15 @@ BEGIN
             'THONGBAO_OLS_DBA is not enabled in this session. Reconnect and rerun 03_OLS_Setup.sql.'
         );
     END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -12458 THEN
+            RAISE_APPLICATION_ERROR(
+                -20034,
+                'Oracle Label Security is not enabled in this database. Connect as SYSDBA to the project PDB, run LBACSYS.CONFIGURE_OLS and LBACSYS.OLS_ENFORCEMENT.ENABLE_OLS, restart the database, rerun Create_HOSPITAL_ADMIN.sql, reconnect as HOSPITAL_ADMIN, then rerun 03_OLS_Setup.sql.'
+            );
+        END IF;
+        RAISE;
 END;
 /
 
@@ -203,77 +212,53 @@ IF table_policy_applied = 0 THEN
             table_options => 'READ_CONTROL'
         );
     END IF;
+END;
+/
 
-    -- Dùng EXECUTE IMMEDIATE vì OLS_LABEL vừa được tạo lúc runtime
-    EXECUTE IMMEDIATE '
-        UPDATE THONGBAO
-        SET OLS_LABEL = CHAR_TO_LABEL(''THONGBAO_OLS'', ''L1_NV'')
-        WHERE OLS_LABEL IS NULL
-    ';
+BEGIN
+    UPDATE THONGBAO
+    SET OLS_LABEL = CHAR_TO_LABEL('THONGBAO_OLS', 'L1_NV')
+    WHERE OLS_LABEL IS NULL;
 
-    EXECUTE IMMEDIATE '
-        DELETE FROM THONGBAO
-        WHERE NOIDUNG LIKE ''t1:%''
-           OR NOIDUNG LIKE ''t2:%''
-           OR NOIDUNG LIKE ''t3:%''
-           OR NOIDUNG LIKE ''t4:%''
-           OR NOIDUNG LIKE ''t5:%''
-           OR NOIDUNG LIKE ''t6:%''
-           OR NOIDUNG LIKE ''t7:%''
-    ';
+    DELETE FROM THONGBAO
+    WHERE NOIDUNG LIKE 't1:%'
+       OR NOIDUNG LIKE 't2:%'
+       OR NOIDUNG LIKE 't3:%'
+       OR NOIDUNG LIKE 't4:%'
+       OR NOIDUNG LIKE 't5:%'
+       OR NOIDUNG LIKE 't6:%'
+       OR NOIDUNG LIKE 't7:%';
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t1: Gui den toan bo nhan vien'', SYSTIMESTAMP, ''Online'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L1_NV''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t1: Gui den toan bo nhan vien', SYSTIMESTAMP, 'Online', CHAR_TO_LABEL('THONGBAO_OLS', 'L1_NV'));
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t2: Gui den toan bo Ban giam doc'', SYSTIMESTAMP, ''Phong hop Giam doc'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L3_GD''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t2: Gui den toan bo Ban giam doc', SYSTIMESTAMP, 'Phong hop Giam doc', CHAR_TO_LABEL('THONGBAO_OLS', 'L3_GD'));
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t3: Gui den cac lanh dao khoa'', SYSTIMESTAMP, ''Hoi truong'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L2_LD''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t3: Gui den cac lanh dao khoa', SYSTIMESTAMP, 'Hoi truong', CHAR_TO_LABEL('THONGBAO_OLS', 'L2_LD'));
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t4: Gui den lanh dao Khoa tieu hoa'', SYSTIMESTAMP, ''Khoa tieu hoa'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L2_LD:C_TIEU''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t4: Gui den lanh dao Khoa tieu hoa', SYSTIMESTAMP, 'Khoa tieu hoa', CHAR_TO_LABEL('THONGBAO_OLS', 'L2_LD:C_TIEU'));
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t5: Gui den nhan vien Khoa tieu hoa o Ho Chi Minh'', SYSTIMESTAMP, ''Ho Chi Minh'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L1_NV:C_TIEU:G_HCM''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t5: Gui den nhan vien Khoa tieu hoa o Ho Chi Minh', SYSTIMESTAMP, 'Ho Chi Minh', CHAR_TO_LABEL('THONGBAO_OLS', 'L1_NV:C_TIEU:G_HCM'));
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t6: Gui den nhan vien Khoa tieu hoa o Ha Noi'', SYSTIMESTAMP, ''Ha Noi'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L1_NV:C_TIEU:G_HN''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t6: Gui den nhan vien Khoa tieu hoa o Ha Noi', SYSTIMESTAMP, 'Ha Noi', CHAR_TO_LABEL('THONGBAO_OLS', 'L1_NV:C_TIEU:G_HN'));
 
-    EXECUTE IMMEDIATE '
-        INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
-        VALUES (''t7: Gui den lanh dao Khoa tieu hoa va Khoa than kinh tai Hai Phong'',
-                SYSTIMESTAMP, ''Hai Phong'',
-                CHAR_TO_LABEL(''THONGBAO_OLS'', ''L2_LD:C_TIEU,C_THAN:G_HP''))
-    ';
+    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+    VALUES ('t7: Gui den lanh dao Khoa tieu hoa va Khoa than kinh tai Hai Phong', SYSTIMESTAMP, 'Hai Phong', CHAR_TO_LABEL('THONGBAO_OLS', 'L2_LD:C_TIEU,C_THAN:G_HP'));
 
     SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'HOSPITAL_ADMIN', 'L3_GD:C_TIEU,C_THAN,C_TIM:G_HN,G_HP,G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000001', 'L3_GD:C_TIEU,C_THAN,C_TIM:G_HN,G_HP,G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000090', 'L2_LD:C_TIM:G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000060', 'L2_LD:C_THAN:G_HN');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000061', 'L1_NV:C_THAN:G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000091', 'L1_NV:C_TIM:G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000002', 'L2_LD:C_TIM:G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000003', 'L2_LD:C_TIEU,C_THAN,C_TIM:G_HN,G_HP,G_HCM');
-    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', 'NV000030', 'L1_NV:C_TIEU:G_HN');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000001', 'L3_GD:C_TIEU,C_THAN,C_TIM:G_HN,G_HP,G_HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000090', 'L2_LD:C_TIM:G_HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000060', 'L2_LD:C_THAN:G_HN');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000061', 'L1_NV:C_THAN:G_HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000091', 'L1_NV:C_TIM:G_HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000002', 'L2_LD:C_TIM:G_HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000003', 'L2_LD:C_TIEU,C_THAN,C_TIM:G_HN,G_HP,G_HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('THONGBAO_OLS', '990000000030', 'L1_NV:C_TIEU:G_HN');
 END;
 /
 

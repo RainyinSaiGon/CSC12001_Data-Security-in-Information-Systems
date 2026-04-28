@@ -2,7 +2,7 @@ namespace MedicalDataSystem.Models;
 
 public class Patient
 {
-    public int MABN { get; set; }
+    public string MABN { get; set; } = string.Empty;
     public string TENBN { get; set; } = string.Empty;
     public string PHAI { get; set; } = string.Empty;
     public DateTime NGAYSINH { get; set; }

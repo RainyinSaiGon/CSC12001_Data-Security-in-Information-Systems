@@ -49,6 +49,7 @@ public class OLSService
                         WHEN t.OLS_LABEL = 1130 THEN 'L1_NV:C_TIEU:G_HCM'
                         WHEN t.OLS_LABEL = 1110 THEN 'L1_NV:C_TIEU:G_HN'
                         WHEN t.OLS_LABEL = 2220 THEN 'L2_LD:C_TIEU,C_THAN:G_HP'
+                        WHEN USERNAME IN ('990000000001', '990000000002', '990000000003') THEN 'MULTI_SITE'
                         ELSE 'UNKNOWN'
                     END AS OLS_LABEL_TEXT
                 FROM THONGBAO t

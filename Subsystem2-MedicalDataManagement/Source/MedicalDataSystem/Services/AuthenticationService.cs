@@ -29,13 +29,13 @@ public class AuthenticationService
             return adminSession;
         }
 
-        UserSession? staffSession = TryReadStaffSession(connection, username, connectionString, dataSource);
+        UserSession? staffSession = TryReadStaffSession(connection, username, password, verifyPasswordHash: true, connectionString, dataSource);
         if (staffSession is not null)
         {
             return staffSession;
         }
 
-        UserSession? patientSession = TryReadPatientSession(connection, username, connectionString, dataSource);
+        UserSession? patientSession = TryReadPatientSession(connection, username, password, verifyPasswordHash: true, connectionString, dataSource);
         if (patientSession is not null)
         {
             return patientSession;
@@ -68,17 +68,15 @@ public class AuthenticationService
             throw new InvalidOperationException("A connection service is required for this overload.");
         }
 
-        _ = password;
-
         using var connection = _connectionService.GetConnection();
 
-        UserSession? staffSession = TryReadStaffSession(connection, username, _connectionService.ConnectionString, string.Empty);
+        UserSession? staffSession = TryReadStaffSession(connection, username, password, verifyPasswordHash: false, _connectionService.ConnectionString, string.Empty);
         if (staffSession is not null)
         {
             return staffSession.Role;
         }
 
-        UserSession? patientSession = TryReadPatientSession(connection, username, _connectionService.ConnectionString, string.Empty);
+        UserSession? patientSession = TryReadPatientSession(connection, username, password, verifyPasswordHash: false, _connectionService.ConnectionString, string.Empty);
         return patientSession?.Role;
     }
 
@@ -93,7 +91,7 @@ public class AuthenticationService
         _ = username;
     }
 
-    private static UserSession? TryReadStaffSession(OracleConnection connection, string username, string connectionString, string dataSource)
+    private static UserSession? TryReadStaffSession(OracleConnection connection, string username, string password, bool verifyPasswordHash, string connectionString, string dataSource)
     {
         try
         {
@@ -103,6 +101,7 @@ public class AuthenticationService
                     MANV,
                     HOTEN,
                     CHUYENKHOA,
+                    PASSWORD_HASH,
                     CASE
                         WHEN VAITRO = N'Điều phối viên' THEN 'COORDINATOR'
                         WHEN VAITRO = N'Bác sĩ/Y sĩ' THEN 'DOCTOR'
@@ -119,30 +118,36 @@ public class AuthenticationService
                 return null;
             }
 
+            string? storedHash = reader.IsDBNull(3) ? null : reader.GetString(3);
+            if (verifyPasswordHash && !EnsurePasswordHash(connection, updateSelfStaff: true, storedHash, password))
+            {
+                throw new InvalidOperationException("Invalid username or password.");
+            }
+
             return new UserSession
             {
                 Username = username.ToUpperInvariant(),
                 FullName = reader.GetString(1),
-                Role = reader.GetString(3),
-                StaffId = reader.GetInt32(0),
+                Role = reader.GetString(4),
+                StaffId = reader.GetString(0),
                 DepartmentCode = reader.IsDBNull(2) ? null : reader.GetString(2),
                 ConnectionString = connectionString,
                 DataSource = dataSource
             };
         }
-        catch (OracleException ex) when (ex.Number == 942)
+        catch (OracleException ex) when (ex.Number == 942 || ex.Number == 904)
         {
             return null;
         }
     }
 
-    private static UserSession? TryReadPatientSession(OracleConnection connection, string username, string connectionString, string dataSource)
+    private static UserSession? TryReadPatientSession(OracleConnection connection, string username, string password, bool verifyPasswordHash, string connectionString, string dataSource)
     {
         try
         {
             using var patientCommand = connection.CreateCommand();
             patientCommand.CommandText = """
-                SELECT MABN, TENBN
+                SELECT MABN, TENBN, PASSWORD_HASH
                 FROM V_SELF_BENHNHAN
                 """;
 
@@ -152,19 +157,49 @@ public class AuthenticationService
                 return null;
             }
 
+            string? storedHash = patientReader.IsDBNull(2) ? null : patientReader.GetString(2);
+            if (verifyPasswordHash && !EnsurePasswordHash(connection, updateSelfStaff: false, storedHash, password))
+            {
+                throw new InvalidOperationException("Invalid username or password.");
+            }
+
             return new UserSession
             {
                 Username = username.ToUpperInvariant(),
                 FullName = patientReader.GetString(1),
                 Role = "PATIENT",
-                PatientId = patientReader.GetInt32(0),
+                PatientId = patientReader.GetString(0),
                 ConnectionString = connectionString,
                 DataSource = dataSource
             };
         }
-        catch (OracleException ex) when (ex.Number == 942)
+        catch (OracleException ex) when (ex.Number == 942 || ex.Number == 904)
         {
             return null;
         }
+    }
+
+    private static bool EnsurePasswordHash(OracleConnection connection, bool updateSelfStaff, string? storedHash, string password)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(storedHash))
+        {
+            return BCrypt.Net.BCrypt.Verify(password, storedHash);
+        }
+
+        string newHash = BCrypt.Net.BCrypt.HashPassword(password);
+
+        using var updateCommand = connection.CreateCommand();
+        updateCommand.CommandText = updateSelfStaff
+            ? "UPDATE V_SELF_NHANVIEN SET PASSWORD_HASH = :password_hash"
+            : "UPDATE V_SELF_BENHNHAN SET PASSWORD_HASH = :password_hash";
+        updateCommand.Parameters.Add(new OracleParameter("password_hash", newHash));
+        updateCommand.ExecuteNonQuery();
+
+        return true;
     }
 }

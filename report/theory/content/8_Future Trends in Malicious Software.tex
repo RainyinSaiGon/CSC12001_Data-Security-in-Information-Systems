@@ -1,0 +1,48 @@
+\section{Future Trends in Malicious Software}
+
+As digital transformation accelerates, malicious software is evolving from static, fixed-rule programs into intelligent, stealthy, and adaptive digital weapons. Based on current developments in the cybersecurity landscape, the following five trends represent the next generation of malware threats:
+
+\subsection{AI-Powered and Autonomous Malware}
+
+\begin{itemize}
+  \item Definition: This refers to malware that integrates Artificial Intelligence (AI) and Machine Learning (ML) to automate decision-making processes that previously required human intervention.
+  \item The Mechanism: Unlike traditional malware that follows a hard-coded path, AI-powered malware can perform "Automated Reconnaissance." It analyzes the victim's security environment, identifies specific firewall rules or antivirus signatures, and then modifies its own code (Advanced Polymorphism) to bypass those defenses.
+  \item The Threat: AI enables malware to stay dormant until the most opportune moment. Furthermore, AI-driven Deepfakes (cloning voices or faces) will make Social Engineering almost impossible to detect, as employees can no longer trust their eyes or ears during video calls [45, 46].
+\end{itemize}
+
+\subsection{Fileless Malware and "Living-off-the-Land" (LotL)}
+
+\begin{itemize}
+  \item Definition: A sophisticated technique where the malicious code resides entirely in the computer's volatile memory (RAM) instead of being saved as a file on the hard drive.
+  \item The Mechanism: Most antivirus software works by scanning files on the disk for known "bad signatures." Fileless malware avoids this by exploiting the "trust" of the Operating System. It uses legitimate system administrative tools, such as PowerShell or Windows Management Instrumentation (WMI), to execute malicious commands directly in memory.
+  \item The Threat: Because the attacker is using "authorized" tools already found on the victim's computer, this is called "Living-off-the-Land." Since no "infected file" is ever created, it leaves almost no digital footprint, making it one of the most difficult types of malware to detect and remove [47].
+\end{itemize}
+
+\subsection{IoT Botnets and Critical Infrastructure Threats}
+
+\begin{itemize}
+  \item Definition: The large-scale infection of "Internet of Things" (IoT) devices---ranging from smart cameras and thermostats to industrial sensors---to build massive, distributed zombie networks.
+  \item The Mechanism: Billions of IoT devices are shipped with weak security frameworks and default passwords that are rarely changed. Malware like the Mozi or Mirai variants can scan the entire IPv4 address space in hours, infecting vulnerable devices and turning them into "bots" waiting for a command [1].
+  \item The Threat: While one smart device is weak, a Botnet of millions of devices can launch a Distributed Denial of Service (DDoS) attack powerful enough to disable national power grids, banking systems, or healthcare networks, shifting the threat from digital inconvenience to physical safety risks.
+\end{itemize}
+
+\subsection{Ransomware 3.0: The Triple Extortion Model}
+
+\begin{itemize}
+  \item Definition: An advanced evolution of ransomware that applies three distinct layers of psychological and financial pressure to ensure the victim pays the ransom.
+  \item The Mechanism: This trend moves beyond simple data encryption:
+  \begin{enumerate}
+    \item Encryption: Locking the victim's data to stop operations (Availability loss).
+    \item Exfiltration (Data Theft): Stealing sensitive records and threatening to leak them online (Confidentiality loss).
+    \item Harassment: Directly contacting the company's clients, partners, or employees to inform them of the breach and pressure the organization from all sides.
+  \end{enumerate}
+  \item The Threat: This model makes backups (the traditional defense) ineffective. Even if an organization can restore its data from a backup, it cannot "un-leak" a secret or repair the ruined reputation caused by public data disclosure [45].
+\end{itemize}
+
+\subsection{Supply Chain Attacks (Software Poisoning)}
+
+\begin{itemize}
+  \item Definition: A strategic attack where malware is injected into a trusted software vendor's product or update mechanism to reach thousands of downstream customers at once.
+  \item The Mechanism: Instead of attacking a well-defended target (like a bank), hackers compromise a software provider that the target trusts. They hide a backdoor inside a legitimate software update.
+  \item The Threat: When the customer clicks "Update Now" for a trusted app, they are unknowingly installing malware with administrative privileges. Because the update is "signed" and comes from a "trusted" source, the system's defenses are completely bypassed. A single supply chain compromise, such as the SolarWinds incident, can cause a mass-infection event globally [46].
+\end{itemize}

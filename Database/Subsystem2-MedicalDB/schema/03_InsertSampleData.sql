@@ -28,7 +28,7 @@ COMMIT;
 
 /* ==========================================================================
    BƯỚC 3: TẠO 170 NHÂN VIÊN (TÊN THẬT & ID RIÊNG BIỆT)
-   Range CMND: Bắt đầu bằng 99... (990000000001 -> 990000000170)
+    Range CCCD: Bắt đầu bằng 99... (990000000001 -> 990000000170)
    ========================================================================== */
 DECLARE
     TYPE t_arr IS TABLE OF NVARCHAR2(50);
@@ -88,7 +88,7 @@ BEGIN
 
         v_cmnd_nv := '99' || LPAD(i, 10, '0');
 
-        INSERT INTO NHANVIEN (HOTEN, PHAI, NGAYSINH, CMND, QUEQUAN, SODT, VAITRO, CHUYENKHOA, USERNAME)
+        INSERT INTO NHANVIEN (HOTEN, PHAI, NGAYSINH, CCCD, QUEQUAN, SODT, VAITRO, CHUYENKHOA, USERNAME, PASSWORD_HASH)
         VALUES (
             v_hoten,
             v_phai,
@@ -98,7 +98,8 @@ BEGIN
             '09' || LPAD(i, 8, '0'),
             v_vaitro,
             v_khoa,
-            'NV' || LPAD(i, 6, '0')
+            v_cmnd_nv,
+            NULL
         );
     END LOOP;
     COMMIT;
@@ -149,12 +150,12 @@ BEGIN
         BEGIN
             INSERT INTO BENHNHAN (
                 TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN,
-                TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME
+                TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME, PASSWORD_HASH
             )
             VALUES (
                 v_hoten,
                 v_phai,
-                ADD_MONTHS(SYSDATE, -1 * TRUNC(DBMS_RANDOM.VALUE(18 * 12, 90 * 12))),
+                ADD_MONTHS(TRUNC(SYSDATE), -1 * TRUNC(DBMS_RANDOM.VALUE(18 * 12, 90 * 12))),
                 v_cccd_bn,
                 v_sonha,
                 v_tenduong,
@@ -163,7 +164,8 @@ BEGIN
                 N'Không',
                 N'Không',
                 N'Không',
-                'BN' || LPAD(i, 9, '0')
+                v_cccd_bn,
+                NULL
             );
         EXCEPTION
             WHEN DUP_VAL_ON_INDEX THEN
@@ -196,24 +198,25 @@ DECLARE
     g_thuoc_tm t_list := t_list(N'Amlodipine 5mg', N'Losartan 50mg', N'Concor 2.5mg', N'Aspirin 81mg', N'Atorvastatin 10mg', N'Panangin');
     g_dv_tm    t_list := t_list(N'Đo điện tâm đồ (ECG)', N'Siêu âm tim Doppler màu', N'Holter huyết áp 24h');
 
-    TYPE t_num_array IS TABLE OF NUMBER;
-    bs_th t_num_array;
-    bs_tk t_num_array;
-    bs_tm t_num_array;
-    ktv_list t_num_array;
+    TYPE t_id_array IS TABLE OF VARCHAR2(32);
+    bs_th t_id_array;
+    bs_tk t_id_array;
+    bs_tm t_id_array;
+    ktv_list t_id_array;
 
     v_cur_benh NVARCHAR2(200);
     v_cur_thuoc NVARCHAR2(200);
     v_cur_dv NVARCHAR2(200);
-    v_cur_bs NUMBER;
-    v_cur_ktv NUMBER;
+    v_cur_bs VARCHAR2(32);
+    v_cur_ktv VARCHAR2(32);
 
-    v_mabn NUMBER;
+    v_mabn VARCHAR2(32);
     v_new_mahsba NUMBER;
     v_ngaykham DATE;
     v_scenario INT;
     v_num_hsba INT;
     v_cnt_hsba INT := 0;
+    v_patient_counter INT := 0;
 BEGIN
     DBMS_OUTPUT.PUT_LINE('>>> BẮT ĐẦU GENERATE DỮ LIỆU KHỐI LƯỢNG LỚN...');
 
@@ -234,6 +237,7 @@ BEGIN
     WHERE VAITRO LIKE N'%Kỹ thuật viên%';
 
     FOR r IN (SELECT MABN FROM BENHNHAN) LOOP
+        v_patient_counter := v_patient_counter + 1;
         v_mabn := r.MABN;
 
         IF DBMS_RANDOM.VALUE < 0.7 THEN
@@ -329,7 +333,7 @@ BEGIN
             END LOOP;
         END IF;
 
-        IF MOD(v_mabn, 2000) = 0 THEN
+        IF MOD(v_patient_counter, 2000) = 0 THEN
             COMMIT;
         END IF;
     END LOOP;
