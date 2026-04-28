@@ -80,9 +80,10 @@ BEGIN
         RETURN 'MABS = ''' || REPLACE(v_manv, '''', '''''') || '''';
     END IF;
 
-    RETURN '1=1';
+    RETURN '1=0';
 END;
 /
+
 
 CREATE OR REPLACE FUNCTION VPD_BENHNHAN_FN(p_schema VARCHAR2, p_object VARCHAR2)
 RETURN VARCHAR2
@@ -106,7 +107,8 @@ BEGIN
         RETURN 'MABN IN (SELECT MABN FROM HSBA WHERE MABS = ''' || REPLACE(v_manv, '''', '''''') || ''')';
     END IF;
 
-    RETURN 'USERNAME = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
+    -- Patient self-row only
+    RETURN 'UPPER(USERNAME) = UPPER(SYS_CONTEXT(''USERENV'', ''SESSION_USER''))';
 END;
 /
 
@@ -132,7 +134,7 @@ BEGIN
         RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ''' || REPLACE(v_manv, '''', '''''') || ''')';
     END IF;
 
-    RETURN '1=1';
+    RETURN '1=0'; -- No access for others
 END;
 /
 
@@ -158,7 +160,7 @@ BEGIN
         RETURN 'MAHSBA IN (SELECT MAHSBA FROM HSBA WHERE MABS = ''' || REPLACE(v_manv, '''', '''''') || ''')';
     END IF;
 
-    RETURN '1=1';
+    RETURN '1=0';
 END;
 /
 
@@ -179,7 +181,7 @@ BEGIN
         policy_name     => 'BENHNHAN_VPD',
         function_schema => USER,
         policy_function => 'VPD_BENHNHAN_FN',
-        statement_types => 'SELECT,UPDATE',
+        statement_types => 'SELECT,UPDATE,DELETE,INSERT',
         update_check    => TRUE
     );
 

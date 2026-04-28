@@ -98,6 +98,11 @@ public partial class PatientForm : BaseMedicalForm
         };
         notificationsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
+        profileLayout.Controls.Add(saveButton);
+        profileLayout.Controls.Add(notificationsButton);
+        profileLayout.Controls.Add(logoutButton);
 
         _identityLabel.AutoSize = true;
         _identityLabel.Font = new Font("Segoe UI", 12, FontStyle.Bold);
@@ -419,5 +424,16 @@ public partial class PatientForm : BaseMedicalForm
         {
             MessageBox.Show(this, ex.Message, "Bệnh nhân", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }

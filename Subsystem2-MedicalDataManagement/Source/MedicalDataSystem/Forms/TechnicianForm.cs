@@ -190,6 +190,11 @@ public partial class TechnicianForm : BaseMedicalForm
         saveButton.FlatAppearance.BorderSize = 0;
         saveButton.Click += (_, _) => SaveResult();
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
+        topPanel.Controls.Add(saveButton);
+        topPanel.Controls.Add(notificationsButton);
+        topPanel.Controls.Add(logoutButton);
 
         actionLayout.Controls.Add(_resultTextBox, 0, 3);
         actionLayout.SetColumnSpan(_resultTextBox, 3);
@@ -348,5 +353,16 @@ public partial class TechnicianForm : BaseMedicalForm
         {
             MessageBox.Show(this, ex.Message, "Kỹ thuật viên", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }

@@ -23,6 +23,12 @@ public class AuthenticationService
 
         using var connection = connectionService.GetConnection();
 
+        UserSession? adminSession = TryReadAdminSession(username, connectionString, dataSource);
+        if (adminSession is not null)
+        {
+            return adminSession;
+        }
+
         UserSession? staffSession = TryReadStaffSession(connection, username, password, verifyPasswordHash: true, connectionString, dataSource);
         if (staffSession is not null)
         {
@@ -36,6 +42,23 @@ public class AuthenticationService
         }
 
         throw new InvalidOperationException("Authenticated Oracle user is not mapped to NHANVIEN or BENHNHAN.");
+    }
+
+    private static UserSession? TryReadAdminSession(string username, string connectionString, string dataSource)
+    {
+        if (!string.Equals(username, "HOSPITAL_ADMIN", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return new UserSession
+        {
+            Username = username.ToUpperInvariant(),
+            FullName = "Hospital Administrator",
+            Role = "ADMIN",
+            ConnectionString = connectionString,
+            DataSource = dataSource
+        };
     }
 
     public string? Login(string username, string password)

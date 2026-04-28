@@ -336,6 +336,7 @@ public partial class LoginForm : Form
             UserSession session = _authenticationService.Authenticate(username, password, dataSource);
             Form nextForm = session.Role switch
             {
+                "ADMIN" => new AdminForm(session),
                 "COORDINATOR" => new CoordinatorForm(session),
                 "DOCTOR" => new DoctorForm(session),
                 "TECHNICIAN" => new TechnicianForm(session),
@@ -343,8 +344,18 @@ public partial class LoginForm : Form
                 _ => throw new InvalidOperationException($"Unsupported role: {session.Role}")
             };
 
-            TargetForm = nextForm;
-            DialogResult = DialogResult.OK;
+            Hide();
+            nextForm.ShowDialog(this);
+
+            if (nextForm.DialogResult == DialogResult.Retry)
+            {
+                _passwordTextBox.Clear();
+                _passwordTextBox.Focus();
+                ShowStatus("You have been logged out.");
+                Show();
+                return;
+            }
+
             Close();
         }
         catch (Exception ex)

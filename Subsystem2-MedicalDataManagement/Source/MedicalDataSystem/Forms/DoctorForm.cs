@@ -116,84 +116,13 @@ public partial class DoctorForm : BaseMedicalForm
         notificationsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
 
-        ConfigureGrid(_patientsGrid);
-        ConfigureGrid(_recordsGrid);
+        var logoutButton = new Button { Text = "Log out", AutoSize = true };
+        logoutButton.Click += (_, _) => Logout();
+        topPanel.Controls.Add(logoutButton);
 
-        var scrollHost = new Panel
-        {
-            Dock = DockStyle.Fill,
-            AutoScroll = true,
-            AutoScrollMinSize = new Size(0, 860),
-            BackColor = Color.FromArgb(241, 244, 249)
-        };
-
-        var root = new TableLayoutPanel
-        {
-            Dock = DockStyle.Top,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            ColumnCount = 1,
-            RowCount = 3,
-            Padding = new Padding(12, 12, 12, 56),
-            BackColor = Color.FromArgb(241, 244, 249)
-        };
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-
-        var actionCard = new Panel
-        {
-            Dock = DockStyle.Top,
-            Height = 176,
-            BackColor = Color.White,
-            BorderStyle = BorderStyle.FixedSingle,
-            Padding = new Padding(10),
-            Margin = new Padding(0, 0, 0, 10)
-        };
-
-        var actionLayout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 5,
-            RowCount = 7,
-            Margin = Padding.Empty
-        };
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 18));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22));
-
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
-
-        actionLayout.Controls.Add(new Label { Text = "Record ID", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
-        actionLayout.Controls.Add(new Label { Text = "Diagnosis", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
-        actionLayout.Controls.Add(new Label { Text = "Treatment", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
-        actionLayout.Controls.Add(new Label { Text = "Conclusion", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
-        actionLayout.Controls.Add(_recordIdTextBox, 0, 1);
-        actionLayout.Controls.Add(_diagnosisTextBox, 1, 1);
-        actionLayout.Controls.Add(_treatmentTextBox, 2, 1);
-        actionLayout.Controls.Add(_conclusionTextBox, 3, 1);
-        actionLayout.Controls.Add(updateRecordButton, 4, 1);
-
-        actionLayout.Controls.Add(new Label { Text = "Service type", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
-        actionLayout.Controls.Add(new Label { Text = "Service date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
-        actionLayout.Controls.Add(_serviceTypeTextBox, 0, 3);
-        actionLayout.Controls.Add(_serviceDatePicker, 1, 3);
-        actionLayout.Controls.Add(addServiceButton, 4, 3);
-
-        actionLayout.Controls.Add(new Label { Text = "Drug", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 4);
-        actionLayout.Controls.Add(new Label { Text = "Dose", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 4);
-        actionLayout.Controls.Add(new Label { Text = "Date", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 4);
-        actionLayout.Controls.Add(_prescriptionNameTextBox, 0, 5);
-        actionLayout.Controls.Add(_prescriptionDoseTextBox, 1, 5);
-        actionLayout.Controls.Add(_prescriptionDatePicker, 2, 5);
-        actionLayout.Controls.Add(savePrescriptionButton, 4, 5);
-        actionLayout.Controls.Add(notificationsButton, 4, 6);
+        var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
+        split.Panel1.Controls.Add(_patientsGrid);
+        split.Panel2.Controls.Add(_recordsGrid);
 
         actionCard.Controls.Add(actionLayout);
 
@@ -436,5 +365,16 @@ public partial class DoctorForm : BaseMedicalForm
         {
             MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
     }
 }
