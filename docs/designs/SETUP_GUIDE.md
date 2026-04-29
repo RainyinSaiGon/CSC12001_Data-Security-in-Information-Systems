@@ -368,6 +368,6 @@ The repository is ready for:
 - FGA
 - both WinForms apps
 
-Still incomplete as checked-in project assets:
+Still needing environment-specific validation:
 
 - Requirement 4 backup and recovery scripts in `database/Subsystem2-MedicalDB/recovery`

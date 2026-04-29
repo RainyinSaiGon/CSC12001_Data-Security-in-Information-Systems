@@ -170,6 +170,6 @@ The repository is in good shape for:
 - FGA
 - both WinForms apps
 
-Still incomplete as checked-in project assets:
+Still needing environment-specific validation:
 
 - backup and recovery scripts for Requirement 4

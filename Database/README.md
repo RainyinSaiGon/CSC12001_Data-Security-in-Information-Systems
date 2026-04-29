@@ -92,9 +92,6 @@ Ready now:
 - `audit/`
 - `Reset.sql`
 - `Report.sql`
-
-Still incomplete:
-
 - `recovery/`
 
-So Requirement 4 backup and recovery should still be treated as unfinished unless your team adds those scripts.
+The `recovery/` folder is checked in and documented; it still needs to be exercised in the target Oracle environment before the final demo.

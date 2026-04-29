@@ -190,11 +190,6 @@ public partial class TechnicianForm : BaseMedicalForm
         saveButton.FlatAppearance.BorderSize = 0;
         saveButton.Click += (_, _) => SaveResult();
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
-        var logoutButton = new Button { Text = "Log out", AutoSize = true };
-        logoutButton.Click += (_, _) => Logout();
-        topPanel.Controls.Add(saveButton);
-        topPanel.Controls.Add(notificationsButton);
-        topPanel.Controls.Add(logoutButton);
 
         actionLayout.Controls.Add(_resultTextBox, 0, 3);
         actionLayout.SetColumnSpan(_resultTextBox, 3);

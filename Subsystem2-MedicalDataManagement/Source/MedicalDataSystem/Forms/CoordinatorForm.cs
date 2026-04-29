@@ -51,12 +51,6 @@ public partial class CoordinatorForm : BaseMedicalForm
         };
         notificationsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
-        var logoutButton = new Button { Text = "Log out", AutoSize = true };
-        logoutButton.Click += (_, _) => Logout();
-        topPanel.Controls.Add(addButton);
-        topPanel.Controls.Add(refreshButton);
-        topPanel.Controls.Add(notificationsButton);
-        topPanel.Controls.Add(logoutButton);
 
         var addButton = new Button
         {

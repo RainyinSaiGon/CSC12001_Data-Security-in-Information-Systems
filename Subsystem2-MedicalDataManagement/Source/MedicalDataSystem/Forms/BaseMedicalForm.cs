@@ -27,7 +27,7 @@ namespace MedicalDataSystem.Forms
                 {
                     
                     
-                    this.DialogResult = DialogResult.OK; // Đánh dấu là đóng Form để Logout
+                        this.DialogResult = DialogResult.Retry; // Return to login after logout
                     this.Close(); // Đóng Form hiện tại
                 }
             };

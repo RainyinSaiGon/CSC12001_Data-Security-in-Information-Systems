@@ -81,11 +81,12 @@ What is ready in the repository:
 - OLS setup
 - Standard Audit and FGA setup
 - reset and reporting scripts
+- Requirement 4 backup and recovery scripts under `database/Subsystem2-MedicalDB/recovery`
 - both WinForms projects
 
-What is still incomplete and should be documented honestly in the final report:
+What still needs environment-specific validation before a live demo:
 
-- Requirement 4 backup and recovery assets under `database/Subsystem2-MedicalDB/recovery`
+- Run and verify the Requirement 4 backup/recovery scripts against the target Oracle installation and OS paths
 
 ## Notes
 

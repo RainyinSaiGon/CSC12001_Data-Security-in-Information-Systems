@@ -10,13 +10,11 @@ Implement the backup and recovery part that is still missing from the repository
 
 ## Current State
 
-This is the biggest clearly unfinished requirement in the repo.
+The recovery folder is now checked in and documented.
 
-The folder exists:
+The remaining work is to validate the scripts in the target Oracle environment and carry the results into the final report:
 
 - `database/Subsystem2-MedicalDB/recovery`
-
-But the final checked-in scripts and documentation are still incomplete.
 
 ## Expected Deliverables
 
@@ -44,7 +42,7 @@ But the final checked-in scripts and documentation are still incomplete.
 
 ## Acceptance Criteria
 
-- Requirement 4 has real checked-in assets under `database/Subsystem2-MedicalDB/recovery`
+- Requirement 4 is demonstrable from the checked-in assets under `database/Subsystem2-MedicalDB/recovery`
 - backup can be demonstrated
 - recovery can be explained and repeated
 - documentation is clear enough for the final report

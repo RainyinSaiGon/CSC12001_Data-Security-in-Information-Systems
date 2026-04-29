@@ -98,11 +98,6 @@ public partial class PatientForm : BaseMedicalForm
         };
         notificationsButton.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
         notificationsButton.Click += (_, _) => new NotificationForm(_session).ShowDialog(this);
-        var logoutButton = new Button { Text = "Log out", AutoSize = true };
-        logoutButton.Click += (_, _) => Logout();
-        profileLayout.Controls.Add(saveButton);
-        profileLayout.Controls.Add(notificationsButton);
-        profileLayout.Controls.Add(logoutButton);
 
         _identityLabel.AutoSize = true;
         _identityLabel.Font = new Font("Segoe UI", 12, FontStyle.Bold);
