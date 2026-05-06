@@ -1,3 +1,11 @@
+/* ================================================= */
+/* PREPARE ENVIRONMENT (Enable OLS for security) */
+/* ================================================= */
+ALTER SESSION SET CONTAINER = XEPDB1;
+EXEC LBACSYS.CONFIGURE_OLS;
+EXEC LBACSYS.OLS_ENFORCEMENT.ENABLE_OLS;
+SHUTDOWN IMMEDIATE;
+STARTUP;
 SET SERVEROUTPUT ON;
 
 PROMPT === Bootstrap HOSPITAL_ADMIN ===

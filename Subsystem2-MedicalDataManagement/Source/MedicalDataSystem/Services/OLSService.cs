@@ -52,7 +52,7 @@ public class OLSService
                         WHEN USERNAME IN ('990000000001', '990000000002', '990000000003') THEN 'MULTI_SITE'
                         ELSE 'UNKNOWN'
                     END AS OLS_LABEL_TEXT
-                FROM THONGBAO t
+                FROM HOSPITAL_ADMIN.THONGBAO t
                 """;
 
             if (filterLabelTag.HasValue)
@@ -110,7 +110,7 @@ public class OLSService
 
                 using var command = connection.CreateCommand();
                 command.CommandText = """
-                    INSERT INTO THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
+                    INSERT INTO HOSPITAL_ADMIN.THONGBAO (NOIDUNG, NGAYGIO, DIADIEM, OLS_LABEL)
                     VALUES (
                         :noiDung,
                         :ngayGio,
@@ -146,7 +146,7 @@ public class OLSService
             using var command = connection.CreateCommand();
             command.CommandText = """
                 SELECT MATHONGBAO, NOIDUNG, NGAYGIO, DIADIEM
-                FROM THONGBAO
+                FROM HOSPITAL_ADMIN.THONGBAO
                 ORDER BY NGAYGIO DESC
                 FETCH FIRST 200 ROWS ONLY
                 """;

@@ -49,29 +49,69 @@ public class PatientService
         });
     }
 
-    public bool UpdatePatientInfo(Patient patient)
+    public bool UpdatePatientInfo(Patient patient, bool attemptRestrictedUpdate = false)
     {
         return _connectionService.Execute(connection =>
         {
             using var command = connection.CreateCommand();
-            command.CommandText = """
-                UPDATE V_SELF_BENHNHAN
-                SET SONHA = :sonha,
-                    TENDUONG = :tenduong,
-                    QUANHUYEN = :quanhuyen,
-                    TINHTP = :tinhtp,
-                    TIENSUBENH = :tiensubenh,
-                    TIENSUBENHGD = :tiensubenhgd,
-                    DIUNGTHUOC = :diungthuoc
-                """;
-            command.Parameters.Add(new OracleParameter("sonha", patient.SONHA));
-            command.Parameters.Add(new OracleParameter("tenduong", patient.TENDUONG));
-            command.Parameters.Add(new OracleParameter("quanhuyen", patient.QUANHUYEN));
-            command.Parameters.Add(new OracleParameter("tinhtp", patient.TINHTP));
-            command.Parameters.Add(new OracleParameter("tiensubenh", patient.TIENSUBENH));
-            command.Parameters.Add(new OracleParameter("tiensubenhgd", patient.TIENSUBENHGD));
-            command.Parameters.Add(new OracleParameter("diungthuoc", patient.DIUNGTHUOC));
-            return command.ExecuteNonQuery() == 1;
+            command.BindByName = true;
+            
+            if (attemptRestrictedUpdate)
+            {
+                command.CommandText = """
+                    DECLARE
+                        v_mabn VARCHAR2(32) := :mabn;
+                        v_tenbn NVARCHAR2(100) := :tenbn;
+                        v_cccd CHAR(12) := :cccd;
+                    BEGIN
+                        -- Lệnh này sẽ bị Oracle chặn (ORA-01031) do Bệnh nhân không có quyền UPDATE trên cột TENBN, CCCD
+                        UPDATE V_SELF_BENHNHAN
+                        SET TENBN = v_tenbn,
+                            CCCD = v_cccd
+                        WHERE MABN = v_mabn;
+                    END;
+                    """;
+                command.Parameters.Add(new OracleParameter("tenbn", patient.TENBN ?? ""));
+                command.Parameters.Add(new OracleParameter("cccd", patient.CCCD ?? ""));
+                command.Parameters.Add(new OracleParameter("mabn", patient.MABN));
+                command.ExecuteNonQuery();
+                return true;
+            }
+            else
+            {
+                command.CommandText = """
+                    DECLARE
+                        v_mabn VARCHAR2(32) := :mabn;
+                        v_sonha NVARCHAR2(30) := :sonha;
+                        v_tenduong NVARCHAR2(30) := :tenduong;
+                        v_quanhuyen NVARCHAR2(30) := :quanhuyen;
+                        v_tinhtp NVARCHAR2(50) := :tinhtp;
+                        v_tiensubenh NVARCHAR2(2000) := :tiensubenh;
+                        v_tiensubenhgd NVARCHAR2(2000) := :tiensubenhgd;
+                        v_diungthuoc NVARCHAR2(2000) := :diungthuoc;
+                    BEGIN
+                        UPDATE V_SELF_BENHNHAN
+                        SET SONHA = v_sonha,
+                            TENDUONG = v_tenduong,
+                            QUANHUYEN = v_quanhuyen,
+                            TINHTP = v_tinhtp,
+                            TIENSUBENH = v_tiensubenh,
+                            TIENSUBENHGD = v_tiensubenhgd,
+                            DIUNGTHUOC = v_diungthuoc
+                        WHERE MABN = v_mabn;
+                    END;
+                    """;
+                command.Parameters.Add(new OracleParameter("sonha", patient.SONHA ?? ""));
+                command.Parameters.Add(new OracleParameter("tenduong", patient.TENDUONG ?? ""));
+                command.Parameters.Add(new OracleParameter("quanhuyen", patient.QUANHUYEN ?? ""));
+                command.Parameters.Add(new OracleParameter("tinhtp", patient.TINHTP ?? ""));
+                command.Parameters.Add(new OracleParameter("tiensubenh", patient.TIENSUBENH ?? ""));
+                command.Parameters.Add(new OracleParameter("tiensubenhgd", patient.TIENSUBENHGD ?? ""));
+                command.Parameters.Add(new OracleParameter("diungthuoc", patient.DIUNGTHUOC ?? ""));
+                command.Parameters.Add(new OracleParameter("mabn", patient.MABN));
+                command.ExecuteNonQuery();
+                return true;
+            }
         });
     }
 

@@ -79,7 +79,7 @@ Optional:
 ## Important Current Notes
 
 - `Create_HOSPITAL_ADMIN.sql` creates or unlocks `HOSPITAL_ADMIN` with password `12345678`
-- `01_RBAC_Setup.sql` creates runtime Oracle users with password `123`
+- `01_RBAC_Setup.sql` creates runtime Oracle users with password is the same to username
 - `03_OLS_Setup.sql` is intentionally two-pass
 - old `HOS_OLS_POL` cleanup is already handled in reset and OLS setup
 

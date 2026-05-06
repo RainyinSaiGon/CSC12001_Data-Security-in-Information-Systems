@@ -21,8 +21,7 @@ public class CoordinatorService
                 SELECT MABN, TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN,
                        TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME
                 FROM BENHNHAN
-                ORDER BY MABN
-                FETCH FIRST 200 ROWS ONLY
+                ORDER BY MABN DESC
                 """;
 
             using var reader = command.ExecuteReader();
@@ -42,13 +41,12 @@ public class CoordinatorService
         {
             using var command = connection.CreateCommand();
             command.CommandText = """
-                INSERT INTO BENHNHAN (
-                    TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN,
-                    TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME, PASSWORD_HASH
-                ) VALUES (
-                    :tenbn, :phai, TRUNC(:ngaysinh), :cccd, :sonha, :tenduong, :quanhuyen,
-                    :tinhtp, :tiensubenh, :tiensubenhgd, :diungthuoc, :username, :password_hash
-                )
+                BEGIN
+                    HOSPITAL_ADMIN.SP_ADD_PATIENT(
+                        :tenbn, :phai, TRUNC(:ngaysinh), :cccd, :sonha, :tenduong, 
+                        :quanhuyen, :tinhtp, :tiensubenh, :tiensubenhgd, :diungthuoc
+                    );
+                END;
                 """;
             string normalizedCccd = patient.CCCD.Trim();
             command.Parameters.Add(new OracleParameter("tenbn", patient.TENBN));
@@ -62,9 +60,8 @@ public class CoordinatorService
             command.Parameters.Add(new OracleParameter("tiensubenh", patient.TIENSUBENH));
             command.Parameters.Add(new OracleParameter("tiensubenhgd", patient.TIENSUBENHGD));
             command.Parameters.Add(new OracleParameter("diungthuoc", patient.DIUNGTHUOC));
-            command.Parameters.Add(new OracleParameter("username", normalizedCccd));
-            command.Parameters.Add(new OracleParameter("password_hash", BCrypt.Net.BCrypt.HashPassword(normalizedCccd)));
-            return command.ExecuteNonQuery() == 1;
+            command.ExecuteNonQuery();
+            return true;
         });
     }
 
@@ -142,28 +139,72 @@ public class CoordinatorService
     {
         return _connectionService.Execute(connection =>
         {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[AssignTechnician] Bắt đầu. MAHSBA: {medicalRecordId}, LOAIDV: {serviceType}, NGAYDV: {serviceDate:yyyy-MM-dd}, MAKTV: {technicianId}");
+
+                using var cmdUpdate = connection.CreateCommand();
+                cmdUpdate.BindByName = true;
+                cmdUpdate.CommandText = """
+                    UPDATE HSBA_DV 
+                    SET MAKTV = :maktv 
+                    WHERE MAHSBA = :mahsba AND LOAIDV = :loaidv AND TRUNC(NGAYDV) = TRUNC(:ngaydv)
+                    """;
+                cmdUpdate.Parameters.Add(new OracleParameter("maktv", OracleDbType.Varchar2, technicianId, System.Data.ParameterDirection.Input));
+                cmdUpdate.Parameters.Add(new OracleParameter("mahsba", OracleDbType.Int32, medicalRecordId, System.Data.ParameterDirection.Input));
+                cmdUpdate.Parameters.Add(new OracleParameter("loaidv", OracleDbType.NVarchar2, serviceType, System.Data.ParameterDirection.Input));
+                cmdUpdate.Parameters.Add(new OracleParameter("ngaydv", OracleDbType.Date, serviceDate, System.Data.ParameterDirection.Input));
+                
+                System.Diagnostics.Debug.WriteLine("[AssignTechnician] Đang thực thi lệnh UPDATE...");
+                int updated = cmdUpdate.ExecuteNonQuery();
+                System.Diagnostics.Debug.WriteLine($"[AssignTechnician] UPDATE thành công. Số dòng ảnh hưởng: {updated}");
+
+                if (updated == 0)
+                {
+                    throw new Exception("Dịch vụ này chưa tồn tại trong Hồ sơ bệnh án!\n\n💡 LƯU Ý QUY TRÌNH (TC#2 & TC#3):\nĐiều phối viên KHÔNG có quyền tự tạo Dịch vụ. Bác sĩ phải là người 'Chỉ định Dịch vụ' trước, sau đó Điều phối viên mới được phép quay lại form này để cập nhật phân công Kỹ thuật viên.");
+                }
+                return true;
+            }
+            catch (OracleException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AssignTechnician] OracleException lỗi số ({ex.Number}): {ex.Message}");
+                throw new Exception($"Lỗi CSDL Oracle ({ex.Number}): {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AssignTechnician] Exception chung: {ex.Message}");
+                throw;
+            }
+        });
+    }
+
+    public List<DiagnosticService> GetUnassignedServices(int medicalRecordId)
+    {
+        return _connectionService.Execute(connection =>
+        {
             using var command = connection.CreateCommand();
             command.CommandText = """
-                MERGE INTO HSBA_DV target
-                USING (
-                    SELECT :mahsba AS MAHSBA, :loaidv AS LOAIDV, :ngaydv AS NGAYDV FROM dual
-                ) source
-                ON (
-                    target.MAHSBA = source.MAHSBA AND
-                    target.LOAIDV = source.LOAIDV AND
-                    target.NGAYDV = source.NGAYDV
-                )
-                WHEN MATCHED THEN
-                    UPDATE SET MAKTV = :maktv
-                WHEN NOT MATCHED THEN
-                    INSERT (MAHSBA, LOAIDV, NGAYDV, KETQUA, MAKTV)
-                    VALUES (:mahsba, :loaidv, :ngaydv, NULL, :maktv)
+                SELECT MAHSBA, LOAIDV, NGAYDV, KETQUA, MAKTV
+                FROM HSBA_DV
+                WHERE MAHSBA = :mahsba AND MAKTV IS NULL
+                ORDER BY NGAYDV DESC
                 """;
             command.Parameters.Add(new OracleParameter("mahsba", medicalRecordId));
-            command.Parameters.Add(new OracleParameter("loaidv", serviceType));
-            command.Parameters.Add(new OracleParameter("ngaydv", serviceDate));
-            command.Parameters.Add(new OracleParameter("maktv", technicianId));
-            return command.ExecuteNonQuery() > 0;
+
+            using var reader = command.ExecuteReader();
+            var list = new List<DiagnosticService>();
+            while (reader.Read())
+            {
+                list.Add(new DiagnosticService
+                {
+                    MAHSBA = reader.GetInt32(0),
+                    LOAIDV = reader.GetString(1),
+                    NGAYDV = reader.GetDateTime(2),
+                    KETQUA = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                    MAKTV = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+                });
+            }
+            return list;
         });
     }
 
@@ -175,6 +216,26 @@ public class CoordinatorService
     public List<Staff> GetTechnicians()
     {
         return GetStaffByAppRole("TECHNICIAN");
+    }
+
+    public List<int> GetMedicalRecordsByPatient(string patientId)
+    {
+        return _connectionService.Execute(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT MAHSBA FROM HSBA WHERE MABN = :mabn ORDER BY MAHSBA DESC
+                """;
+            command.Parameters.Add(new OracleParameter("mabn", patientId));
+
+            using var reader = command.ExecuteReader();
+            var list = new List<int>();
+            while (reader.Read())
+            {
+                list.Add(reader.GetInt32(0));
+            }
+            return list;
+        });
     }
 
     public string GetRecordStatus(string recordId)
