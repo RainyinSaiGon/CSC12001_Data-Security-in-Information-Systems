@@ -38,7 +38,7 @@ EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
 CREATE TABLE BENHNHAN (
     MABN VARCHAR2(32) DEFAULT LOWER(RAWTOHEX(SYS_GUID())) PRIMARY KEY,
     TENBN NVARCHAR2(100) NOT NULL,
-    PHAI NVARCHAR2(3),
+    PHAI NVARCHAR2(4),
     NGAYSINH DATE,
     CCCD CHAR(12) UNIQUE NOT NULL,
     SONHA NVARCHAR2(30),
@@ -67,7 +67,7 @@ CREATE TABLE KHOA (
 CREATE TABLE NHANVIEN (
     MANV VARCHAR2(32) DEFAULT LOWER(RAWTOHEX(SYS_GUID())) PRIMARY KEY,
     HOTEN NVARCHAR2(100) NOT NULL,
-    PHAI NVARCHAR2(3),
+    PHAI NVARCHAR2(4),
     NGAYSINH DATE,
     CCCD CHAR(12) UNIQUE NOT NULL,
     QUEQUAN NVARCHAR2(100),
@@ -136,3 +136,37 @@ CREATE TABLE THONGBAO (
     NGAYGIO TIMESTAMP,
     DIADIEM NVARCHAR2(100)
 );
+
+/* ================================================= */
+/* 3. CREATE PROCEDURES                              */
+/* ================================================= */
+CREATE OR REPLACE PROCEDURE SP_ADD_PATIENT(
+    p_tenbn IN NVARCHAR2,
+    p_phai IN NVARCHAR2,
+    p_ngaysinh IN DATE,
+    p_cccd IN CHAR,
+    p_sonha IN NVARCHAR2,
+    p_tenduong IN NVARCHAR2,
+    p_quanhuyen IN NVARCHAR2,
+    p_tinhtp IN NVARCHAR2,
+    p_tiensubenh IN NVARCHAR2,
+    p_tiensubenhgd IN NVARCHAR2,
+    p_diungthuoc IN NVARCHAR2
+) AUTHID DEFINER AS
+    v_username VARCHAR2(30);
+BEGIN
+    -- Username bat buoc phai la CCCD theo constraint
+    v_username := TRIM(p_cccd);
+
+    -- Insert vao bang
+    INSERT INTO BENHNHAN (TENBN, PHAI, NGAYSINH, CCCD, SONHA, TENDUONG, QUANHUYEN, TINHTP, TIENSUBENH, TIENSUBENHGD, DIUNGTHUOC, USERNAME, PASSWORD_HASH)
+    VALUES (p_tenbn, p_phai, p_ngaysinh, p_cccd, p_sonha, p_tenduong, p_quanhuyen, p_tinhtp, p_tiensubenh, p_tiensubenhgd, p_diungthuoc, v_username, NULL);
+
+    -- Tao User tu dong & cap quyen (Muon quyen Admin)
+    EXECUTE IMMEDIATE 'CREATE USER "' || v_username || '" IDENTIFIED BY "123"';
+    EXECUTE IMMEDIATE 'GRANT BENH_NHAN TO "' || v_username || '"';
+
+    -- Lenh quan trong nhat de du lieu khong bay mau
+    COMMIT; 
+END;
+/

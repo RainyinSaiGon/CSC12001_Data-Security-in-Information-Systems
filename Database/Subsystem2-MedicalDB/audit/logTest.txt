@@ -1,0 +1,935 @@
+=====================================================================
+THUC HIEN CAC HANH VI DE TAO LOG (STANDARD AUDIT & FGA)
+=====================================================================
+---> KET NOI: KY THUAT VIEN (990000000121)
+Connected.
+[Checklist] Failed SELECT on BENHNHAN
+
+Error starting at line : 19 in command -
+SELECT * FROM HOSPITAL_ADMIN.BENHNHAN FETCH FIRST 5 ROWS ONLY
+Error at Command Line : 19 Column : 30
+Error report -
+SQL Error: ORA-00942: table or view does not exist
+
+https://docs.oracle.com/error-help/db/ora-00942/00942. 00000 -  "table or view%s does not exist"
+*Cause:    The specified table or view did not exist, or a synonym
+           pointed to a table or view that did not exist.
+           To find existing user tables and views, query the
+           ALL_TABLES and ALL_VIEWS data dictionary views. Certain
+           privileges may be required to access the table. If an
+           application returned this message, then the table that the
+           application tried to access did not exist in the database, or
+           the application did not have access to it.
+*Action:   Check each of the following
+           - The spelling of the table or view name is correct.
+           - The referenced table or view name does exist.
+           - The synonym points to an existing table or view.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-00942/
+---> KET NOI: BENH NHAN (000000000001)
+Connected.
+[Checklist] Failed DML on HSBA_DV (Standard) & Illegal HSBA_DV DML (FGA)
+
+Error starting at line : 28 in command -
+DELETE FROM HOSPITAL_ADMIN.HSBA_DV WHERE MAHSBA = 1
+Error at Command Line : 28 Column : 28
+Error report -
+SQL Error: ORA-00942: table or view does not exist
+
+https://docs.oracle.com/error-help/db/ora-00942/00942. 00000 -  "table or view%s does not exist"
+*Cause:    The specified table or view did not exist, or a synonym
+           pointed to a table or view that did not exist.
+           To find existing user tables and views, query the
+           ALL_TABLES and ALL_VIEWS data dictionary views. Certain
+           privileges may be required to access the table. If an
+           application returned this message, then the table that the
+           application tried to access did not exist in the database, or
+           the application did not have access to it.
+*Action:   Check each of the following
+           - The spelling of the table or view name is correct.
+           - The referenced table or view name does exist.
+           - The synonym points to an existing table or view.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-00942/
+
+Error starting at line : 29 in command -
+UPDATE HOSPITAL_ADMIN.HSBA_DV SET KETQUA = 'Âm tính giả' WHERE MAHSBA = 1
+Error at Command Line : 29 Column : 23
+Error report -
+SQL Error: ORA-00942: table or view does not exist
+
+https://docs.oracle.com/error-help/db/ora-00942/00942. 00000 -  "table or view%s does not exist"
+*Cause:    The specified table or view did not exist, or a synonym
+           pointed to a table or view that did not exist.
+           To find existing user tables and views, query the
+           ALL_TABLES and ALL_VIEWS data dictionary views. Certain
+           privileges may be required to access the table. If an
+           application returned this message, then the table that the
+           application tried to access did not exist in the database, or
+           the application did not have access to it.
+*Action:   Check each of the following
+           - The spelling of the table or view name is correct.
+           - The referenced table or view name does exist.
+           - The synonym points to an existing table or view.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-00942/
+---> KET NOI: BAC SI 21 (990000000021)
+Connected.
+[Checklist] Successful login/logout
+[Checklist] VPD function execution
+
+    MAHSBA MABN                             NGAY
+---------- -------------------------------- ---------
+CHANDOAN
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DIEUTRI
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+KETLUAN
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+MABS                             MAKHOA
+-------------------------------- ------
+        42 00130fbf9764436fbdf840a889073833 31-MAR-26 
+Trào ngược dạ dày (GERD)                                                                                                                                                                                                                                                                                    
+Điều trị ngoại trú                                                                                                                                                                                                                                                                                          
+Tái khám                                                                                                                                                                                                                                                                                                    
+60a6ba2d6bcf4fb8aca47bc8b9e5b581 KHOA01
+
+        44 001391e337f84ae89ba79e00c26da896 27-JUL-24 
+Viêm đại tràng                                                                                                                                                                                                                                                                                              
+Điều trị ngoại trú                                                                                                                                                                                                                                                                                          
+Tái khám                                                                                                                                                                                                                                                                                                    
+6dde16251eaf4ea8bf6f008f6aa7c774 KHOA01
+
+        45 001391e337f84ae89ba79e00c26da896 15-JAN-25 
+Mất ngủ mãn tính                                                                                                                                                                                                                                                                                            
+Nghỉ ngơi                                                                                                                                                                                                                                                                                                   
+Theo dõi                                                                                                                                                                                                                                                                                                    
+e776cd1a5e90484cbbaabebb350161d0 KHOA02
+
+        46 0013a196eef54ac6999db9827b8355a8 01-OCT-25 
+Đau nửa đầu Migraine                                                                                                                                                                                                                                                                                        
+Nghỉ ngơi                                                                                                                                                                                                                                                                                                   
+Theo dõi                                                                                                                                                                                                                                                                                                    
+99e092aa4dd34ca7b04e33f81d2c01e4 KHOA02
+
+        47 0013a196eef54ac6999db9827b8355a8 17-DEC-24 
+Trào ngược dạ dày (GERD)                                                                                                                                                                                                                                                                                    
+Điều trị ngoại trú                                                                                                                                                                                                                                                                                          
+Tái khám                                                                                                                                                                                                                                                                                                    
+2eeaef823d05440dac58b56baf5610cb KHOA01
+
+
+[Checklist] DML on HSBA (Standard) & Valid doctor update on HSBA (FGA)
+
+1,693 rows updated.
+
+
+Commit complete.
+
+[Checklist] DML on DONTHUOC (Standard) & Update DONTHUOC after creation (FGA)
+
+3,121 rows updated.
+
+
+Commit complete.
+
+[Checklist] Invalid doctor update on HSBA (FGA)
+
+0 rows updated.
+
+=====================================================================
+THUC THI XEM NHAT KY KIEM TOAN (03_ReadAuditLogs.sql)
+=====================================================================
+---> KET NOI: ADMIN (HOSPITAL_ADMIN)
+Connected.
+=== Session audit trail (login/logout - success only) ===
+
+USERNAME        USERHOST        TERMINAL        RETURNCODE LOGON_TIME          LOGOFF_TIME          SESSIONID
+--------------- --------------- --------------- ---------- ------------------- ------------------- ----------
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:16:31                         120018
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:16:31 2026-05-06 11:16:31     120017
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:16:30 2026-05-06 11:16:30     120016
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:16:30                         120015
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:16:30                         120017
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:16:30 2026-05-06 11:16:30     120015
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:16:30                         120016
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:15:36 2026-05-06 11:15:36     120013
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:15:36                         120014
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:15:36 2026-05-06 11:15:36     120014
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:15:35                         120011
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:15:35                         120012
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:15:35 2026-05-06 11:15:35     120011
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:15:35                         120013
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:15:35 2026-05-06 11:15:35     120012
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:15:11                         120010
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:14:50 2026-05-06 11:14:50     120009
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:14:50 2026-05-06 11:14:50     120008
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:14:50                         120009
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:14:49                         120007
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:14:49 2026-05-06 11:14:49     120006
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:14:49 2026-05-06 11:14:49     120007
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:14:49                         120008
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:14:48                         120006
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:03:54 2026-05-06 11:03:54     110003
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:03:54                         110004
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:03:54 2026-05-06 11:03:54     110004
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:03:52                         110001
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:03:52                         110002
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:03:52 2026-05-06 11:03:52     110001
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:03:52 2026-05-06 11:03:52     110002
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:03:52                         110003
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:00:32                         100083
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:00:32 2026-05-06 11:00:32     100083
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:00:32 2026-05-06 11:00:32     100082
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 11:00:31                         100082
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:00:31 2026-05-06 11:00:31     100080
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:00:31                         100081
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:00:31 2026-05-06 11:00:31     100079
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 11:00:31                         100079
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 11:00:31                         100080
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 11:00:31 2026-05-06 11:00:31     100081
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:58:37 2026-05-06 10:58:37     100073
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:58:36 2026-05-06 10:58:36     100072
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:58:36                         100072
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:58:36 2026-05-06 10:58:36     100071
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:58:36                         100073
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:58:25 2026-05-06 10:58:25     100070
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:58:25                         100071
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:58:13                         100070
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:58:13                         100069
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:58:13 2026-05-06 10:58:13     100069
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:57:47 2026-05-06 10:57:47     100068
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:57:43                         100068
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:55:42 2026-05-06 10:55:42     100065
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:42                         100067
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:42 2026-05-06 10:55:42     100066
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:42 2026-05-06 10:55:42     100067
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:42                         100066
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:55:39                         100065
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:55:39 2026-05-06 10:55:39     100064
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:55:38 2026-05-06 10:55:38     100063
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:55:38                         100064
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:55:37                         100063
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:12 2026-05-06 10:55:12     100062
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:12 2026-05-06 10:55:12     100061
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:12                         100062
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:55:11                         100061
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:55:11 2026-05-06 10:55:11     100060
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:55:06                         100060
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:55:06 2026-05-06 10:55:06     100059
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:55:03 2026-05-06 10:55:03     100058
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:55:03                         100059
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:55:03                         100058
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:54:29                         100057
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:51:25 2026-05-06 10:51:25     100056
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:51:02                         100056
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:47:10                         100055
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:47:10 2026-05-06 10:47:10     100053
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:47:10                         100054
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:47:10 2026-05-06 10:47:10     100054
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:47:10 2026-05-06 10:47:10     100055
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:47:08                         100053
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:47:08 2026-05-06 10:47:08     100051
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:47:08                         100052
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:47:08                         100051
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:47:08 2026-05-06 10:47:08     100052
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:29:48                         100046
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:29:48                         100047
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:29:48 2026-05-06 10:29:48     100046
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:29:48 2026-05-06 10:29:48     100047
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:29:48                         100049
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:29:48 2026-05-06 10:29:48     100048
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:29:48 2026-05-06 10:29:48     100049
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:29:48                         100048
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:29:45                         100045
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 10:29:45 2026-05-06 10:29:45     100045
+
+USERNAME        USERHOST        TERMINAL        RETURNCODE LOGON_TIME          LOGOFF_TIME          SESSIONID
+--------------- --------------- --------------- ---------- ------------------- ------------------- ----------
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:29:45 2026-05-06 10:29:45     100043
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:29:45                         100044
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 10:29:45 2026-05-06 10:29:45     100044
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:29:44                         100042
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 10:29:44 2026-05-06 10:29:44     100042
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 10:29:44                         100043
+990000000028    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-06 10:29:42 2026-05-06 10:29:42     100035
+                _DOM                                                                                         
+
+990000000001    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-06 10:29:42 2026-05-06 10:29:42     100025
+                _DOM                                                                                         
+
+990000000021    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-06 10:29:42 2026-05-06 10:29:42     100024
+                _DOM                                                                                         
+
+990000000028    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-06 09:58:22                         100035
+                _DOM                                                                                         
+
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:46:33 2026-05-06 09:46:33     100034
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:46:33                         100034
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:44:38 2026-05-06 09:44:38     100032
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:44:38                         100032
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 09:44:01                         100031
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 09:44:01 2026-05-06 09:44:01     100031
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 09:43:34                         100029
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 09:43:34 2026-05-06 09:43:34     100029
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:43:24 2026-05-06 09:43:24     100026
+000000000376    TRIET_DOM       unknown                  0 2026-05-06 09:42:47                         100028
+000000000376    TRIET_DOM       unknown                  0 2026-05-06 09:42:47 2026-05-06 09:42:47     100028
+000000000376    TRIET_DOM       unknown                  0 2026-05-06 09:42:32 2026-05-06 09:42:32     100027
+000000000376    TRIET_DOM       unknown                  0 2026-05-06 09:42:32                         100027
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:42:03                         100026
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:38:25 2026-05-06 09:38:25     100023
+990000000001    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-06 09:32:54                         100025
+                _DOM                                                                                         
+
+990000000021    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-06 09:31:50                         100024
+                _DOM                                                                                         
+
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:28:50                         100022
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:28:50 2026-05-06 09:28:50     100022
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:28:50                         100023
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:28:49                         100021
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:28:49 2026-05-06 09:28:49     100021
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:23:11                         100019
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:23:11 2026-05-06 09:23:11     100019
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:23:05 2026-05-06 09:23:05     100018
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:23:05                         100018
+990000000022    TRIET_DOM       unknown                  0 2026-05-06 09:18:33                         100016
+990000000022    TRIET_DOM       unknown                  0 2026-05-06 09:18:33 2026-05-06 09:18:33     100015
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:18:33                         100017
+990000000022    TRIET_DOM       unknown                  0 2026-05-06 09:18:33 2026-05-06 09:18:33     100016
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-06 09:18:33 2026-05-06 09:18:33     100017
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100011
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100014
+990000000022    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100015
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100013
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100014
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100012
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100013
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100011
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100012
+990000000001    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100010
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100009
+990000000001    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100010
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 09:18:32 2026-05-06 09:18:32     100008
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 09:18:32                         100009
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 09:18:31                         100008
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:31 2026-05-06 09:18:31     100007
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:31 2026-05-06 09:18:31     100006
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:18:31                         100007
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:15:39 2026-05-06 09:15:39     100005
+990000000001    TRIET_DOM       unknown                  0 2026-05-06 09:15:39 2026-05-06 09:15:39     100004
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:15:39                         100005
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:15:39                         100006
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:15:38                         100001
+990000000021    TRIET_DOM       unknown                  0 2026-05-06 09:15:38 2026-05-06 09:15:38     100001
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 09:15:38                         100002
+990000000001    TRIET_DOM       unknown                  0 2026-05-06 09:15:38                         100004
+990000000121    TRIET_DOM       unknown                  0 2026-05-06 09:15:38 2026-05-06 09:15:38     100002
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 09:15:38                         100003
+000000000001    TRIET_DOM       unknown                  0 2026-05-06 09:15:38 2026-05-06 09:15:38     100003
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:20:34                          90055
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:20:34 2026-05-05 21:20:34      90054
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:20:34 2026-05-05 21:20:34      90055
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33 2026-05-05 21:20:33      90049
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33                          90051
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33 2026-05-05 21:20:33      90050
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33 2026-05-05 21:20:33      90051
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:20:33                          90053
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33 2026-05-05 21:20:33      90052
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:20:33                          90054
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:20:33 2026-05-05 21:20:33      90053
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33                          90050
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 21:20:33 2026-05-05 21:20:33      90048
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33                          90049
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:33                          90052
+
+USERNAME        USERHOST        TERMINAL        RETURNCODE LOGON_TIME          LOGOFF_TIME          SESSIONID
+--------------- --------------- --------------- ---------- ------------------- ------------------- ----------
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 21:20:32                          90048
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:20:32 2026-05-05 21:20:32      90047
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:19:35                          90047
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:19:35 2026-05-05 21:19:35      90046
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 21:19:35                          90044
+990000000121    TRIET_DOM       unknown                  0 2026-05-05 21:19:35 2026-05-05 21:19:35      90043
+990000000001    TRIET_DOM       unknown                  0 2026-05-05 21:19:35                          90045
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 21:19:35 2026-05-05 21:19:35      90044
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:19:35                          90046
+990000000001    TRIET_DOM       unknown                  0 2026-05-05 21:19:35 2026-05-05 21:19:35      90045
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:19:34                          90042
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:19:34 2026-05-05 21:19:34      90042
+990000000121    TRIET_DOM       unknown                  0 2026-05-05 21:19:34                          90043
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90035
+990000000122    TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90039
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90038
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90040
+990000000122    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90039
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90040
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90034
+990000000001    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90033
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90034
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90036
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90035
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90037
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90038
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52 2026-05-05 21:13:52      90036
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:52                          90037
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 21:13:51                          90032
+990000000121    TRIET_DOM       unknown                  0 2026-05-05 21:13:51 2026-05-05 21:13:51      90031
+990000000001    TRIET_DOM       unknown                  0 2026-05-05 21:13:51                          90033
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 21:13:51 2026-05-05 21:13:51      90032
+990000000121    TRIET_DOM       unknown                  0 2026-05-05 21:13:51                          90031
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:51 2026-05-05 21:13:51      90030
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:13:51                          90030
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:07:18                          90025
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:07:18 2026-05-05 21:07:18      90025
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:06:24                          90024
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 21:06:24 2026-05-05 21:06:24      90024
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:05:18 2026-05-05 21:05:18      90022
+990000000122    TRIET_DOM       unknown                  0 2026-05-05 21:05:18                          90023
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:05:18 2026-05-05 21:05:18      90021
+990000000022    TRIET_DOM       unknown                  0 2026-05-05 21:05:18                          90022
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:05:18 2026-05-05 21:05:18      90020
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:05:18                          90021
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 21:05:18                          90020
+990000000122    TRIET_DOM       unknown                  0 2026-05-05 21:05:18 2026-05-05 21:05:18      90023
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 20:53:26 2026-05-05 20:53:26      90018
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 20:50:17                          90018
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 20:49:53 2026-05-05 20:49:53      90017
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 20:49:53                          90017
+990000000001    TRIET_DOM       unknown                  0 2026-05-05 20:49:41 2026-05-05 20:49:41      90016
+990000000001    TRIET_DOM       unknown                  0 2026-05-05 20:49:41                          90016
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 20:49:26                          90015
+000000000001    TRIET_DOM       unknown                  0 2026-05-05 20:49:26 2026-05-05 20:49:26      90015
+990000000121    TRIET_DOM       unknown                  0 2026-05-05 20:49:07 2026-05-05 20:49:07      90014
+990000000121    TRIET_DOM       unknown                  0 2026-05-05 20:49:07                          90014
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 20:48:24 2026-05-05 20:48:24      90013
+990000000021    TRIET_DOM       unknown                  0 2026-05-05 20:48:24                          90013
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 20:48:15                          90012
+000000000001    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-05 20:47:34 2026-05-05 20:47:34      90011
+                _DOM                                                                                         
+
+990000000001    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-05 20:47:34 2026-05-05 20:47:34      90009
+                _DOM                                                                                         
+
+000000000001    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-05 20:46:56                          90011
+                _DOM                                                                                         
+
+990000000001    TRIET_DOM\TRIET TRIET_DOM                0 2026-05-05 20:42:34                          90009
+                _DOM                                                                                         
+
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 20:41:49                          90008
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 20:41:44 2026-05-05 20:41:44      90007
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 20:41:35                          90007
+HOSPITAL_ADMIN  TRIET_DOM       unknown                  0 2026-05-05 20:41:05                          90006
+
+250 rows selected. 
+
+=== Standard audit trail ===
+
+USERNAME        ACTION_NAME          OBJ_NAME        RETURNCODE ACTION_TIME        
+--------------- -------------------- --------------- ---------- -------------------
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:16:31
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 11:16:31
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:16:31
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:16:30
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:16:30
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:16:30
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:16:30
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:16:30
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:16:30
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:15:36
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 11:15:36
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:15:36
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:15:35
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:15:35
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:15:35
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:15:35
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:15:35
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:15:35
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:14:50
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 11:14:49
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:14:49
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:14:49
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:14:49
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:14:49
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:14:49
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:14:49
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:14:49
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:03:54
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 11:03:54
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:03:53
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:03:52
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:03:52
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:03:52
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:03:52
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:03:52
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:03:52
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:00:31
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 11:00:31
+990000000021    UPDATE               HSBA                     0 2026-05-06 11:00:31
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:00:31
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 11:00:31
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:00:31
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 11:00:31
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:00:31
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 11:00:31
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:58:36
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 10:58:36
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:58:34
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:58:25
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:58:25
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:58:25
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:58:25
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:55:42
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 10:55:42
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:55:41
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:55:39
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:55:39
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:55:39
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:55:39
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:55:37
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:55:37
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:55:11
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 10:55:11
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:55:08
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:55:06
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:55:06
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:55:06
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:55:06
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:47:10
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 10:47:10
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:47:09
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:47:08
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:47:08
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:47:08
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:47:08
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:47:08
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:47:08
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:29:48
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 10:29:48
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:29:48
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:29:48
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:29:48
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:29:48
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:29:48
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:29:48
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:29:48
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:29:45
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 10:29:45
+990000000021    UPDATE               HSBA                     0 2026-05-06 10:29:45
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:29:44
+000000000001    UPDATE               HSBA_DV               2004 2026-05-06 10:29:44
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:29:44
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 10:29:44
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:29:44
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 10:29:44
+990000000028    UPDATE               DONTHUOC                 0 2026-05-06 10:07:41
+990000000028    INSERT               DONTHUOC                 0 2026-05-06 10:07:33
+
+USERNAME        ACTION_NAME          OBJ_NAME        RETURNCODE ACTION_TIME        
+--------------- -------------------- --------------- ---------- -------------------
+990000000028    UPDATE               DONTHUOC                 0 2026-05-06 10:07:33
+990000000028    DELETE               DONTHUOC                 0 2026-05-06 10:07:28
+990000000028    INSERT               DONTHUOC                 0 2026-05-06 10:07:16
+990000000028    UPDATE               DONTHUOC                 0 2026-05-06 10:07:16
+990000000028    UPDATE               HSBA                     0 2026-05-06 10:05:31
+990000000001    INSERT               HSBA                     0 2026-05-06 10:03:13
+990000000001    INSERT               HSBA                     0 2026-05-06 09:59:40
+990000000001    INSERT               HSBA                     0 2026-05-06 09:52:05
+990000000001    INSERT               HSBA                     0 2026-05-06 09:46:00
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 09:44:01
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 09:44:01
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 09:43:34
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 09:43:34
+000000000376    SELECT               BENHNHAN              2004 2026-05-06 09:42:47
+000000000376    SELECT               BENHNHAN              2004 2026-05-06 09:42:47
+990000000022    INSERT               HSBA_DV               2291 2026-05-06 09:18:33
+990000000022    UPDATE               HSBA                     0 2026-05-06 09:18:32
+990000000021    UPDATE               HSBA                     0 2026-05-06 09:18:32
+990000000021    UPDATE               DONTHUOC                 0 2026-05-06 09:18:32
+990000000021    INSERT               DONTHUOC                 0 2026-05-06 09:18:32
+990000000001    INSERT               HSBA                     0 2026-05-06 09:18:32
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 09:18:32
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 09:18:32
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 09:18:31
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 09:18:31
+990000000001    INSERT               HSBA                     0 2026-05-06 09:15:38
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 09:15:38
+000000000001    DELETE               HSBA_DV               2004 2026-05-06 09:15:38
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 09:15:38
+990000000121    SELECT               BENHNHAN              2004 2026-05-06 09:15:38
+990000000022    INSERT               HSBA_DV               2291 2026-05-05 21:20:33
+990000000022    UPDATE               HSBA                     0 2026-05-05 21:20:33
+990000000021    UPDATE               HSBA                     0 2026-05-05 21:20:33
+990000000021    UPDATE               DONTHUOC                 0 2026-05-05 21:20:33
+990000000021    INSERT               DONTHUOC                 0 2026-05-05 21:20:33
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 21:20:33
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 21:20:33
+990000000001    INSERT               HSBA                     0 2026-05-05 21:19:35
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 21:19:35
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 21:19:35
+990000000121    SELECT               BENHNHAN              2004 2026-05-05 21:19:34
+990000000121    SELECT               BENHNHAN              2004 2026-05-05 21:19:34
+990000000022    UPDATE               HSBA                  2004 2026-05-05 21:13:52
+990000000022    UPDATE               HSBA                  2004 2026-05-05 21:13:52
+990000000021    UPDATE               HSBA                  2004 2026-05-05 21:13:52
+990000000021    UPDATE               HSBA                  2004 2026-05-05 21:13:52
+990000000021    UPDATE               DONTHUOC              2004 2026-05-05 21:13:52
+990000000021    UPDATE               DONTHUOC              2004 2026-05-05 21:13:52
+990000000001    INSERT               HSBA                     0 2026-05-05 21:13:51
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 21:13:51
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 21:13:51
+990000000121    SELECT               BENHNHAN              2004 2026-05-05 21:13:51
+990000000121    SELECT               BENHNHAN              2004 2026-05-05 21:13:51
+990000000122    UPDATE               HSBA_DV               2004 2026-05-05 21:05:18
+990000000122    UPDATE               HSBA_DV               2004 2026-05-05 21:05:18
+990000000022    UPDATE               HSBA                     0 2026-05-05 21:05:18
+990000000021    UPDATE               HSBA                     0 2026-05-05 21:05:18
+990000000021    UPDATE               DONTHUOC                 0 2026-05-05 21:05:18
+990000000021    INSERT               DONTHUOC                 0 2026-05-05 20:49:53
+990000000001    INSERT               HSBA                  2291 2026-05-05 20:49:41
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 20:49:26
+000000000001    DELETE               HSBA_DV               2004 2026-05-05 20:49:26
+990000000121    SELECT               BENHNHAN              2004 2026-05-05 20:49:07
+990000000121    SELECT               BENHNHAN              2004 2026-05-05 20:49:07
+
+161 rows selected. 
+
+=== FGA trail ===
+
+DB_USER         OBJECT_SCHEMA                                                                                                                    OBJECT_NAME     POLICY_NAME               STATEMENT_TYPE  ACTION_TIME         SQL_TEXT                                                              
+--------------- -------------------------------------------------------------------------------------------------------------------------------- --------------- ------------------------- --------------- ------------------- ----------------------------------------------------------------------
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:16:31 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:16:30 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:15:36 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:15:35 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:14:49 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:14:49 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:03:53 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:03:53 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:00:31 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:00:31 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:58:36 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:58:34 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:55:41 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:55:40 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:55:11 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:55:08 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:47:09 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:47:08 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                                                                                                                                                               WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:29:48 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = '
+                                                                                                                                                                                                                               990000000021')                                                        
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:29:45 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                                                                                                                                                               WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = '
+                                                                                                                                                                                                                               990000000021')                                                        
+
+990000000028    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:07:41 UPDATE DONTHUOC SET LIEUDUNG = :B4 WHERE MAHSBA = :B3 AND TENTHUOC = :
+                                                                                                                                                                                                                               B2 AND NGAYDT >= :B1 AND NGAYDT < :B1 + 1                             
+
+990000000028    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:07:33 UPDATE DONTHUOC SET LIEUDUNG = :B4 WHERE MAHSBA = :B3 AND TENTHUOC = :
+                                                                                                                                                                                                                               B2 AND NGAYDT >= :B1 AND NGAYDT < :B1 + 1                             
+
+
+DB_USER         OBJECT_SCHEMA                                                                                                                    OBJECT_NAME     POLICY_NAME               STATEMENT_TYPE  ACTION_TIME         SQL_TEXT                                                              
+--------------- -------------------------------------------------------------------------------------------------------------------------------- --------------- ------------------------- --------------- ------------------- ----------------------------------------------------------------------
+990000000028    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:07:16 UPDATE DONTHUOC SET LIEUDUNG = :B4 WHERE MAHSBA = :B3 AND TENTHUOC = :
+                                                                                                                                                                                                                               B2 AND NGAYDT >= :B1 AND NGAYDT < :B1 + 1                             
+
+990000000028    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-06 10:05:31 UPDATE HSBA SET CHANDOAN = :B4 , DIEUTRI = :B3 , KETLUAN = :B2 WHERE M
+                                                                                                                                                                                                                               AHSBA = :B1                                                           
+
+990000000022    HOSPITAL_ADMIN                                                                                                                   HSBA_DV         FGA_HSBA_DV_ILLEGAL_DML   INSERT          2026-05-06 09:18:33 INSERT INTO HOSPITAL_ADMIN.HSBA_DV (MAHSBA, LOAIDV, NGAYDV, KETQUA, MA
+                                                                                                                                                                                                                               KTV)                                                                  
+                                                                                                                                                                                                                               VALUES (99999, u'Si\00eau \00e2m', SYSDATE, u'B\1ea5t th\01b0\1eddng',
+                                                                                                                                                                                                                                'DUMMY_KTV_ID')                                                      
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 09:18:32 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = u'2 vi\00ean/ng\00e0y'                                 
+                                                                                                                                                                                                                               WHERE TENTHUOC = u'Paracetamol'                                       
+                                                                                                                                                                                                                                 AND MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                                                                                                                                                               SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000022    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-06 09:18:32 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = u'Vi\00eam h\1ecdng'                                   
+                                                                                                                                                                                                                               WHERE MAHSBA = 9999                                                   
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-06 09:18:32 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = u'\0110au \0111\1ea7u k\00e8m s\1ed1t'                 
+                                                                                                                                                                                                                               WHERE MAHSBA = (                                                      
+                                                                                                                                                                                                                                   SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA                            
+                                                                                                                                                                                                                                   WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)    
+                                                                                                                                                                                                                                   FETCH FIRST 1 ROWS ONLY                                           
+                                                                                                                                                                                                                               )                                                                     
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-05 21:20:33 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = u'\0110au \0111\1ea7u k\00e8m s\1ed1t'                 
+                                                                                                                                                                                                                               WHERE MAHSBA = (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA FETCH FIRST 1 R
+                                                                                                                                                                                                                               OWS ONLY)                                                             
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-05 21:20:33 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = u'2 vi\00ean/ng\00e0y'                                 
+                                                                                                                                                                                                                               WHERE TENTHUOC = u'Paracetamol'                                       
+
+990000000022    HOSPITAL_ADMIN                                                                                                                   HSBA_DV         FGA_HSBA_DV_ILLEGAL_DML   INSERT          2026-05-05 21:20:33 INSERT INTO HOSPITAL_ADMIN.HSBA_DV (MAHSBA, LOAIDV, NGAYDV, KETQUA, MA
+                                                                                                                                                                                                                               KTV)                                                                  
+                                                                                                                                                                                                                               VALUES (999999, u'Si\00eau \00e2m', SYSDATE, u'B\1ea5t th\01b0\1eddng'
+                                                                                                                                                                                                                               , 'FAKE_KTV_ID')                                                      
+
+990000000022    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-05 21:05:18 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = u'Vi\00eam h\1ecdng'                                   
+                                                                                                                                                                                                                               WHERE MAHSBA = 1                                                      
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-05 21:05:18 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                                                                                                                                                               SET CHANDOAN = u'\0110au \0111\1ea7u k\00e8m s\1ed1t'                 
+                                                                                                                                                                                                                               WHERE MAHSBA = 1                                                      
+
+990000000021    HOSPITAL_ADMIN                                                                                                                   DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-05 21:05:18 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                                                                                                                                                               SET LIEUDUNG = u'2 vi\00ean/ng\00e0y'                                 
+                                                                                                                                                                                                                               WHERE MAHSBA = 1 AND TENTHUOC = u'Paracetamol'                        
+
+
+34 rows selected. 
+
+=== DONTHUOC audit scenario ===
+
+DB_USER         OBJECT_NAME     POLICY_NAME               STATEMENT_TYPE  ACTION_TIME         SQL_TEXT                                                              
+--------------- --------------- ------------------------- --------------- ------------------- ----------------------------------------------------------------------
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:16:31 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:15:36 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:14:49 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:03:53 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 11:00:31 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:58:36 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:55:41 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:55:11 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:47:09 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:29:48 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = '
+                                                                                              990000000021')                                                        
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:29:45 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = 'Sáng 2 viên, tối 1 viên (cập nhật mới)'               
+                                                                                              WHERE MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = '
+                                                                                              990000000021')                                                        
+
+990000000028    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:07:41 UPDATE DONTHUOC SET LIEUDUNG = :B4 WHERE MAHSBA = :B3 AND TENTHUOC = :
+                                                                                              B2 AND NGAYDT >= :B1 AND NGAYDT < :B1 + 1                             
+
+990000000028    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:07:33 UPDATE DONTHUOC SET LIEUDUNG = :B4 WHERE MAHSBA = :B3 AND TENTHUOC = :
+                                                                                              B2 AND NGAYDT >= :B1 AND NGAYDT < :B1 + 1                             
+
+990000000028    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 10:07:16 UPDATE DONTHUOC SET LIEUDUNG = :B4 WHERE MAHSBA = :B3 AND TENTHUOC = :
+                                                                                              B2 AND NGAYDT >= :B1 AND NGAYDT < :B1 + 1                             
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-06 09:18:32 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = u'2 vi\00ean/ng\00e0y'                                 
+                                                                                              WHERE TENTHUOC = u'Paracetamol'                                       
+                                                                                                AND MAHSBA IN (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA WHERE MABS = (
+                                                                                              SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN))                     
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-05 21:20:33 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = u'2 vi\00ean/ng\00e0y'                                 
+                                                                                              WHERE TENTHUOC = u'Paracetamol'                                       
+
+990000000021    DONTHUOC        FGA_DONTHUOC_AFTER_CREATE UPDATE          2026-05-05 21:05:18 UPDATE HOSPITAL_ADMIN.DONTHUOC                                        
+                                                                                              SET LIEUDUNG = u'2 vi\00ean/ng\00e0y'                                 
+                                                                                              WHERE MAHSBA = 1 AND TENTHUOC = u'Paracetamol'                        
+
+
+17 rows selected. 
+
+=== HSBA audit scenarios ===
+
+DB_USER         OBJECT_NAME     POLICY_NAME               STATEMENT_TYPE  ACTION_TIME         SQL_TEXT                                                              
+--------------- --------------- ------------------------- --------------- ------------------- ----------------------------------------------------------------------
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:16:30 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:15:35 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:14:49 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:03:53 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 11:00:31 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:58:34 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:55:40 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:55:08 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000021    HSBA            FGA_HSBA_VALID_UPDATE     UPDATE          2026-05-06 10:47:08 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = 'Viêm họng hạt cấp', KETLUAN = 'Tái khám sau 1 tuần'   
+                                                                                              WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)        
+
+990000000028    HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-06 10:05:31 UPDATE HSBA SET CHANDOAN = :B4 , DIEUTRI = :B3 , KETLUAN = :B2 WHERE M
+                                                                                              AHSBA = :B1                                                           
+
+990000000022    HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-06 09:18:32 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = u'Vi\00eam h\1ecdng'                                   
+                                                                                              WHERE MAHSBA = 9999                                                   
+
+990000000021    HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-06 09:18:32 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = u'\0110au \0111\1ea7u k\00e8m s\1ed1t'                 
+                                                                                              WHERE MAHSBA = (                                                      
+                                                                                                  SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA                            
+                                                                                                  WHERE MABS = (SELECT MANV FROM HOSPITAL_ADMIN.V_SELF_NHANVIEN)    
+                                                                                                  FETCH FIRST 1 ROWS ONLY                                           
+                                                                                              )                                                                     
+
+990000000021    HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-05 21:20:33 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = u'\0110au \0111\1ea7u k\00e8m s\1ed1t'                 
+                                                                                              WHERE MAHSBA = (SELECT MAHSBA FROM HOSPITAL_ADMIN.HSBA FETCH FIRST 1 R
+                                                                                              OWS ONLY)                                                             
+
+990000000022    HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-05 21:05:18 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = u'Vi\00eam h\1ecdng'                                   
+                                                                                              WHERE MAHSBA = 1                                                      
+
+990000000021    HSBA            FGA_HSBA_INVALID_UPDATE   UPDATE          2026-05-05 21:05:18 UPDATE HOSPITAL_ADMIN.HSBA                                            
+                                                                                              SET CHANDOAN = u'\0110au \0111\1ea7u k\00e8m s\1ed1t'                 
+                                                                                              WHERE MAHSBA = 1                                                      
+
+
+15 rows selected. 
+
+=== HSBA_DV illegal DML scenario ===
+
+DB_USER         OBJECT_NAME     POLICY_NAME               STATEMENT_TYPE  ACTION_TIME         SQL_TEXT                                                              
+--------------- --------------- ------------------------- --------------- ------------------- ----------------------------------------------------------------------
+990000000022    HSBA_DV         FGA_HSBA_DV_ILLEGAL_DML   INSERT          2026-05-06 09:18:33 INSERT INTO HOSPITAL_ADMIN.HSBA_DV (MAHSBA, LOAIDV, NGAYDV, KETQUA, MA
+                                                                                              KTV)                                                                  
+                                                                                              VALUES (99999, u'Si\00eau \00e2m', SYSDATE, u'B\1ea5t th\01b0\1eddng',
+                                                                                               'DUMMY_KTV_ID')                                                      
+
+990000000022    HSBA_DV         FGA_HSBA_DV_ILLEGAL_DML   INSERT          2026-05-05 21:20:33 INSERT INTO HOSPITAL_ADMIN.HSBA_DV (MAHSBA, LOAIDV, NGAYDV, KETQUA, MA
+                                                                                              KTV)                                                                  
+                                                                                              VALUES (999999, u'Si\00eau \00e2m', SYSDATE, u'B\1ea5t th\01b0\1eddng'
+                                                                                              , 'FAKE_KTV_ID')                                                      
+
+
+Connection created by CONNECT script command disconnected

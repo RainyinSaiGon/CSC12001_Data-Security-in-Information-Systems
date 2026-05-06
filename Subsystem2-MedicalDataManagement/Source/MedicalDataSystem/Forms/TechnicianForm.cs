@@ -12,9 +12,9 @@ public partial class TechnicianForm : BaseMedicalForm
     private readonly TextBox _servicesSearchTextBox = new() { Width = 260 };
     private List<DiagnosticService> _allServices = new();
     private readonly DataGridView _servicesGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
-    private readonly TextBox _recordIdTextBox = new() { Width = 80 };
-    private readonly TextBox _serviceTypeTextBox = new() { Width = 180 };
-    private readonly DateTimePicker _serviceDatePicker = new() { Width = 150 };
+    private readonly TextBox _recordIdTextBox = new() { Width = 80, ReadOnly = true };
+    private readonly TextBox _serviceTypeTextBox = new() { Width = 180, ReadOnly = true };
+    private readonly DateTimePicker _serviceDatePicker = new() { Width = 150, Enabled = false };
     private readonly TextBox _resultTextBox = new() { Width = 220 };
 
     public TechnicianForm(UserSession session)
@@ -51,6 +51,8 @@ public partial class TechnicianForm : BaseMedicalForm
 
         _servicesGrid.DataSource = _servicesBindingSource;
         _servicesGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_servicesGrid);
+        _servicesGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _servicesGrid.CellClick += ServicesGrid_CellClick;
 
         var scrollHost = new Panel
         {
@@ -332,16 +334,38 @@ public partial class TechnicianForm : BaseMedicalForm
         }
     }
 
+    private void ServicesGrid_CellClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0 && e.RowIndex < _servicesGrid.Rows.Count)
+        {
+            var row = _servicesGrid.Rows[e.RowIndex];
+            _recordIdTextBox.Text = row.Cells["MAHSBA"]?.Value?.ToString() ?? string.Empty;
+            _serviceTypeTextBox.Text = row.Cells["LOAIDV"]?.Value?.ToString() ?? string.Empty;
+            
+            if (DateTime.TryParse(row.Cells["NGAYDV"]?.Value?.ToString(), out var date))
+                _serviceDatePicker.Value = date;
+
+            _resultTextBox.Text = row.Cells["KETQUA"]?.Value?.ToString() ?? string.Empty;
+        }
+    }
+
     private void SaveResult()
     {
         try
         {
+            if (!int.TryParse(_recordIdTextBox.Text, out int recordId))
+            {
+                MessageBox.Show(this, "Vui lòng chọn một dịch vụ từ danh sách bên dưới.", "Kỹ thuật viên", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             _technicianService.UpdateServiceResult(
-                int.Parse(_recordIdTextBox.Text),
+                recordId,
                 _serviceTypeTextBox.Text.Trim(),
                 _serviceDatePicker.Value,
                 _resultTextBox.Text.Trim());
 
+            MessageBox.Show(this, "Đã lưu kết quả thành công.", "Kỹ thuật viên", MessageBoxButtons.OK, MessageBoxIcon.Information);
             RefreshData();
         }
         catch (Exception ex)

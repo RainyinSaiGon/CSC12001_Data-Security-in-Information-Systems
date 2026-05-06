@@ -9,13 +9,24 @@ public partial class DoctorForm : BaseMedicalForm
     private readonly DoctorService _doctorService;
     private readonly BindingSource _patientsBindingSource = new();
     private readonly BindingSource _recordsBindingSource = new();
+    private readonly BindingSource _servicesBindingSource = new();
+    private readonly BindingSource _prescriptionsBindingSource = new();
+
     private readonly TextBox _patientCccdSearchTextBox = new() { Width = 220 };
-    private readonly TextBox _recordMabnSearchTextBox = new() { Width = 220 };
     private List<Patient> _allPatients = new();
     private List<MedicalRecord> _allRecords = new();
+    
     private readonly DataGridView _patientsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
     private readonly DataGridView _recordsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
-    private readonly TextBox _recordIdTextBox = new() { Width = 80 };
+    private readonly DataGridView _servicesGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
+    private readonly DataGridView _prescriptionsGrid = new() { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
+
+    private readonly TextBox _patientIdTextBox = new() { Dock = DockStyle.Fill, ReadOnly = true };
+    private readonly TextBox _medicalHistoryTextBox = new() { Dock = DockStyle.Fill };
+    private readonly TextBox _familyHistoryTextBox = new() { Dock = DockStyle.Fill };
+    private readonly TextBox _allergyTextBox = new() { Dock = DockStyle.Fill };
+
+    private readonly TextBox _recordIdTextBox = new() { Dock = DockStyle.Fill, ReadOnly = true };
     private readonly TextBox _diagnosisTextBox = new() { Width = 200 };
     private readonly TextBox _treatmentTextBox = new() { Width = 200 };
     private readonly TextBox _conclusionTextBox = new() { Width = 200 };
@@ -40,18 +51,18 @@ public partial class DoctorForm : BaseMedicalForm
         BackColor = Color.FromArgb(241, 244, 249);
         MinimumSize = new Size(1040, 700);
 
-        _recordIdTextBox.Dock = DockStyle.Fill;
-        _recordIdTextBox.PlaceholderText = "Mã hồ sơ";
         _diagnosisTextBox.Dock = DockStyle.Fill;
         _diagnosisTextBox.PlaceholderText = "Chẩn đoán";
         _treatmentTextBox.Dock = DockStyle.Fill;
         _treatmentTextBox.PlaceholderText = "Phác đồ điều trị";
         _conclusionTextBox.Dock = DockStyle.Fill;
         _conclusionTextBox.PlaceholderText = "Kết luận";
+        
         _serviceTypeTextBox.Dock = DockStyle.Fill;
         _serviceTypeTextBox.PlaceholderText = "Loại dịch vụ";
         _serviceDatePicker.Dock = DockStyle.Fill;
         _serviceDatePicker.Format = DateTimePickerFormat.Short;
+        
         _prescriptionNameTextBox.Dock = DockStyle.Fill;
         _prescriptionNameTextBox.PlaceholderText = "Tên thuốc";
         _prescriptionDoseTextBox.Dock = DockStyle.Fill;
@@ -61,49 +72,33 @@ public partial class DoctorForm : BaseMedicalForm
 
         _patientCccdSearchTextBox.PlaceholderText = "Tìm theo CCCD";
         _patientCccdSearchTextBox.TextChanged += (_, _) => ApplyPatientFilter();
-        _recordMabnSearchTextBox.PlaceholderText = "Tìm theo MABN";
-        _recordMabnSearchTextBox.TextChanged += (_, _) => ApplyRecordFilter();
 
         _patientsGrid.DataSource = _patientsBindingSource;
         _recordsGrid.DataSource = _recordsBindingSource;
+        _servicesGrid.DataSource = _servicesBindingSource;
+        _prescriptionsGrid.DataSource = _prescriptionsBindingSource;
+
         _patientsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_patientsGrid);
         _recordsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_recordsGrid);
+        _servicesGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_servicesGrid);
+        _prescriptionsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_prescriptionsGrid);
 
-        var updateRecordButton = new Button
-        {
-            Text = "Cập nhật hồ sơ",
-            Dock = DockStyle.Fill,
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(37, 99, 235),
-            ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
-        };
-        updateRecordButton.FlatAppearance.BorderSize = 0;
-        updateRecordButton.Click += (_, _) => UpdateRecord();
-
-        var addServiceButton = new Button
-        {
-            Text = "Chỉ định dịch vụ",
-            Dock = DockStyle.Fill,
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(37, 99, 235),
-            ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
-        };
-        addServiceButton.FlatAppearance.BorderSize = 0;
-        addServiceButton.Click += (_, _) => AddService();
-
-        var savePrescriptionButton = new Button
-        {
-            Text = "Lưu toa thuốc",
-            Dock = DockStyle.Fill,
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(37, 99, 235),
-            ForeColor = Color.White,
-            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
-        };
-        savePrescriptionButton.FlatAppearance.BorderSize = 0;
-        savePrescriptionButton.Click += (_, _) => SavePrescription();
+        _patientsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _patientsGrid.CellClick += PatientsGrid_CellClick;
+        
+        _recordsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _recordsGrid.CellClick += RecordsGrid_CellClick;
+        
+        _servicesGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _servicesGrid.CellClick += ServicesGrid_CellClick;
+        
+        _prescriptionsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _prescriptionsGrid.CellClick += PrescriptionsGrid_CellClick;
+        
+        ConfigureGrid(_patientsGrid);
+        ConfigureGrid(_recordsGrid);
+        ConfigureGrid(_servicesGrid);
+        ConfigureGrid(_prescriptionsGrid);
 
         var notificationsButton = new Button
         {
@@ -130,7 +125,7 @@ public partial class DoctorForm : BaseMedicalForm
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             ColumnCount = 1,
-            RowCount = 4,
+            RowCount = 7,
             Padding = new Padding(12, 12, 12, 56),
             BackColor = Color.FromArgb(241, 244, 249)
         };
@@ -187,57 +182,7 @@ public partial class DoctorForm : BaseMedicalForm
         headerLayout.Controls.Add(notificationsButton, 1, 0);
         headerCard.Controls.Add(headerLayout);
 
-        var actionCard = new Panel
-        {
-            Dock = DockStyle.Top,
-            Height = 190,
-            BackColor = Color.White,
-            BorderStyle = BorderStyle.FixedSingle,
-            Padding = new Padding(10),
-            Margin = new Padding(0, 0, 0, 10)
-        };
-
-        var actionLayout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 4,
-            RowCount = 5,
-            Margin = Padding.Empty
-        };
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-        actionLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        actionLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
-
-        actionLayout.Controls.Add(new Label { Text = "Mã hồ sơ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 0);
-        actionLayout.Controls.Add(new Label { Text = "Chẩn đoán", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 0);
-        actionLayout.Controls.Add(new Label { Text = "Điều trị", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 0);
-        actionLayout.Controls.Add(new Label { Text = "Kết luận", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 0);
-        actionLayout.Controls.Add(_recordIdTextBox, 0, 1);
-        actionLayout.Controls.Add(_diagnosisTextBox, 1, 1);
-        actionLayout.Controls.Add(_treatmentTextBox, 2, 1);
-        actionLayout.Controls.Add(_conclusionTextBox, 3, 1);
-
-        actionLayout.Controls.Add(new Label { Text = "Loại dịch vụ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
-        actionLayout.Controls.Add(new Label { Text = "Ngày dịch vụ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 1, 2);
-        actionLayout.Controls.Add(new Label { Text = "Tên thuốc", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 2, 2);
-        actionLayout.Controls.Add(new Label { Text = "Liều dùng", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 3, 2);
-        actionLayout.Controls.Add(_serviceTypeTextBox, 0, 3);
-        actionLayout.Controls.Add(_serviceDatePicker, 1, 3);
-        actionLayout.Controls.Add(_prescriptionNameTextBox, 2, 3);
-        actionLayout.Controls.Add(_prescriptionDoseTextBox, 3, 3);
-
-        actionLayout.Controls.Add(updateRecordButton, 0, 4);
-        actionLayout.Controls.Add(addServiceButton, 1, 4);
-        actionLayout.Controls.Add(savePrescriptionButton, 2, 4);
-        actionLayout.Controls.Add(new Label { AutoSize = true }, 3, 4);
-
-        actionCard.Controls.Add(actionLayout);
+        Font boldFont = new Font("Segoe UI", 8, FontStyle.Bold);
 
         var patientsCard = CreateGridCard(
             "Danh sách bệnh nhân",
@@ -245,21 +190,134 @@ public partial class DoctorForm : BaseMedicalForm
             _patientCccdSearchTextBox,
             _patientsGrid,
             174);
+            
+        var patientInfoCard = new Panel { Dock = DockStyle.Top, Height = 100, BackColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Padding = new Padding(10), Margin = new Padding(0, 0, 0, 10) };
+        var pLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2, Margin = Padding.Empty };
+        pLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+        pLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        pLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        pLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+        pLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+        pLayout.Controls.Add(new Label { Text = "Mã Bệnh nhân", AutoSize = true, Font = boldFont }, 0, 0);
+        pLayout.Controls.Add(new Label { Text = "Tiền sử bệnh", AutoSize = true, Font = boldFont }, 1, 0);
+        pLayout.Controls.Add(new Label { Text = "Tiền sử GĐ", AutoSize = true, Font = boldFont }, 2, 0);
+        pLayout.Controls.Add(new Label { Text = "Dị ứng", AutoSize = true, Font = boldFont }, 3, 0);
+        pLayout.Controls.Add(_patientIdTextBox, 0, 1);
+        pLayout.Controls.Add(_medicalHistoryTextBox, 1, 1);
+        pLayout.Controls.Add(_familyHistoryTextBox, 2, 1);
+        pLayout.Controls.Add(_allergyTextBox, 3, 1);
+        var updatePatientBtn = CreateButton("Lưu BN", Color.FromArgb(37, 99, 235));
+        updatePatientBtn.Click += (_, _) => UpdatePatient();
+        pLayout.Controls.Add(updatePatientBtn, 4, 1);
+        patientInfoCard.Controls.Add(pLayout);
 
-        var recordsCard = CreateGridCard(
-            "Hồ sơ bệnh án",
-            "Tìm hồ sơ theo MABN",
-            _recordMabnSearchTextBox,
+        var recordsCard = CreateSimpleGridCard(
+            "Hồ sơ bệnh án (Click chọn Bệnh nhân ở trên để xem HSBA)",
             _recordsGrid,
             174);
+            
+        var recordInfoCard = new Panel { Dock = DockStyle.Top, Height = 100, BackColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Padding = new Padding(10), Margin = new Padding(0, 0, 0, 10) };
+        var rLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2, Margin = Padding.Empty };
+        rLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+        rLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        rLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        rLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+        rLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+        rLayout.Controls.Add(new Label { Text = "Mã HSBA", AutoSize = true, Font = boldFont }, 0, 0);
+        rLayout.Controls.Add(new Label { Text = "Chẩn đoán", AutoSize = true, Font = boldFont }, 1, 0);
+        rLayout.Controls.Add(new Label { Text = "Điều trị", AutoSize = true, Font = boldFont }, 2, 0);
+        rLayout.Controls.Add(new Label { Text = "Kết luận", AutoSize = true, Font = boldFont }, 3, 0);
+        rLayout.Controls.Add(_recordIdTextBox, 0, 1);
+        rLayout.Controls.Add(_diagnosisTextBox, 1, 1);
+        rLayout.Controls.Add(_treatmentTextBox, 2, 1);
+        rLayout.Controls.Add(_conclusionTextBox, 3, 1);
+        var updateRecordBtn = CreateButton("Lưu HSBA", Color.FromArgb(37, 99, 235));
+        updateRecordBtn.Click += (_, _) => UpdateRecord();
+        rLayout.Controls.Add(updateRecordBtn, 4, 1);
+        recordInfoCard.Controls.Add(rLayout);
+        
+        var servicesCard = new Panel { Dock = DockStyle.Top, Height = 220, BackColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Padding = new Padding(10), Margin = new Padding(0, 0, 0, 10) };
+        var sLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Margin = Padding.Empty };
+        var sInputPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 2, Margin = Padding.Empty };
+        sInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
+        sInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+        sInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+        sInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+        sInputPanel.Controls.Add(new Label { Text = "Loại dịch vụ (Chỉ định cận lâm sàng)", AutoSize = true, Font = boldFont }, 0, 0);
+        sInputPanel.Controls.Add(new Label { Text = "Ngày dịch vụ", AutoSize = true, Font = boldFont }, 1, 0);
+        sInputPanel.Controls.Add(_serviceTypeTextBox, 0, 1);
+        sInputPanel.Controls.Add(_serviceDatePicker, 1, 1);
+        var addServiceBtn = CreateButton("Chỉ định", Color.FromArgb(37, 99, 235));
+        addServiceBtn.Click += (_, _) => AddService();
+        var delServiceBtn = CreateButton("Xóa DV", Color.FromArgb(220, 38, 38));
+        delServiceBtn.Click += (_, _) => DeleteService();
+        sInputPanel.Controls.Add(addServiceBtn, 2, 1);
+        sInputPanel.Controls.Add(delServiceBtn, 3, 1);
+        sLayout.Controls.Add(sInputPanel, 0, 0);
+        sLayout.Controls.Add(_servicesGrid, 0, 1);
+        servicesCard.Controls.Add(sLayout);
+
+        var prescriptionsCard = new Panel { Dock = DockStyle.Top, Height = 220, BackColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Padding = new Padding(10), Margin = new Padding(0, 0, 0, 10) };
+        var p2Layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Margin = Padding.Empty };
+        var pInputPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2, Margin = Padding.Empty };
+        pInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+        pInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+        pInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+        pInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 10));
+        pInputPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 10));
+        pInputPanel.Controls.Add(new Label { Text = "Tên thuốc", AutoSize = true, Font = boldFont }, 0, 0);
+        pInputPanel.Controls.Add(new Label { Text = "Liều dùng", AutoSize = true, Font = boldFont }, 1, 0);
+        pInputPanel.Controls.Add(new Label { Text = "Ngày kê đơn", AutoSize = true, Font = boldFont }, 2, 0);
+        pInputPanel.Controls.Add(_prescriptionNameTextBox, 0, 1);
+        pInputPanel.Controls.Add(_prescriptionDoseTextBox, 1, 1);
+        pInputPanel.Controls.Add(_prescriptionDatePicker, 2, 1);
+        var savePrescriptionBtn = CreateButton("Lưu Toa", Color.FromArgb(37, 99, 235));
+        savePrescriptionBtn.Click += (_, _) => SavePrescription();
+        var delPrescriptionBtn = CreateButton("Xóa", Color.FromArgb(220, 38, 38));
+        delPrescriptionBtn.Click += (_, _) => DeletePrescription();
+        pInputPanel.Controls.Add(savePrescriptionBtn, 3, 1);
+        pInputPanel.Controls.Add(delPrescriptionBtn, 4, 1);
+        p2Layout.Controls.Add(pInputPanel, 0, 0);
+        p2Layout.Controls.Add(_prescriptionsGrid, 0, 1);
+        prescriptionsCard.Controls.Add(p2Layout);
 
         root.Controls.Add(headerCard, 0, 0);
-        root.Controls.Add(actionCard, 0, 1);
-        root.Controls.Add(patientsCard, 0, 2);
+        root.Controls.Add(patientsCard, 0, 1);
+        root.Controls.Add(patientInfoCard, 0, 2);
         root.Controls.Add(recordsCard, 0, 3);
+        root.Controls.Add(recordInfoCard, 0, 4);
+        root.Controls.Add(servicesCard, 0, 5);
+        root.Controls.Add(prescriptionsCard, 0, 6);
 
         scrollHost.Controls.Add(root);
         Controls.Add(scrollHost);
+    }
+    
+    private Button CreateButton(string text, Color backColor)
+    {
+        var btn = new Button
+        {
+            Text = text,
+            Dock = DockStyle.Fill,
+            FlatStyle = FlatStyle.Flat,
+            BackColor = backColor,
+            ForeColor = Color.White,
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+        };
+        btn.FlatAppearance.BorderSize = 0;
+        return btn;
+    }
+
+    private static Panel CreateSimpleGridCard(string title, DataGridView grid, int height)
+    {
+        var card = new Panel { Dock = DockStyle.Top, Height = height, BackColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Padding = new Padding(10), Margin = new Padding(0, 0, 0, 10) };
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Margin = Padding.Empty };
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        layout.Controls.Add(new Label { Text = title, AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold), ForeColor = Color.FromArgb(15, 23, 42) }, 0, 0);
+        layout.Controls.Add(grid, 0, 1);
+        card.Controls.Add(layout);
+        return card;
     }
 
     private static void ConfigureGrid(DataGridView grid)
@@ -350,7 +408,6 @@ public partial class DoctorForm : BaseMedicalForm
         _allPatients = _doctorService.GetAssignedPatients(doctorId);
         _allRecords = _doctorService.GetAssignedMedicalRecords(doctorId);
         ApplyPatientFilter();
-        ApplyRecordFilter();
     }
 
     private void ApplyPatientFilter()
@@ -391,7 +448,14 @@ public partial class DoctorForm : BaseMedicalForm
             ["DIEUTRI"] = "Điều Trị",
             ["KETLUAN"] = "Kết Luận",
             ["MABS"] = "Mã Bác Sĩ",
-            ["MAKHOA"] = "Mã Khoa"
+            ["MAKHOA"] = "Mã Khoa",
+            ["LOAIDV"] = "Loại Dịch Vụ",
+            ["NGAYDV"] = "Ngày Thực Hiện",
+            ["KETQUA"] = "Kết Quả",
+            ["MAKTV"] = "Mã KTV",
+            ["TENTHUOC"] = "Tên Thuốc",
+            ["LIEUDUNG"] = "Liều Dùng",
+            ["NGAYDT"] = "Ngày Kê Đơn"
         };
 
         foreach (DataGridViewColumn column in grid.Columns)
@@ -404,25 +468,101 @@ public partial class DoctorForm : BaseMedicalForm
         }
     }
 
-    private void ApplyRecordFilter()
+    private void PatientsGrid_CellClick(object? sender, DataGridViewCellEventArgs e)
     {
-        string keyword = _recordMabnSearchTextBox.Text.Trim();
-
-        if (string.IsNullOrWhiteSpace(keyword))
+        if (e.RowIndex >= 0 && e.RowIndex < _patientsGrid.Rows.Count)
         {
-            _recordsBindingSource.DataSource = _allRecords;
+            var row = _patientsGrid.Rows[e.RowIndex];
+            string patientId = row.Cells["MABN"]?.Value?.ToString() ?? string.Empty;
+            _patientIdTextBox.Text = patientId;
+            _medicalHistoryTextBox.Text = row.Cells["TIENSUBENH"]?.Value?.ToString() ?? string.Empty;
+            _familyHistoryTextBox.Text = row.Cells["TIENSUBENHGD"]?.Value?.ToString() ?? string.Empty;
+            _allergyTextBox.Text = row.Cells["DIUNGTHUOC"]?.Value?.ToString() ?? string.Empty;
+
+            _recordsBindingSource.DataSource = _allRecords.Where(r => r.MABN == patientId).ToList();
+            _servicesBindingSource.DataSource = null;
+            _prescriptionsBindingSource.DataSource = null;
+        }
+    }
+
+    private void RecordsGrid_CellClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0 && e.RowIndex < _recordsGrid.Rows.Count)
+        {
+            var row = _recordsGrid.Rows[e.RowIndex];
+            string recordIdStr = row.Cells["MAHSBA"]?.Value?.ToString() ?? string.Empty;
+            _recordIdTextBox.Text = recordIdStr;
+            _diagnosisTextBox.Text = row.Cells["CHANDOAN"]?.Value?.ToString() ?? string.Empty;
+            _treatmentTextBox.Text = row.Cells["DIEUTRI"]?.Value?.ToString() ?? string.Empty;
+            _conclusionTextBox.Text = row.Cells["KETLUAN"]?.Value?.ToString() ?? string.Empty;
+
+            LoadServicesAndPrescriptions(recordIdStr);
+        }
+    }
+
+    private void ServicesGrid_CellClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0 && e.RowIndex < _servicesGrid.Rows.Count)
+        {
+            var row = _servicesGrid.Rows[e.RowIndex];
+            _serviceTypeTextBox.Text = row.Cells["LOAIDV"]?.Value?.ToString() ?? string.Empty;
+            if (DateTime.TryParse(row.Cells["NGAYDV"]?.Value?.ToString(), out var date))
+                _serviceDatePicker.Value = date;
+        }
+    }
+
+    private void PrescriptionsGrid_CellClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0 && e.RowIndex < _prescriptionsGrid.Rows.Count)
+        {
+            var row = _prescriptionsGrid.Rows[e.RowIndex];
+            _prescriptionNameTextBox.Text = row.Cells["TENTHUOC"]?.Value?.ToString() ?? string.Empty;
+            _prescriptionDoseTextBox.Text = row.Cells["LIEUDUNG"]?.Value?.ToString() ?? string.Empty;
+            if (DateTime.TryParse(row.Cells["NGAYDT"]?.Value?.ToString(), out var date))
+                _prescriptionDatePicker.Value = date;
+        }
+    }
+
+    private void LoadServicesAndPrescriptions(string recordIdStr)
+    {
+        if (!int.TryParse(recordIdStr, out int recordId))
+        {
+            _servicesBindingSource.DataSource = null;
+            _prescriptionsBindingSource.DataSource = null;
             return;
         }
+        try
+        {
+            _servicesBindingSource.DataSource = _doctorService.GetDiagnosticServices(recordId);
+            _prescriptionsBindingSource.DataSource = _doctorService.GetPrescriptions(recordId);
+        }
+        catch { /* Bỏ qua nếu lỗi */ }
+    }
 
-        _recordsBindingSource.DataSource = _allRecords
-            .Where(r => r.MABN.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+    private void UpdatePatient()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_patientIdTextBox.Text)) return;
+            var p = new Patient
+            {
+                MABN = _patientIdTextBox.Text,
+                TIENSUBENH = _medicalHistoryTextBox.Text.Trim(),
+                TIENSUBENHGD = _familyHistoryTextBox.Text.Trim(),
+                DIUNGTHUOC = _allergyTextBox.Text.Trim()
+            };
+            _doctorService.UpdatePatientHistory(p);
+            MessageBox.Show(this, "Đã cập nhật thông tin bệnh nhân.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            RefreshData();
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
 
     private void UpdateRecord()
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(_recordIdTextBox.Text)) return;
             var record = new MedicalRecord
             {
                 MAHSBA = int.Parse(_recordIdTextBox.Text),
@@ -432,6 +572,7 @@ public partial class DoctorForm : BaseMedicalForm
             };
 
             _doctorService.UpdateMedicalRecord(record);
+            MessageBox.Show(this, "Đã cập nhật thông tin hồ sơ bệnh án.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
             RefreshData();
         }
         catch (Exception ex)
@@ -444,6 +585,7 @@ public partial class DoctorForm : BaseMedicalForm
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(_recordIdTextBox.Text)) return;
             var service = new DiagnosticService
             {
                 MAHSBA = int.Parse(_recordIdTextBox.Text),
@@ -452,7 +594,29 @@ public partial class DoctorForm : BaseMedicalForm
             };
 
             _doctorService.OrderDiagnosticService(service);
-            RefreshData();
+            MessageBox.Show(this, "Đã chỉ định dịch vụ.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            LoadServicesAndPrescriptions(_recordIdTextBox.Text);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void DeleteService()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_recordIdTextBox.Text)) return;
+            var service = new DiagnosticService
+            {
+                MAHSBA = int.Parse(_recordIdTextBox.Text),
+                LOAIDV = _serviceTypeTextBox.Text.Trim(),
+                NGAYDV = _serviceDatePicker.Value
+            };
+            _doctorService.DeleteDiagnosticService(service);
+            MessageBox.Show(this, "Đã xóa dịch vụ.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            LoadServicesAndPrescriptions(_recordIdTextBox.Text);
         }
         catch (Exception ex)
         {
@@ -464,6 +628,7 @@ public partial class DoctorForm : BaseMedicalForm
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(_recordIdTextBox.Text)) return;
             var prescription = new Prescription
             {
                 MAHSBA = int.Parse(_recordIdTextBox.Text),
@@ -473,7 +638,29 @@ public partial class DoctorForm : BaseMedicalForm
             };
 
             _doctorService.UpdatePrescription(prescription);
-            MessageBox.Show(this, "Đã lưu toa thuốc.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Đã lưu/cập nhật toa thuốc.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            LoadServicesAndPrescriptions(_recordIdTextBox.Text);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void DeletePrescription()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_recordIdTextBox.Text)) return;
+            var prescription = new Prescription
+            {
+                MAHSBA = int.Parse(_recordIdTextBox.Text),
+                TENTHUOC = _prescriptionNameTextBox.Text.Trim(),
+                NGAYDT = _prescriptionDatePicker.Value
+            };
+            _doctorService.DeletePrescription(prescription);
+            MessageBox.Show(this, "Đã xóa toa thuốc.", "Bác sĩ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            LoadServicesAndPrescriptions(_recordIdTextBox.Text);
         }
         catch (Exception ex)
         {

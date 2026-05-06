@@ -14,8 +14,8 @@ public partial class CoordinatorForm : BaseMedicalForm
     private readonly ComboBox _doctorComboBox = new() { Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly ComboBox _technicianComboBox = new() { Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly TextBox _patientIdTextBox = new() { Width = 260 };
-    private readonly TextBox _recordIdTextBox = new() { Width = 80 };
-    private readonly TextBox _serviceTypeTextBox = new() { Width = 180 };
+    private readonly ComboBox _recordIdComboBox = new() { Width = 120, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _serviceComboBox = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly DateTimePicker _serviceDatePicker = new() { Width = 160 };
     private readonly TextBox _nameTextBox = new() { Width = 180 };
     private readonly TextBox _cccdTextBox = new() { Width = 140 };
@@ -67,7 +67,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         var refreshButton = new Button
         {
             Text = "Làm mới",
-            Dock = DockStyle.Fill,
+            AutoSize = true,
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(225, 233, 251),
             ForeColor = Color.FromArgb(35, 65, 130),
@@ -75,6 +75,18 @@ public partial class CoordinatorForm : BaseMedicalForm
         };
         refreshButton.FlatAppearance.BorderSize = 0;
         refreshButton.Click += (_, _) => RefreshPatients();
+
+        var editButton = new Button
+        {
+            Text = "Cập nhật",
+            Dock = DockStyle.Fill,
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(245, 158, 11),
+            ForeColor = Color.White,
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+        };
+        editButton.FlatAppearance.BorderSize = 0;
+        editButton.Click += (_, _) => EditPatient();
 
         var assignDoctorButton = new Button
         {
@@ -114,20 +126,31 @@ public partial class CoordinatorForm : BaseMedicalForm
         _allergyTextBox.PlaceholderText = "Dị ứng thuốc";
         _patientIdTextBox.Dock = DockStyle.Fill;
         _patientIdTextBox.PlaceholderText = "Mã bệnh nhân";
-        _recordIdTextBox.Dock = DockStyle.Fill;
-        _recordIdTextBox.PlaceholderText = "Mã hồ sơ";
-        _serviceTypeTextBox.Dock = DockStyle.Fill;
-        _serviceTypeTextBox.PlaceholderText = "Loại dịch vụ";
+        _recordIdComboBox.Dock = DockStyle.Fill;
+        _serviceComboBox.Dock = DockStyle.Fill;
         _doctorComboBox.Dock = DockStyle.Fill;
         _doctorComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        _doctorComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         _doctorComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+        _doctorComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         _technicianComboBox.Dock = DockStyle.Fill;
         _technicianComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        _technicianComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         _technicianComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+        _technicianComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         _serviceDatePicker.Dock = DockStyle.Fill;
         _serviceDatePicker.Format = DateTimePickerFormat.Short;
+        _serviceDatePicker.Enabled = false;
+
+        _serviceComboBox.SelectedIndexChanged += (_, _) =>
+        {
+            if (_serviceComboBox.SelectedItem != null)
+            {
+                var propInfo = _serviceComboBox.SelectedItem.GetType().GetProperty("NGAYDV");
+                if (propInfo != null)
+                {
+                    _serviceDatePicker.Value = (DateTime)propInfo.GetValue(_serviceComboBox.SelectedItem, null)!;
+                }
+            }
+        };
 
         _cccdSearchTextBox.Dock = DockStyle.Left;
         _cccdSearchTextBox.PlaceholderText = "Nhập CCCD để lọc";
@@ -135,6 +158,10 @@ public partial class CoordinatorForm : BaseMedicalForm
 
         _patientsGrid.DataSource = _patientsBindingSource;
         _patientsGrid.DataBindingComplete += (_, _) => ApplyVietnameseHeaders(_patientsGrid);
+        _patientsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _patientsGrid.CellClick += PatientsGrid_CellClick;
+
+        _recordIdComboBox.SelectedIndexChanged += (_, _) => LoadUnassignedServices();
 
         _patientsGrid.BackgroundColor = Color.White;
         _patientsGrid.BorderStyle = BorderStyle.None;
@@ -257,7 +284,7 @@ public partial class CoordinatorForm : BaseMedicalForm
         intakeLayout.Controls.Add(_familyHistoryTextBox, 0, 3);
         intakeLayout.Controls.Add(_allergyTextBox, 1, 3);
         intakeLayout.Controls.Add(addButton, 2, 3);
-        intakeLayout.Controls.Add(refreshButton, 3, 3);
+        intakeLayout.Controls.Add(editButton, 3, 3);
 
         intakeCard.Controls.Add(intakeLayout);
 
@@ -315,6 +342,8 @@ public partial class CoordinatorForm : BaseMedicalForm
             Margin = new Padding(0, 8, 8, 0)
         });
         cccdSearchPanel.Controls.Add(_cccdSearchTextBox);
+        refreshButton.Margin = new Padding(8, 0, 0, 0);
+        cccdSearchPanel.Controls.Add(refreshButton);
         listLayout.Controls.Add(cccdSearchPanel, 0, 2);
 
         listLayout.Controls.Add(_patientsGrid, 0, 3);
@@ -354,8 +383,8 @@ public partial class CoordinatorForm : BaseMedicalForm
         assignmentLayout.Controls.Add(new Label { Text = "Loại dịch vụ", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 4, 0);
         assignmentLayout.Controls.Add(_patientIdTextBox, 0, 1);
         assignmentLayout.Controls.Add(_doctorComboBox, 1, 1);
-        assignmentLayout.Controls.Add(_recordIdTextBox, 3, 1);
-        assignmentLayout.Controls.Add(_serviceTypeTextBox, 4, 1);
+        assignmentLayout.Controls.Add(_recordIdComboBox, 3, 1);
+        assignmentLayout.Controls.Add(_serviceComboBox, 4, 1);
         assignmentLayout.Controls.Add(assignDoctorButton, 5, 1);
 
         assignmentLayout.Controls.Add(new Label { Text = "Ngày", AutoSize = true, Font = new Font("Segoe UI", 8, FontStyle.Bold) }, 0, 2);
@@ -396,15 +425,14 @@ public partial class CoordinatorForm : BaseMedicalForm
     {
         string keyword = _cccdSearchTextBox.Text.Trim();
 
-        if (string.IsNullOrWhiteSpace(keyword))
-        {
-            _patientsBindingSource.DataSource = _allPatients;
-            return;
-        }
+        var filteredList = string.IsNullOrWhiteSpace(keyword)
+            ? _allPatients
+            : _allPatients.Where(p => (p.CCCD ?? string.Empty).Trim().Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        _patientsBindingSource.DataSource = _allPatients
-            .Where(p => (p.CCCD ?? string.Empty).Contains(keyword, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        _patientsGrid.DataSource = null; // Bắt buộc DataGrid gỡ kết nối cũ
+        _patientsBindingSource.DataSource = new System.ComponentModel.BindingList<Patient>(filteredList);
+        _patientsGrid.DataSource = _patientsBindingSource; // Gắn lại kết nối mới
+        ApplyVietnameseHeaders(_patientsGrid);
     }
 
     private static void ApplyVietnameseHeaders(DataGridView grid)
@@ -458,11 +486,119 @@ public partial class CoordinatorForm : BaseMedicalForm
 
             _coordinatorService.AddPatient(patient);
             RefreshPatients();
+            MessageBox.Show(this, "Đã thêm bệnh nhân thành công.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            ClearPatientInputs();
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, ex.Message, "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void ClearPatientInputs()
+    {
+        _patientIdTextBox.Clear();
+        _nameTextBox.Clear();
+        _cccdTextBox.Clear();
+        _addressTextBox.Clear();
+        _medicalHistoryTextBox.Clear();
+        _familyHistoryTextBox.Clear();
+        _allergyTextBox.Clear();
+    }
+
+    private void EditPatient()
+    {
+        try
+        {
+            string patientId = _patientIdTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(patientId))
+            {
+                MessageBox.Show(this, "Vui lòng click chọn một bệnh nhân ở danh sách bên dưới để cập nhật.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string[] addressParts = _addressTextBox.Text.Split(',', StringSplitOptions.TrimEntries);
+            var patient = new Patient
+            {
+                MABN = patientId,
+                TENBN = _nameTextBox.Text.Trim(),
+                PHAI = "Nam",
+                NGAYSINH = DateTime.Today.AddYears(-30),
+                CCCD = _cccdTextBox.Text.Trim(),
+                SONHA = addressParts.ElementAtOrDefault(0) ?? string.Empty,
+                TENDUONG = addressParts.ElementAtOrDefault(1) ?? string.Empty,
+                QUANHUYEN = addressParts.ElementAtOrDefault(2) ?? string.Empty,
+                TINHTP = addressParts.ElementAtOrDefault(3) ?? "TP.HCM",
+                TIENSUBENH = _medicalHistoryTextBox.Text.Trim(),
+                TIENSUBENHGD = _familyHistoryTextBox.Text.Trim(),
+                DIUNGTHUOC = _allergyTextBox.Text.Trim()
+            };
+
+            _coordinatorService.EditPatient(patient);
+            RefreshPatients();
+            MessageBox.Show(this, "Đã cập nhật bệnh nhân thành công.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            ClearPatientInputs();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void PatientsGrid_CellClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0 && e.RowIndex < _patientsGrid.Rows.Count)
+        {
+            var row = _patientsGrid.Rows[e.RowIndex];
+            _patientIdTextBox.Text = row.Cells["MABN"]?.Value?.ToString() ?? string.Empty;
+            
+            _nameTextBox.Text = row.Cells["TENBN"]?.Value?.ToString() ?? string.Empty;
+            _cccdTextBox.Text = row.Cells["CCCD"]?.Value?.ToString() ?? string.Empty;
+            
+            string sonha = row.Cells["SONHA"]?.Value?.ToString() ?? string.Empty;
+            string tenduong = row.Cells["TENDUONG"]?.Value?.ToString() ?? string.Empty;
+            string quanhuyen = row.Cells["QUANHUYEN"]?.Value?.ToString() ?? string.Empty;
+            string tinhtp = row.Cells["TINHTP"]?.Value?.ToString() ?? string.Empty;
+            string[] parts = new[] { sonha, tenduong, quanhuyen, tinhtp }.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            
+            _addressTextBox.Text = string.Join(", ", parts);
+            _medicalHistoryTextBox.Text = row.Cells["TIENSUBENH"]?.Value?.ToString() ?? string.Empty;
+            _familyHistoryTextBox.Text = row.Cells["TIENSUBENHGD"]?.Value?.ToString() ?? string.Empty;
+            _allergyTextBox.Text = row.Cells["DIUNGTHUOC"]?.Value?.ToString() ?? string.Empty;
+
+            LoadPatientRecords(_patientIdTextBox.Text);
+        }
+    }
+
+    private void LoadPatientRecords(string patientId)
+    {
+        if (string.IsNullOrWhiteSpace(patientId))
+        {
+            _recordIdComboBox.DataSource = null;
+            return;
+        }
+        try
+        {
+            _recordIdComboBox.DataSource = _coordinatorService.GetMedicalRecordsByPatient(patientId);
+        }
+        catch { /* Bỏ qua nếu lỗi kết nối hoặc phân quyền */ }
+    }
+
+    private void LoadUnassignedServices()
+    {
+        if (_recordIdComboBox.SelectedItem is null || !int.TryParse(_recordIdComboBox.SelectedItem.ToString(), out int recordId))
+        {
+            _serviceComboBox.DataSource = null;
+            return;
+        }
+        try
+        {
+            var services = _coordinatorService.GetUnassignedServices(recordId);
+            _serviceComboBox.DataSource = services.Select(s => new { s.LOAIDV, s.NGAYDV, Display = $"{s.LOAIDV} ({s.NGAYDV:dd/MM/yyyy})" }).ToList();
+            _serviceComboBox.DisplayMember = "Display";
+            _serviceComboBox.ValueMember = "LOAIDV";
+        }
+        catch { /* Bỏ qua nếu lỗi */ }
     }
 
     private void CreateRecord()
@@ -484,7 +620,36 @@ public partial class CoordinatorForm : BaseMedicalForm
 
             string doctorId = _doctorComboBox.SelectedValue?.ToString() ?? string.Empty;
             _coordinatorService.CreateMedicalRecord(patientId, doctorId, string.Empty);
-            MessageBox.Show(this, "Đã tạo hồ sơ và phân công bác sĩ.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            
+            // Tự động tìm MÃ HSBA vừa tạo để hiển thị cho UI
+            int newRecordId = 0;
+            try
+            {
+                var oracleSvc = new OracleConnectionService(_session.ConnectionString);
+                newRecordId = oracleSvc.Execute(conn =>
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = "SELECT MAX(MAHSBA) FROM HOSPITAL_ADMIN.HSBA WHERE MABN = :mabn";
+                    var param = cmd.CreateParameter();
+                    param.ParameterName = "mabn";
+                    param.Value = patientId;
+                    cmd.Parameters.Add(param);
+                    var res = cmd.ExecuteScalar();
+                    return res != null && res != DBNull.Value ? Convert.ToInt32(res) : 0;
+                });
+            }
+            catch { /* Bỏ qua nếu lỗi */ }
+
+            if (newRecordId > 0)
+            {
+                LoadPatientRecords(patientId);
+                _recordIdComboBox.SelectedItem = newRecordId;
+                MessageBox.Show(this, $"Đã tạo HSBA thành công!\n👉 Mã hồ sơ (MÃ HSBA) vừa tạo là: {newRecordId}\n\nLưu ý quy trình:\n1. Bác sĩ sẽ tiến hành khám bệnh và chỉ định Dịch vụ.\n2. Sau khi có Dịch vụ, Điều phối viên mới lấy mã này và Loại Dịch vụ để phân công Kỹ thuật viên.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(this, "Đã tạo HSBA thành công!\n\nLưu ý quy trình:\n1. Bác sĩ (Role Bác sĩ) sẽ tiến hành khám bệnh và chỉ định Dịch vụ.\n2. Sau khi có Dịch vụ, Điều phối viên mới lấy Mã HSBA và Loại Dịch vụ đó điền vào form này để phân công Kỹ thuật viên.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
         catch (Exception ex)
         {
@@ -496,9 +661,9 @@ public partial class CoordinatorForm : BaseMedicalForm
     {
         try
         {
-            if (!int.TryParse(_recordIdTextBox.Text, out int recordId))
+            if (_recordIdComboBox.SelectedItem is null || !int.TryParse(_recordIdComboBox.SelectedItem.ToString(), out int recordId))
             {
-                MessageBox.Show(this, "Mã hồ sơ không hợp lệ.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "Vui lòng chọn mã hồ sơ hợp lệ từ danh sách.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -508,13 +673,43 @@ public partial class CoordinatorForm : BaseMedicalForm
                 return;
             }
 
+            if (_serviceComboBox.SelectedValue is null)
+            {
+                MessageBox.Show(this, "Vui lòng chọn một dịch vụ cần phân công từ danh sách.\n\nNếu danh sách trống, nghĩa là hồ sơ này chưa có dịch vụ nào đang chờ phân công.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string technicianId = _technicianComboBox.SelectedValue?.ToString() ?? string.Empty;
-            _coordinatorService.AssignTechnician(recordId, _serviceTypeTextBox.Text.Trim(), _serviceDatePicker.Value, technicianId);
-            MessageBox.Show(this, "Đã phân công kỹ thuật viên.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            string serviceType = _serviceComboBox.SelectedValue.ToString() ?? string.Empty;
+            DateTime serviceDate = DateTime.Today;
+            if (_serviceComboBox.SelectedItem != null)
+            {
+                var propInfo = _serviceComboBox.SelectedItem.GetType().GetProperty("NGAYDV");
+                if (propInfo != null)
+                {
+                    serviceDate = (DateTime)propInfo.GetValue(_serviceComboBox.SelectedItem, null)!;
+                }
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"[UI] Đang gọi AssignTechnician - MAHSBA: {recordId}, LOAIDV: {serviceType}, NGAYDV: {serviceDate:yyyy-MM-dd}, MAKTV: {technicianId}");
+            
+            _coordinatorService.AssignTechnician(recordId, serviceType, serviceDate, technicianId);
+            MessageBox.Show(this, "Đã phân công kỹ thuật viên thành công.", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            LoadUnassignedServices();
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            string errorDetails = $"Lỗi: {ex.Message}\nStack Trace: {ex.StackTrace}";
+            System.Diagnostics.Debug.WriteLine($"[UI Error] {errorDetails}");
+            
+            if (ex.Message.Contains("ORA-12537") || ex.Message.Contains("connection closed"))
+            {
+                MessageBox.Show(this, $"Lỗi ORA-12537: Đã mất kết nối tới Database.\n\nChi tiết:\n{ex.Message}\n\n👉 Giải pháp: Tắt ứng dụng, mở tab Output (Debug) trong Visual Studio để xem dòng log cuối cùng trước khi crash, sau đó gửi cho mình nhé.", "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                MessageBox.Show(this, $"{ex.Message}\n\n(Xem thêm chi tiết trong Output Debug)", "Điều phối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 

@@ -38,11 +38,12 @@ DECLARE
     v_lot_nu  t_arr := t_arr(N'Thị', N'Diệu', N'Ánh', N'Ngọc', N'Thanh', N'Phương', N'Hồng', N'Mai', N'Thảo', N'Thu', N'Kim');
     v_ten_nu  t_arr := t_arr(N'Hoa', N'Lan', N'Huệ', N'Cúc', N'Dung', N'Hạnh', N'Trang', N'Huyền', N'Thư', N'Thảo', N'Linh', N'Vy', N'Nhi', N'Hân', N'Quỳnh', N'Yến');
 
-    v_hoten NVARCHAR2(100);
-    v_phai NVARCHAR2(3);
-    v_vaitro NVARCHAR2(50);
-    v_khoa CHAR(6);
-    v_cmnd_nv CHAR(12);
+    v_hoten NVARCHAR2(150);
+    v_phai NVARCHAR2(10);
+    v_vaitro NVARCHAR2(100);
+    v_khoa VARCHAR2(10);
+    v_cmnd_nv VARCHAR2(20);
+    v_username_nv VARCHAR2(30);
 BEGIN
     FOR i IN 1..170 LOOP
         IF DBMS_RANDOM.VALUE > 0.4 THEN
@@ -120,12 +121,13 @@ DECLARE
     v_duong   t_arr := t_arr(N'Nguyễn Huệ', N'Lê Lợi', N'Pasteur', N'Hai Bà Trưng', N'Lê Duẩn', N'Đồng Khởi', N'Nam Kỳ Khởi Nghĩa', N'Điện Biên Phủ', N'Nguyễn Thị Minh Khai', N'CMT8', N'Võ Văn Kiệt', N'Phạm Văn Đồng', N'Hoàng Diệu', N'Nguyễn Văn Linh', N'Lý Thường Kiệt', N'3 Tháng 2');
     v_quan    t_arr := t_arr(N'Quận 1', N'Quận 3', N'Quận 4', N'Quận 5', N'Quận 6', N'Quận 7', N'Quận 8', N'Quận 10', N'Quận 11', N'Quận 12', N'Bình Thạnh', N'Phú Nhuận', N'Tân Bình', N'Gò Vấp', N'Thủ Đức');
 
-    v_hoten NVARCHAR2(100);
-    v_phai NVARCHAR2(3);
-    v_sonha NVARCHAR2(20);
-    v_tenduong NVARCHAR2(50);
-    v_quanhuyen NVARCHAR2(30);
-    v_cccd_bn CHAR(12);
+    v_hoten NVARCHAR2(150);
+    v_phai NVARCHAR2(10);
+    v_sonha NVARCHAR2(50);
+    v_tenduong NVARCHAR2(100);
+    v_quanhuyen NVARCHAR2(100);
+    v_cccd_bn VARCHAR2(20);
+    v_username_bn VARCHAR2(30);
     v_skipped NUMBER := 0;
 BEGIN
     DBMS_OUTPUT.PUT_LINE('>>> BẮT ĐẦU TẠO BỆNH NHÂN...');

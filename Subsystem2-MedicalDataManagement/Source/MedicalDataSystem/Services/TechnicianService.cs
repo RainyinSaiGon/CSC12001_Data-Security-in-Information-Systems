@@ -59,16 +59,26 @@ public class TechnicianService
         return _connectionService.Execute(connection =>
         {
             using var command = connection.CreateCommand();
+            command.BindByName = true;
             command.CommandText = """
-                UPDATE HSBA_DV
-                SET KETQUA = :ketqua
-                WHERE MAHSBA = :mahsba AND LOAIDV = :loaidv AND NGAYDV = :ngaydv
+                DECLARE
+                    v_mahsba INT := :mahsba;
+                    v_loaidv NVARCHAR2(100) := :loaidv;
+                    v_ngaydv DATE := TO_DATE(:ngaydv_str, 'YYYY-MM-DD');
+                    v_ketqua NVARCHAR2(2000) := :ketqua;
+                BEGIN
+                    UPDATE V_TECHNICIAN_HSBA_DV
+                    SET KETQUA = v_ketqua
+                    WHERE MAHSBA = v_mahsba AND LOAIDV = v_loaidv 
+                      AND NGAYDV >= v_ngaydv AND NGAYDV < v_ngaydv + 1;
+                END;
                 """;
-            command.Parameters.Add(new OracleParameter("ketqua", result));
+            command.Parameters.Add(new OracleParameter("ketqua", result ?? ""));
             command.Parameters.Add(new OracleParameter("mahsba", medicalRecordId));
-            command.Parameters.Add(new OracleParameter("loaidv", serviceType));
-            command.Parameters.Add(new OracleParameter("ngaydv", serviceDate));
-            return command.ExecuteNonQuery() == 1;
+            command.Parameters.Add(new OracleParameter("loaidv", serviceType ?? ""));
+            command.Parameters.Add(new OracleParameter("ngaydv_str", serviceDate.ToString("yyyy-MM-dd")));
+            command.ExecuteNonQuery();
+            return true;
         });
     }
 
