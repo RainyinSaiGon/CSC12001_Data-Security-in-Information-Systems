@@ -203,7 +203,7 @@ BEGIN
     safe_create_label(1110, 'L1_NV:C_TIEU:G_HN');
     safe_create_label(2220, 'L2_LD:C_TIEU,C_THAN:G_HP');
 
-IF table_policy_applied = 0 THEN
+    IF table_policy_applied = 0 THEN
         SA_POLICY_ADMIN.APPLY_TABLE_POLICY(
             policy_name   => 'THONGBAO_OLS',
             schema_name   => USER,

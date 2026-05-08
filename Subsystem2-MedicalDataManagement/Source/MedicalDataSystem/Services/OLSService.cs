@@ -31,61 +31,74 @@ public class OLSService
 
     public List<OlsNotificationDisplayItem> GetAllNotificationsForAdminDisplay(int? filterLabelTag = null)
     {
-        return _connectionService.Execute(connection =>
+        LastErrorMessage = string.Empty;
+        try
         {
-            using var command = connection.CreateCommand();
-            string sql = """
-                SELECT
-                    t.MATHONGBAO,
-                    t.NOIDUNG,
-                    t.NGAYGIO,
-                    t.DIADIEM,
-                    t.OLS_LABEL AS OLS_LABEL_TAG,
-                    CASE
-                        WHEN t.OLS_LABEL = 1000 THEN 'L1_NV'
-                        WHEN t.OLS_LABEL = 2000 THEN 'L2_LD'
-                        WHEN t.OLS_LABEL = 3000 THEN 'L3_GD'
-                        WHEN t.OLS_LABEL = 2100 THEN 'L2_LD:C_TIEU'
-                        WHEN t.OLS_LABEL = 1130 THEN 'L1_NV:C_TIEU:G_HCM'
-                        WHEN t.OLS_LABEL = 1110 THEN 'L1_NV:C_TIEU:G_HN'
-                        WHEN t.OLS_LABEL = 2220 THEN 'L2_LD:C_TIEU,C_THAN:G_HP'
-                        WHEN USERNAME IN ('990000000001', '990000000002', '990000000003') THEN 'MULTI_SITE'
-                        ELSE 'UNKNOWN'
-                    END AS OLS_LABEL_TEXT
-                FROM HOSPITAL_ADMIN.THONGBAO t
-                """;
-
-            if (filterLabelTag.HasValue)
+            return _connectionService.Execute(connection =>
             {
-                sql += " WHERE t.OLS_LABEL = :filterLabelTag ";
-            }
+                using var command = connection.CreateCommand();
+                string sql = """
+                    SELECT
+                        t.MATHONGBAO,
+                        t.NOIDUNG,
+                        t.NGAYGIO,
+                        t.DIADIEM,
+                        t.OLS_LABEL AS OLS_LABEL_TAG,
+                        CASE
+                            WHEN t.OLS_LABEL = 1000 THEN 'L1_NV'
+                            WHEN t.OLS_LABEL = 2000 THEN 'L2_LD'
+                            WHEN t.OLS_LABEL = 3000 THEN 'L3_GD'
+                            WHEN t.OLS_LABEL = 2100 THEN 'L2_LD:C_TIEU'
+                            WHEN t.OLS_LABEL = 1130 THEN 'L1_NV:C_TIEU:G_HCM'
+                            WHEN t.OLS_LABEL = 1110 THEN 'L1_NV:C_TIEU:G_HN'
+                            WHEN t.OLS_LABEL = 2220 THEN 'L2_LD:C_TIEU,C_THAN:G_HP'
+                            ELSE 'UNKNOWN'
+                        END AS OLS_LABEL_TEXT
+                    FROM HOSPITAL_ADMIN.THONGBAO t
+                    """;
 
-            sql += " ORDER BY t.NGAYGIO DESC, t.MATHONGBAO DESC";
-
-            command.CommandText = sql;
-            if (filterLabelTag.HasValue)
-            {
-                command.Parameters.Add(new OracleParameter("filterLabelTag", filterLabelTag.Value));
-            }
-
-            using var reader = command.ExecuteReader();
-            var items = new List<OlsNotificationDisplayItem>();
-            while (reader.Read())
-            {
-                string labelCode = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
-                items.Add(new OlsNotificationDisplayItem
+                if (filterLabelTag.HasValue)
                 {
-                    MaThongBao = reader.GetInt32(0),
-                    NoiDung = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                    NgayGio = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
-                    DiaDiem = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                    OlsLabel = BuildLabelCodeWithTag(labelCode, reader.IsDBNull(4) ? null : Convert.ToInt32(reader.GetDecimal(4))),
-                    DoiTuongDuocThongBao = TranslateLabelToVietnamese(labelCode)
-                });
-            }
+                    sql += " WHERE t.OLS_LABEL = :filterLabelTag ";
+                }
 
-            return items;
-        });
+                sql += " ORDER BY t.NGAYGIO DESC, t.MATHONGBAO DESC";
+
+                command.CommandText = sql;
+                if (filterLabelTag.HasValue)
+                {
+                    command.Parameters.Add(new OracleParameter("filterLabelTag", filterLabelTag.Value));
+                }
+
+                using var reader = command.ExecuteReader();
+                var items = new List<OlsNotificationDisplayItem>();
+                while (reader.Read())
+                {
+                    string labelCode = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
+                    items.Add(new OlsNotificationDisplayItem
+                    {
+                        MaThongBao = reader.GetInt32(0),
+                        NoiDung = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                        NgayGio = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
+                        DiaDiem = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                        OlsLabel = BuildLabelCodeWithTag(labelCode, reader.IsDBNull(4) ? null : (int?)reader.GetDecimal(4)),
+                        DoiTuongDuocThongBao = TranslateLabelToVietnamese(labelCode)
+                    });
+                }
+
+                return items;
+            });
+        }
+        catch (OracleException ex)
+        {
+            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
+            return new List<OlsNotificationDisplayItem>();
+        }
+        catch (Exception ex)
+        {
+            LastErrorMessage = ex.Message;
+            return new List<OlsNotificationDisplayItem>();
+        }
     }
 
     public bool CreateNotificationAsAdmin(string noiDung, DateTime ngayGio, string diaDiem, string labelCode)
@@ -141,31 +154,45 @@ public class OLSService
 
     public List<Notification> GetAccessibleNotificationsDetailed()
     {
-        return _connectionService.Execute(connection =>
+        LastErrorMessage = string.Empty;
+        try
         {
-            using var command = connection.CreateCommand();
-            command.CommandText = """
-                SELECT MATHONGBAO, NOIDUNG, NGAYGIO, DIADIEM
-                FROM HOSPITAL_ADMIN.THONGBAO
-                ORDER BY NGAYGIO DESC
-                FETCH FIRST 200 ROWS ONLY
-                """;
-
-            using var reader = command.ExecuteReader();
-            var items = new List<Notification>();
-            while (reader.Read())
+            return _connectionService.Execute(connection =>
             {
-                items.Add(new Notification
-                {
-                    MATHONGBAO = reader.GetInt32(0),
-                    NOIDUNG = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                    NGAYGIO = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
-                    DIADIEM = reader.IsDBNull(3) ? string.Empty : reader.GetString(3)
-                });
-            }
+                using var command = connection.CreateCommand();
+                command.CommandText = """
+                    SELECT MATHONGBAO, NOIDUNG, NGAYGIO, DIADIEM
+                    FROM HOSPITAL_ADMIN.THONGBAO
+                    ORDER BY NGAYGIO DESC
+                    FETCH FIRST 200 ROWS ONLY
+                    """;
 
-            return items;
-        });
+                using var reader = command.ExecuteReader();
+                var items = new List<Notification>();
+                while (reader.Read())
+                {
+                    items.Add(new Notification
+                    {
+                        MATHONGBAO = reader.GetInt32(0),
+                        NOIDUNG = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                        NGAYGIO = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
+                        DIADIEM = reader.IsDBNull(3) ? string.Empty : reader.GetString(3)
+                    });
+                }
+
+                return items;
+            });
+        }
+        catch (OracleException ex)
+        {
+            LastErrorMessage = $"Oracle error {ex.Number}: {ex.Message}";
+            return new List<Notification>();
+        }
+        catch (Exception ex)
+        {
+            LastErrorMessage = ex.Message;
+            return new List<Notification>();
+        }
     }
 
     private static bool IsHospitalAdminSession(OracleConnection connection)

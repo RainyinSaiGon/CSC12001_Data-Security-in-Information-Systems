@@ -319,13 +319,15 @@ public partial class LoginForm : Form
         string password = _passwordTextBox.Text;
         string dataSource = _dataSourceTextBox.Text.Trim();
 
-        if (!_validationService.ValidateUsername(username))
+        bool isAdmin = string.Equals(username, "HOSPITAL_ADMIN", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdmin && !_validationService.ValidateUsername(username))
         {
             ShowStatus("Username must be a 12-digit CCCD.");
             return;
         }
 
-        if (!_validationService.ValidatePassword(password))
+        if (!isAdmin && !_validationService.ValidatePassword(password))
         {
             ShowStatus("Password must be a 12-digit CCCD.");
             return;

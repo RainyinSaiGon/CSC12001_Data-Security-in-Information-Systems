@@ -748,7 +748,7 @@ public class AdminForm : Form
     {
         var tab = new TabPage("OLS Labels");
 
-        _olsLoadLabelButton.Text = "Xem tat ca thong bao";
+        _olsLoadLabelButton.Text = "Xem tat ca";
         _olsPreviewButton.Text = "Tao thong bao";
 
         _olsLoadLabelButton.Click -= HandleOlsLoadAllNotificationsClick;
@@ -756,23 +756,47 @@ public class AdminForm : Form
         _olsPreviewButton.Click -= HandleOlsCreateNotificationClick;
         _olsPreviewButton.Click += HandleOlsCreateNotificationClick;
 
-        var actionPanel = new FlowLayoutPanel
+        _olsLabelSummaryLabel.Padding = new Padding(10, 8, 0, 0);
+        _olsContentTextBox.Width = 260;
+        _olsLocationTextBox.Width = 200;
+
+        var filterRow = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(8, 4, 8, 4),
+            Padding = new Padding(8, 4, 8, 0),
             WrapContents = false
         };
-        actionPanel.Controls.Add(_olsLoadLabelButton);
-        actionPanel.Controls.Add(new Label { Text = "OLS Label", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
-        actionPanel.Controls.Add(_olsUserCombo);
-        actionPanel.Controls.Add(new Label { Text = "Noi dung", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
-        actionPanel.Controls.Add(_olsContentTextBox);
-        actionPanel.Controls.Add(new Label { Text = "Ngay gio", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
-        actionPanel.Controls.Add(_olsDateTimePicker);
-        actionPanel.Controls.Add(new Label { Text = "Dia diem", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
-        actionPanel.Controls.Add(_olsLocationTextBox);
-        actionPanel.Controls.Add(_olsPreviewButton);
-        actionPanel.Controls.Add(_olsLabelSummaryLabel);
+        filterRow.Controls.Add(_olsLoadLabelButton);
+        filterRow.Controls.Add(new Label { Text = "OLS Label", AutoSize = true, Padding = new Padding(8, 8, 4, 0) });
+        filterRow.Controls.Add(_olsUserCombo);
+        filterRow.Controls.Add(_olsLabelSummaryLabel);
+
+        var createRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 0, 8, 4),
+            WrapContents = false
+        };
+        createRow.Controls.Add(new Label { Text = "Noi dung", AutoSize = true, Padding = new Padding(0, 8, 4, 0) });
+        createRow.Controls.Add(_olsContentTextBox);
+        createRow.Controls.Add(new Label { Text = "Ngay gio", AutoSize = true, Padding = new Padding(8, 8, 4, 0) });
+        createRow.Controls.Add(_olsDateTimePicker);
+        createRow.Controls.Add(new Label { Text = "Dia diem", AutoSize = true, Padding = new Padding(8, 8, 4, 0) });
+        createRow.Controls.Add(_olsLocationTextBox);
+        createRow.Controls.Add(_olsPreviewButton);
+
+        var toolbarPanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        toolbarPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        toolbarPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        toolbarPanel.Controls.Add(filterRow, 0, 0);
+        toolbarPanel.Controls.Add(createRow, 0, 1);
 
         var mappingGroup = new GroupBox
         {
@@ -788,10 +812,10 @@ public class AdminForm : Form
             ColumnCount = 1,
             RowCount = 3
         };
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 116));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
-        rootLayout.Controls.Add(actionPanel, 0, 0);
+        rootLayout.Controls.Add(toolbarPanel, 0, 0);
         rootLayout.Controls.Add(_olsPreviewGrid, 0, 1);
         rootLayout.Controls.Add(mappingGroup, 0, 2);
 
