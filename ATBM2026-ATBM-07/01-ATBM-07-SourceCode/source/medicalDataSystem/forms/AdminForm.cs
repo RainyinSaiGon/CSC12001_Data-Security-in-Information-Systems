@@ -1,0 +1,1912 @@
+namespace MedicalDataSystem.Forms;
+
+using MedicalDataSystem.Models;
+using MedicalDataSystem.Services;
+public class AdminForm : Form
+
+{
+    private readonly UserSession _session;
+    private readonly OracleConnectionService _connectionService;
+    private readonly UserService _userService;
+    private readonly RBACService _rbacService;
+    private readonly VPDService _vpdService;
+    private readonly OLSService _olsService;
+    private readonly AuditService _auditService;
+    private readonly TabControl _mainTabControl = new() { Dock = DockStyle.Fill };
+    private readonly TabControl _usersSubTabs = new() { Dock = DockStyle.Fill };
+    private readonly Label _footerStatusLabel = new() { Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft };
+    private readonly DataGridView _vpdPoliciesGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly Label _vpdPoliciesInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
+    private readonly Button _vpdRefreshButton = new() { Text = "Refresh VPD", Width = 110, Height = 30 };
+    private readonly Button _vpdEnableButton = new() { Text = "Enable", Width = 90, Height = 30, Enabled = false };
+    private readonly Button _vpdDisableButton = new() { Text = "Disable", Width = 90, Height = 30, Enabled = false };
+    private readonly ComboBox _olsUserCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly Button _olsLoadLabelButton = new() { Text = "Load User Labels", Width = 130, Height = 30 };
+    private readonly Button _olsPreviewButton = new() { Text = "Preview Accessible Notifications", Width = 210, Height = 30 };
+    private readonly Label _olsLabelSummaryLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0), Text = "User label: (not loaded)" };
+    private readonly DataGridView _olsPreviewGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly TextBox _olsHierarchyTextBox = new()
+    {
+        Multiline = true,
+        ReadOnly = true,
+        Dock = DockStyle.Fill,
+        ScrollBars = ScrollBars.Vertical
+    };
+    private readonly TextBox _olsContentTextBox = new() { Width = 300 };
+    private readonly DateTimePicker _olsDateTimePicker = new() { Width = 170, Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm" };
+    private readonly TextBox _olsLocationTextBox = new() { Width = 220 };
+    private readonly DataGridView dgvStandardAudit = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly DataGridView dgvFgaAudit = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly DataGridView dgvSessionAudit = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly Button btnRefreshAudit = new() { Text = "Refresh Audit", Width = 120, Height = 30 };
+
+    private readonly DataGridView _patientUsersGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly DataGridView _staffUsersGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+        ScrollBars = ScrollBars.Both
+    };
+    private readonly TextBox _patientSearchBox = new() { Width = 240, PlaceholderText = "Nhap CCCD benh nhan" };
+    private readonly TextBox _staffSearchBox = new() { Width = 240, PlaceholderText = "Nhap CMND nhan vien" };
+    private readonly Button _patientSearchButton = new() { Text = "Tim", Width = 70, Height = 30 };
+    private readonly Button _staffSearchButton = new() { Text = "Tim", Width = 70, Height = 30 };
+
+    private readonly Label _patientPageInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
+    private readonly Button _patientRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
+
+    private readonly Label _staffPageInfoLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0) };
+    private readonly Button _staffRefreshButton = new() { Text = "Tim lai", Width = 90, Height = 30 };
+    private readonly ComboBox _grantRoleCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly Button _grantRoleButton = new() { Text = "Grant Role", Width = 110, Height = 30, Enabled = false };
+    private readonly Button _revokeUserButton = new() { Text = "Revoke User", Width = 110, Height = 30, Enabled = false };
+    private readonly Label _grantRoleHintLabel = new() { AutoSize = true, Padding = new Padding(6, 8, 6, 0), Text = "Chon nhan vien de grant role." };
+    private readonly DataGridView _roleGrid = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        AllowUserToAddRows = false,
+        AllowUserToDeleteRows = false,
+        AllowUserToResizeRows = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
+        RowTemplate = { Height = 28 },
+        ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+    };
+    private readonly TextBox _securityProfileTextBox = new()
+    {
+        Multiline = true,
+        ReadOnly = true,
+        Dock = DockStyle.Fill,
+        ScrollBars = ScrollBars.Vertical
+    };
+    private UserSecurityProfileItem? _selectedProfile;
+
+    private readonly ComboBox _createUserTypeCombo = new() { Width = 140, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly TextBox _createUsernameTextBox = new() { Width = 180 };
+    private readonly TextBox _createFullNameTextBox = new() { Width = 220 };
+    private readonly ComboBox _createGenderCombo = new() { Width = 110, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly DateTimePicker _createBirthDatePicker = new() { Width = 150, Format = DateTimePickerFormat.Short };
+    private readonly TextBox _createIdNumberTextBox = new() { Width = 180 };
+
+    private readonly TextBox _createStaffAddressTextBox = new() { Width = 220 };
+    private readonly TextBox _createStaffPhoneTextBox = new() { Width = 140 };
+    private readonly ComboBox _createStaffRoleCombo = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _createStaffDepartmentCombo = new() { Width = 260, DropDownStyle = ComboBoxStyle.DropDownList };
+
+    private readonly TextBox _createPatientSoNhaTextBox = new() { Width = 120 };
+    private readonly TextBox _createPatientTenDuongTextBox = new() { Width = 180 };
+    private readonly TextBox _createPatientQuanHuyenTextBox = new() { Width = 160 };
+    private readonly TextBox _createPatientTinhTpTextBox = new() { Width = 160 };
+    private readonly TextBox _createPatientTienSuBenhTextBox = new() { Width = 220 };
+    private readonly TextBox _createPatientTienSuGdTextBox = new() { Width = 220 };
+    private readonly TextBox _createPatientDiUngTextBox = new() { Width = 220 };
+
+    private readonly FlowLayoutPanel _createStaffPanel = new() { AutoSize = true, WrapContents = true, Dock = DockStyle.Top };
+    private readonly FlowLayoutPanel _createPatientPanel = new() { AutoSize = true, WrapContents = true, Dock = DockStyle.Top };
+    private readonly Button _createUserButton = new() { Text = "Create User", Width = 120, Height = 32 };
+    private readonly TextBox _createFlowTextBox = new()
+    {
+        Multiline = true,
+        ReadOnly = true,
+        Dock = DockStyle.Fill,
+        ScrollBars = ScrollBars.Vertical
+    };
+
+    public AdminForm(UserSession session)
+    {
+        _session = session;
+        _connectionService = new OracleConnectionService(session.ConnectionString);
+        _userService = new UserService(_connectionService);
+        _rbacService = new RBACService(_connectionService);
+        _vpdService = new VPDService(_connectionService);
+        _olsService = new OLSService(_connectionService);
+        _auditService = new AuditService(_connectionService);
+        InitializeComponent();
+        SetSearchHints();
+    }
+
+    private void InitializeComponent()
+    {
+        Text = $"Hospital Admin Dashboard — {_session.FullName}";
+        Width = 1000;
+        Height = 700;
+        StartPosition = FormStartPosition.CenterScreen;
+        Padding = new Padding(8);
+
+        _mainTabControl.TabPages.Clear();
+        _mainTabControl.TabPages.Add(BuildUsersTab());
+        _mainTabControl.TabPages.Add(BuildVpdPoliciesTab());
+        _mainTabControl.TabPages.Add(BuildOlsVisualizationTab());
+        _mainTabControl.TabPages.Add(BuildAuditLogTab());
+
+        _mainTabControl.SelectedIndexChanged += (_, _) =>
+        {
+            if (_mainTabControl.SelectedIndex == 0)
+            {
+                SetSearchHints();
+            }
+            else if (_mainTabControl.SelectedIndex == 1)
+            {
+                RefreshVpdPolicies();
+            }
+            else if (_mainTabControl.SelectedIndex == 3)
+            {
+                RefreshAuditLogs();
+            }
+
+            UpdateFooterStatus("Ready");
+        };
+
+        var statusLabel = new Label
+        {
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Padding = new Padding(10, 0, 0, 0),
+            Text = $"Logged in as: {_session.Username}"
+        };
+
+        var logoutButton = new Button
+        {
+            Text = "Log out",
+            AutoSize = true,
+            Margin = new Padding(0),
+            Anchor = AnchorStyles.Right | AnchorStyles.Top
+        };
+        logoutButton.Click += (_, _) => Logout();
+
+        var headerLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Padding = new Padding(8, 8, 8, 8)
+        };
+        headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        headerLayout.Controls.Add(statusLabel, 0, 0);
+        headerLayout.Controls.Add(logoutButton, 1, 0);
+
+        var headerPanel = new Panel
+        {
+            Dock = DockStyle.Fill
+        };
+        headerPanel.Controls.Add(headerLayout);
+
+        var footerLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 1,
+            Padding = new Padding(8, 6, 8, 6)
+        };
+        footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footerLayout.Controls.Add(_footerStatusLabel, 0, 0);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
+        rootLayout.Controls.Add(headerPanel, 0, 0);
+        rootLayout.Controls.Add(_mainTabControl, 0, 1);
+        rootLayout.Controls.Add(footerLayout, 0, 2);
+
+        Controls.Clear();
+        Controls.Add(rootLayout);
+        UpdateFooterStatus("Ready");
+
+        _ = _connectionService;
+    }
+
+    private void UpdateFooterStatus(string message)
+    {
+        _footerStatusLabel.Text = message;
+    }
+
+    private void Logout()
+    {
+        if (MessageBox.Show(this, "Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DialogResult = DialogResult.Retry;
+        Close();
+    }
+
+    private TabPage BuildUsersTab()
+    {
+        var tab = new TabPage("Users");
+
+        _usersSubTabs.TabPages.Clear();
+        _usersSubTabs.TabPages.Add(BuildPatientUsersSubTab());
+        _usersSubTabs.TabPages.Add(BuildStaffUsersSubTab());
+        _usersSubTabs.TabPages.Add(BuildCreateUserSubTab());
+        _usersSubTabs.SelectedIndexChanged += (_, _) =>
+        {
+            if (_usersSubTabs.SelectedIndex == 0)
+            {
+                RefreshPatientUsersPage();
+            }
+            else if (_usersSubTabs.SelectedIndex == 1)
+            {
+                RefreshStaffUsersPage();
+            }
+        };
+
+        var profileGroup = new GroupBox
+        {
+            Text = "Thong tin nguoi dung va quyen hien tai",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+
+        _grantRoleCombo.Items.Clear();
+        _grantRoleCombo.Items.AddRange(new object[]
+        {
+            "DIEU_PHOI_VIEN",
+            "BAC_SI_Y_SI",
+            "KY_THUAT_VIEN",
+            "BENH_NHAN"
+        });
+        _grantRoleCombo.SelectedIndex = 0;
+
+        _grantRoleButton.Click -= HandleGrantRoleClick;
+        _grantRoleButton.Click += HandleGrantRoleClick;
+        _revokeUserButton.Click -= HandleRevokeUserClick;
+        _revokeUserButton.Click += HandleRevokeUserClick;
+
+        var grantPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 42,
+            WrapContents = false,
+            Padding = new Padding(0)
+        };
+        grantPanel.Controls.Add(new Label { Text = "Grant role:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        grantPanel.Controls.Add(_grantRoleCombo);
+        grantPanel.Controls.Add(_grantRoleButton);
+        grantPanel.Controls.Add(_revokeUserButton);
+        grantPanel.Controls.Add(_grantRoleHintLabel);
+
+        var profileLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
+        profileLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
+        profileLayout.Controls.Add(grantPanel, 0, 0);
+        profileLayout.Controls.Add(_securityProfileTextBox, 0, 1);
+        profileLayout.Controls.Add(_roleGrid, 0, 2);
+
+        if (_roleGrid.Columns.Count == 0)
+        {
+            _roleGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "RoleName",
+                HeaderText = "Role"
+            });
+
+            _roleGrid.Columns.Add(new DataGridViewButtonColumn
+            {
+                Name = "RevokeRole",
+                HeaderText = "Action",
+                Text = "Revoke",
+                UseColumnTextForButtonValue = true
+            });
+
+            _roleGrid.CellContentClick -= HandleRoleGridCellContentClick;
+            _roleGrid.CellContentClick += HandleRoleGridCellContentClick;
+        }
+
+        profileGroup.Controls.Add(profileLayout);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 55));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
+        rootLayout.Controls.Add(_usersSubTabs, 0, 0);
+        rootLayout.Controls.Add(profileGroup, 0, 1);
+
+        tab.Controls.Add(rootLayout);
+        ShowProfileResult(null, "Nhap CCCD/CMND va bam Tim de hien thong tin + RBAC role.");
+        return tab;
+    }
+
+    private TabPage BuildPatientUsersSubTab()
+    {
+        var tab = new TabPage("BN");
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+
+        var searchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+
+        searchPanel.Controls.Add(new Label { Text = "CCCD:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        searchPanel.Controls.Add(_patientSearchBox);
+        searchPanel.Controls.Add(_patientSearchButton);
+
+        var pagingPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+
+        _patientSearchButton.Click += (_, _) =>
+        {
+            RefreshPatientUsersPage();
+        };
+
+        _patientSearchBox.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                RefreshPatientUsersPage();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        };
+
+        _patientRefreshButton.Click += (_, _) => RefreshPatientUsersPage();
+
+        pagingPanel.Controls.Add(_patientRefreshButton);
+        pagingPanel.Controls.Add(_patientPageInfoLabel);
+
+        rootLayout.Controls.Add(searchPanel, 0, 0);
+        rootLayout.Controls.Add(_patientUsersGrid, 0, 1);
+        rootLayout.Controls.Add(pagingPanel, 0, 2);
+        tab.Controls.Add(rootLayout);
+        return tab;
+    }
+
+    private TabPage BuildStaffUsersSubTab()
+    {
+        var tab = new TabPage("NV");
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+
+        var searchPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+
+        searchPanel.Controls.Add(new Label { Text = "CMND:", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        searchPanel.Controls.Add(_staffSearchBox);
+        searchPanel.Controls.Add(_staffSearchButton);
+
+        var pagingPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+
+        _staffSearchButton.Click += (_, _) =>
+        {
+            RefreshStaffUsersPage();
+        };
+
+        _staffSearchBox.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                RefreshStaffUsersPage();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        };
+
+        _staffRefreshButton.Click += (_, _) => RefreshStaffUsersPage();
+
+        pagingPanel.Controls.Add(_staffRefreshButton);
+        pagingPanel.Controls.Add(_staffPageInfoLabel);
+
+        rootLayout.Controls.Add(searchPanel, 0, 0);
+        rootLayout.Controls.Add(_staffUsersGrid, 0, 1);
+        rootLayout.Controls.Add(pagingPanel, 0, 2);
+        tab.Controls.Add(rootLayout);
+        return tab;
+    }
+
+    private TabPage BuildCreateUserSubTab()
+    {
+        var tab = new TabPage("Create User");
+        tab.AutoScroll = true;
+
+        _createUserTypeCombo.Items.Clear();
+        _createUserTypeCombo.Items.AddRange(new object[] { "STAFF", "PATIENT" });
+        _createUserTypeCombo.SelectedIndex = 0;
+        _createUserTypeCombo.SelectedIndexChanged += (_, _) => ToggleCreateUserPanels();
+
+        _createGenderCombo.Items.Clear();
+        _createGenderCombo.Items.AddRange(new object[] { "Nam", "Nữ" });
+        _createGenderCombo.SelectedIndex = 0;
+
+        _createStaffRoleCombo.Items.Clear();
+        _createStaffRoleCombo.Items.AddRange(new object[] { "Điều phối viên", "Bác sĩ/Y sĩ", "Kỹ thuật viên" });
+        _createStaffRoleCombo.SelectedIndex = 0;
+
+        _createStaffPanel.Controls.Clear();
+        _createStaffPanel.Controls.Add(new Label { Text = "Address (QUEQUAN)", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffAddressTextBox);
+        _createStaffPanel.Controls.Add(new Label { Text = "Phone", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffPhoneTextBox);
+        _createStaffPanel.Controls.Add(new Label { Text = "Role", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffRoleCombo);
+        _createStaffPanel.Controls.Add(new Label { Text = "Department", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createStaffPanel.Controls.Add(_createStaffDepartmentCombo);
+
+        LoadDepartmentOptions();
+
+        _createPatientPanel.Controls.Clear();
+        _createPatientPanel.Controls.Add(new Label { Text = "So nha", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientSoNhaTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Ten duong", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTenDuongTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Quan/Huyen", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientQuanHuyenTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Tinh/TP", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTinhTpTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Tien su benh", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTienSuBenhTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Tien su benh GD", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientTienSuGdTextBox);
+        _createPatientPanel.Controls.Add(new Label { Text = "Di ung thuoc", AutoSize = true, Padding = new Padding(0, 8, 0, 0) });
+        _createPatientPanel.Controls.Add(_createPatientDiUngTextBox);
+
+        _createUserButton.Click -= HandleCreateUserClick;
+        _createUserButton.Click += HandleCreateUserClick;
+
+        var commonLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            ColumnCount = 4,
+            RowCount = 3,
+            Padding = new Padding(8),
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink
+        };
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        commonLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        commonLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        commonLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        commonLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        commonLayout.Controls.Add(new Label { Text = "UserType", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
+        commonLayout.Controls.Add(_createUserTypeCombo, 1, 0);
+        commonLayout.Controls.Add(new Label { Text = "Username", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 0);
+        commonLayout.Controls.Add(_createUsernameTextBox, 3, 0);
+
+        commonLayout.Controls.Add(new Label { Text = "FullName", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 1);
+        commonLayout.Controls.Add(_createFullNameTextBox, 1, 1);
+        commonLayout.Controls.Add(new Label { Text = "Gender", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 1);
+        commonLayout.Controls.Add(_createGenderCombo, 3, 1);
+
+        commonLayout.Controls.Add(new Label { Text = "BirthDate", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 2);
+        commonLayout.Controls.Add(_createBirthDatePicker, 1, 2);
+        commonLayout.Controls.Add(new Label { Text = "IDNumber", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 2);
+        commonLayout.Controls.Add(_createIdNumberTextBox, 3, 2);
+
+        var commonGroup = new GroupBox
+        {
+            Text = "Common Information",
+            Dock = DockStyle.Top,
+            Padding = new Padding(8),
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink
+        };
+        commonGroup.Controls.Add(commonLayout);
+
+        var staffGroup = new GroupBox
+        {
+            Text = "Staff Details",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        _createStaffPanel.Dock = DockStyle.Fill;
+        staffGroup.Controls.Add(_createStaffPanel);
+
+        var patientGroup = new GroupBox
+        {
+            Text = "Patient Details",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        _createPatientPanel.Dock = DockStyle.Fill;
+        patientGroup.Controls.Add(_createPatientPanel);
+
+        var actionPanel = new Panel
+        {
+            Dock = DockStyle.Top,
+            Padding = new Padding(8),
+            Height = 52
+        };
+        _createUserButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _createUserButton.Location = new Point(8, 8);
+        actionPanel.Controls.Add(_createUserButton);
+
+        var flowGroup = new GroupBox
+        {
+            Text = "Create User Flow",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(10)
+        };
+        flowGroup.Controls.Add(_createFlowTextBox);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            ColumnCount = 1,
+            RowCount = 5,
+            Padding = new Padding(8),
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.Controls.Add(commonGroup, 0, 0);
+        rootLayout.Controls.Add(staffGroup, 0, 1);
+        rootLayout.Controls.Add(patientGroup, 0, 2);
+        rootLayout.Controls.Add(actionPanel, 0, 3);
+        rootLayout.Controls.Add(flowGroup, 0, 4);
+
+        tab.Controls.Add(rootLayout);
+
+        ToggleCreateUserPanels();
+        SetCreateFlowStep(1);
+        return tab;
+    }
+
+    private TabPage BuildVpdPoliciesTab()
+    {
+        var tab = new TabPage("VPD Policies");
+
+        _vpdRefreshButton.Click -= HandleVpdRefreshClick;
+        _vpdRefreshButton.Click += HandleVpdRefreshClick;
+        _vpdEnableButton.Click -= HandleVpdEnableClick;
+        _vpdEnableButton.Click += HandleVpdEnableClick;
+        _vpdDisableButton.Click -= HandleVpdDisableClick;
+        _vpdDisableButton.Click += HandleVpdDisableClick;
+        _vpdPoliciesGrid.SelectionChanged -= HandleVpdPolicySelectionChanged;
+        _vpdPoliciesGrid.SelectionChanged += HandleVpdPolicySelectionChanged;
+
+        var topPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+        topPanel.Controls.Add(_vpdRefreshButton);
+        topPanel.Controls.Add(_vpdEnableButton);
+        topPanel.Controls.Add(_vpdDisableButton);
+        topPanel.Controls.Add(_vpdPoliciesInfoLabel);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.Controls.Add(topPanel, 0, 0);
+        rootLayout.Controls.Add(_vpdPoliciesGrid, 0, 1);
+
+        tab.Controls.Add(rootLayout);
+        RefreshVpdPolicies();
+        return tab;
+    }
+
+    private TabPage BuildOlsVisualizationTab()
+    {
+        var tab = new TabPage("OLS Labels");
+
+        _olsLoadLabelButton.Text = "Xem tat ca";
+        _olsPreviewButton.Text = "Tao thong bao";
+
+        _olsLoadLabelButton.Click -= HandleOlsLoadAllNotificationsClick;
+        _olsLoadLabelButton.Click += HandleOlsLoadAllNotificationsClick;
+        _olsPreviewButton.Click -= HandleOlsCreateNotificationClick;
+        _olsPreviewButton.Click += HandleOlsCreateNotificationClick;
+
+        _olsLabelSummaryLabel.Padding = new Padding(10, 8, 0, 0);
+        _olsContentTextBox.Width = 260;
+        _olsLocationTextBox.Width = 200;
+
+        var filterRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 0),
+            WrapContents = false
+        };
+        filterRow.Controls.Add(_olsLoadLabelButton);
+        filterRow.Controls.Add(new Label { Text = "OLS Label", AutoSize = true, Padding = new Padding(8, 8, 4, 0) });
+        filterRow.Controls.Add(_olsUserCombo);
+        filterRow.Controls.Add(_olsLabelSummaryLabel);
+
+        var createRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 0, 8, 4),
+            WrapContents = false
+        };
+        createRow.Controls.Add(new Label { Text = "Noi dung", AutoSize = true, Padding = new Padding(0, 8, 4, 0) });
+        createRow.Controls.Add(_olsContentTextBox);
+        createRow.Controls.Add(new Label { Text = "Ngay gio", AutoSize = true, Padding = new Padding(8, 8, 4, 0) });
+        createRow.Controls.Add(_olsDateTimePicker);
+        createRow.Controls.Add(new Label { Text = "Dia diem", AutoSize = true, Padding = new Padding(8, 8, 4, 0) });
+        createRow.Controls.Add(_olsLocationTextBox);
+        createRow.Controls.Add(_olsPreviewButton);
+
+        var toolbarPanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        toolbarPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        toolbarPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        toolbarPanel.Controls.Add(filterRow, 0, 0);
+        toolbarPanel.Controls.Add(createRow, 0, 1);
+
+        var mappingGroup = new GroupBox
+        {
+            Text = "Mapping OLS Label (Tieng Viet)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        mappingGroup.Controls.Add(_olsHierarchyTextBox);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 116));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
+        rootLayout.Controls.Add(toolbarPanel, 0, 0);
+        rootLayout.Controls.Add(_olsPreviewGrid, 0, 1);
+        rootLayout.Controls.Add(mappingGroup, 0, 2);
+
+        tab.Controls.Add(rootLayout);
+        LoadOlsLabelOptions();
+        RenderOlsLabelDefinitions();
+        RefreshOlsAllNotifications();
+        return tab;
+    }
+
+    private TabPage BuildAuditLogTab()
+    {
+        var tab = new TabPage("Audit Log");
+
+        btnRefreshAudit.Click -= HandleRefreshAuditClick;
+        btnRefreshAudit.Click += HandleRefreshAuditClick;
+
+        ConfigureAuditGridsOnce();
+
+        var actionPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 4, 8, 4),
+            WrapContents = false
+        };
+        actionPanel.Controls.Add(btnRefreshAudit);
+        actionPanel.Controls.Add(new Label { Text = "Theo doi Standard Audit va FGA audit theo script Oracle", AutoSize = true, Padding = new Padding(8, 8, 0, 0) });
+
+        var standardGroup = new GroupBox
+        {
+            Text = "Standard Audit (DBA_AUDIT_TRAIL)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        standardGroup.Controls.Add(dgvStandardAudit);
+
+        var sessionGroup = new GroupBox
+        {
+            Text = "Session Audit (DBA_AUDIT_SESSION - login success)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        sessionGroup.Controls.Add(dgvSessionAudit);
+
+        var fgaGroup = new GroupBox
+        {
+            Text = "FGA Audit (DBA_FGA_AUDIT_TRAIL)",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8)
+        };
+        fgaGroup.Controls.Add(dgvFgaAudit);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 4
+        };
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 34));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
+        rootLayout.Controls.Add(actionPanel, 0, 0);
+        rootLayout.Controls.Add(sessionGroup, 0, 1);
+        rootLayout.Controls.Add(standardGroup, 0, 2);
+        rootLayout.Controls.Add(fgaGroup, 0, 3);
+
+        tab.Controls.Add(rootLayout);
+        RefreshAuditLogs();
+        return tab;
+    }
+
+    private void ConfigureAuditGridsOnce()
+    {
+        if (dgvSessionAudit.Columns.Count == 0)
+        {
+            dgvSessionAudit.AutoGenerateColumns = false;
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.Username),
+                Name = "Username",
+                HeaderText = "Username"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.UserHost),
+                Name = "UserHost",
+                HeaderText = "UserHost"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.Terminal),
+                Name = "Terminal",
+                HeaderText = "Terminal"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.LogonTime),
+                Name = "LogonTime",
+                HeaderText = "Logon Time",
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.LogoffTime),
+                Name = "LogoffTime",
+                HeaderText = "Logoff Time"
+            });
+            dgvSessionAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(SessionAuditGridItem.SessionId),
+                Name = "SessionId",
+                HeaderText = "Session ID"
+            });
+        }
+
+        if (dgvStandardAudit.Columns.Count == 0)
+        {
+            dgvStandardAudit.AutoGenerateColumns = false;
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Username),
+                Name = "Username",
+                HeaderText = "Username"
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Action),
+                Name = "Action",
+                HeaderText = "Action"
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Object),
+                Name = "Object",
+                HeaderText = "Object"
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Time),
+                Name = "Time",
+                HeaderText = "Time",
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+            dgvStandardAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(StandardAuditGridItem.Status),
+                Name = "Status",
+                HeaderText = "Status"
+            });
+        }
+
+        if (dgvFgaAudit.Columns.Count == 0)
+        {
+            dgvFgaAudit.AutoGenerateColumns = false;
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.User),
+                Name = "User",
+                HeaderText = "User"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Object),
+                Name = "Object",
+                HeaderText = "Object"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Policy),
+                Name = "Policy",
+                HeaderText = "Policy"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Statement),
+                Name = "Statement",
+                HeaderText = "Statement"
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.Time),
+                Name = "Time",
+                HeaderText = "Time",
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "yyyy-MM-dd HH:mm:ss" }
+            });
+            dgvFgaAudit.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = nameof(FgaAuditGridItem.SqlText),
+                Name = "SqlText",
+                HeaderText = "SQL Text",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            });
+        }
+    }
+
+    private void HandleRefreshAuditClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        RefreshAuditLogs();
+    }
+
+    private void RefreshAuditLogs()
+    {
+        try
+        {
+            List<SessionAuditLog> sessionLogs = _auditService.GetSessionAuditLogs();
+            List<AuditLog> standardLogs = _auditService.GetStandardAuditLogs();
+            List<FgaAuditLog> fgaLogs = _auditService.GetFgaAuditLogs();
+
+            List<SessionAuditGridItem> sessionRows = sessionLogs
+                .OrderByDescending(item => item.LogonTime)
+                .Select(item => new SessionAuditGridItem
+                {
+                    Username = item.Username,
+                    UserHost = item.UserHost,
+                    Terminal = item.Terminal,
+                    LogonTime = item.LogonTime,
+                    LogoffTime = item.LogoffTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(active)",
+                    SessionId = item.SessionId
+                })
+                .ToList();
+
+            List<StandardAuditGridItem> standardRows = standardLogs
+                .OrderByDescending(item => item.ActionTime)
+                .Select(item => new StandardAuditGridItem
+                {
+                    Username = item.Username,
+                    Action = item.ActionName,
+                    Object = item.ObjectName,
+                    Time = item.ActionTime,
+                    ReturnCode = item.ReturnCode,
+                    Status = item.ReturnCode == 0 ? "Success" : "Failed"
+                })
+                .ToList();
+
+            List<FgaAuditGridItem> fgaRows = fgaLogs
+                .OrderByDescending(item => item.ActionTime)
+                .Select(item => new FgaAuditGridItem
+                {
+                    User = item.DbUser,
+                    Object = item.ObjectName,
+                    Policy = item.PolicyName,
+                    Statement = item.StatementType,
+                    Time = item.ActionTime,
+                    SqlText = item.SqlText
+                })
+                .ToList();
+
+            dgvSessionAudit.DataSource = sessionRows;
+            dgvStandardAudit.DataSource = standardRows;
+            dgvFgaAudit.DataSource = fgaRows;
+
+            HighlightStandardAuditRows();
+            HighlightFgaAuditRows();
+
+            UpdateFooterStatus($"Audit: Loaded {sessionRows.Count} session logs, {standardRows.Count} standard logs and {fgaRows.Count} FGA logs.");
+        }
+        catch (Exception ex)
+        {
+            dgvSessionAudit.DataSource = new List<SessionAuditGridItem>();
+            dgvStandardAudit.DataSource = new List<StandardAuditGridItem>();
+            dgvFgaAudit.DataSource = new List<FgaAuditGridItem>();
+            UpdateFooterStatus("Audit: Load failed.");
+            MessageBox.Show(this, ex.Message, "Audit Log", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void HighlightStandardAuditRows()
+    {
+        foreach (DataGridViewRow row in dgvStandardAudit.Rows)
+        {
+            if (row.DataBoundItem is not StandardAuditGridItem item)
+            {
+                continue;
+            }
+
+            if (item.ReturnCode != 0)
+            {
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+            else
+            {
+                row.DefaultCellStyle.BackColor = dgvStandardAudit.DefaultCellStyle.BackColor;
+                row.DefaultCellStyle.ForeColor = dgvStandardAudit.DefaultCellStyle.ForeColor;
+            }
+        }
+    }
+
+    private void HighlightFgaAuditRows()
+    {
+        foreach (DataGridViewRow row in dgvFgaAudit.Rows)
+        {
+            if (row.DataBoundItem is not FgaAuditGridItem item)
+            {
+                continue;
+            }
+
+            bool suspicious = string.Equals(item.Policy, "FGA_HSBA_INVALID_UPDATE", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(item.Policy, "FGA_HSBA_DV_ILLEGAL_DML", StringComparison.OrdinalIgnoreCase);
+
+            if (suspicious)
+            {
+                row.DefaultCellStyle.BackColor = Color.Moccasin;
+                row.DefaultCellStyle.ForeColor = Color.DarkOrange;
+            }
+            else
+            {
+                row.DefaultCellStyle.BackColor = dgvFgaAudit.DefaultCellStyle.BackColor;
+                row.DefaultCellStyle.ForeColor = dgvFgaAudit.DefaultCellStyle.ForeColor;
+            }
+        }
+    }
+
+    private void LoadOlsLabelOptions()
+    {
+        List<OlsLabelOption> labels = _olsService.GetSupportedLabelOptions();
+
+        _olsUserCombo.BeginUpdate();
+        _olsUserCombo.Items.Clear();
+        foreach (OlsLabelOption label in labels)
+        {
+            _olsUserCombo.Items.Add(label);
+        }
+
+        if (_olsUserCombo.Items.Count > 0)
+        {
+            _olsUserCombo.SelectedIndex = 0;
+        }
+        _olsUserCombo.EndUpdate();
+    }
+
+    private void HandleOlsLoadAllNotificationsClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        RefreshOlsAllNotifications();
+    }
+
+    private void HandleOlsCreateNotificationClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+
+        OlsLabelOption? selectedLabel = _olsUserCombo.SelectedItem as OlsLabelOption;
+        if (selectedLabel is null || string.IsNullOrWhiteSpace(selectedLabel.LabelCode))
+        {
+            MessageBox.Show(this, "Hay chon OLS label cu the (khong phai Tat ca nhan).", "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        bool created = _olsService.CreateNotificationAsAdmin(
+            _olsContentTextBox.Text,
+            _olsDateTimePicker.Value,
+            _olsLocationTextBox.Text,
+            selectedLabel.LabelCode);
+
+        if (!created)
+        {
+            string detail = string.IsNullOrWhiteSpace(_olsService.LastErrorMessage)
+                ? "Khong tao duoc thong bao OLS."
+                : _olsService.LastErrorMessage;
+            MessageBox.Show(this, detail, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus("OLS: Tao thong bao that bai.");
+            return;
+        }
+
+        UpdateFooterStatus("OLS: Tao thong bao thanh cong.");
+        _olsContentTextBox.Clear();
+        _olsLocationTextBox.Clear();
+        RefreshOlsAllNotifications();
+    }
+
+    private void RefreshOlsAllNotifications()
+    {
+        try
+        {
+            OlsLabelOption? selectedLabel = _olsUserCombo.SelectedItem as OlsLabelOption;
+            int? filterLabelTag = selectedLabel?.LabelTag;
+            string filterLabel = selectedLabel?.LabelCode ?? string.Empty;
+
+            List<OlsNotificationDisplayItem> rows = _olsService.GetAllNotificationsForAdminDisplay(filterLabelTag);
+            _olsPreviewGrid.DataSource = rows;
+
+            SetOlsGridHeader("MaThongBao", "Ma thong bao");
+            SetOlsGridHeader("NoiDung", "Noi dung");
+            SetOlsGridHeader("NgayGio", "Ngay gio");
+            SetOlsGridHeader("DiaDiem", "Dia diem");
+            SetOlsGridHeader("OlsLabel", "OLS_Label");
+            SetOlsGridHeader("DoiTuongDuocThongBao", "Doi tuong duoc thong bao");
+
+            if (string.IsNullOrWhiteSpace(filterLabel))
+            {
+                _olsLabelSummaryLabel.Text = $"Tong thong bao: {rows.Count}";
+                UpdateFooterStatus($"OLS: Da tai {rows.Count} thong bao (tat ca nhan)." );
+            }
+            else
+            {
+                _olsLabelSummaryLabel.Text = $"Nhan {filterLabel}: {rows.Count} thong bao";
+                UpdateFooterStatus($"OLS: Da tai {rows.Count} thong bao cho nhan {filterLabel}." );
+            }
+        }
+        catch (Exception ex)
+        {
+            _olsPreviewGrid.DataSource = new List<OlsNotificationDisplayItem>();
+            _olsLabelSummaryLabel.Text = "Load thong bao that bai";
+            UpdateFooterStatus("OLS: Loi tai du lieu thong bao.");
+            MessageBox.Show(this, ex.Message, "OLS Labels", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void RenderOlsLabelDefinitions()
+    {
+        _olsHierarchyTextBox.Text = string.Join(Environment.NewLine,
+            "Danh muc map OLS label theo 03_OLS_Setup.sql:",
+            "- L1_NV: Gui den toan bo nhan vien",
+            "- L2_LD: Gui den cac lanh dao khoa",
+            "- L3_GD: Gui den toan bo Ban giam doc",
+            "- L2_LD:C_TIEU: Gui den lanh dao Khoa tieu hoa",
+            "- L1_NV:C_TIEU:G_HCM: Gui den nhan vien Khoa tieu hoa o Ho Chi Minh",
+            "- L1_NV:C_TIEU:G_HN: Gui den nhan vien Khoa tieu hoa o Ha Noi",
+            "- L2_LD:C_TIEU,C_THAN:G_HP: Gui den lanh dao Khoa tieu hoa va Khoa than kinh tai Hai Phong",
+            "",
+            "Tao thong bao moi: chi HOSPITAL_ADMIN duoc phep.");
+    }
+
+    private void SetOlsGridHeader(string columnName, string headerText)
+    {
+        DataGridViewColumn? column = _olsPreviewGrid.Columns[columnName];
+        if (column is not null)
+        {
+            column.HeaderText = headerText;
+        }
+    }
+
+    private void SetSearchHints()
+    {
+        if (string.IsNullOrWhiteSpace(_patientSearchBox.Text))
+        {
+            _patientUsersGrid.DataSource = new List<object>();
+            _patientPageInfoLabel.Text = "BN: Nhap CCCD de tim";
+        }
+
+        if (string.IsNullOrWhiteSpace(_staffSearchBox.Text))
+        {
+            _staffUsersGrid.DataSource = new List<object>();
+            _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+        }
+    }
+
+    private void HandleVpdRefreshClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        RefreshVpdPolicies();
+    }
+
+    private void HandleVpdEnableClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        ToggleSelectedVpdPolicy(true);
+    }
+
+    private void HandleVpdDisableClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        ToggleSelectedVpdPolicy(false);
+    }
+
+    private void HandleVpdPolicySelectionChanged(object? sender, EventArgs e)
+    {
+        _ = sender;
+        _ = e;
+        UpdateVpdActionButtons();
+    }
+
+    private void UpdateVpdActionButtons()
+    {
+        VpdPolicyItem? selectedPolicy = GetSelectedVpdPolicy();
+        if (selectedPolicy is null)
+        {
+            _vpdEnableButton.Enabled = false;
+            _vpdDisableButton.Enabled = false;
+            return;
+        }
+
+        bool isEnabled = string.Equals(selectedPolicy.IsEnabled, "YES", StringComparison.OrdinalIgnoreCase);
+        _vpdEnableButton.Enabled = !isEnabled;
+        _vpdDisableButton.Enabled = isEnabled;
+    }
+
+    private VpdPolicyItem? GetSelectedVpdPolicy()
+    {
+        if (_vpdPoliciesGrid.CurrentRow?.DataBoundItem is VpdPolicyItem selected)
+        {
+            return selected;
+        }
+
+        return null;
+    }
+
+    private void ToggleSelectedVpdPolicy(bool enable)
+    {
+        VpdPolicyItem? selectedPolicy = GetSelectedVpdPolicy();
+        if (selectedPolicy is null)
+        {
+            MessageBox.Show(this, "Please select one policy first.", "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        bool currentlyEnabled = string.Equals(selectedPolicy.IsEnabled, "YES", StringComparison.OrdinalIgnoreCase);
+        if (currentlyEnabled == enable)
+        {
+            UpdateFooterStatus($"VPD: Policy {selectedPolicy.PolicyName} is already {(enable ? "enabled" : "disabled")}.");
+            UpdateVpdActionButtons();
+            return;
+        }
+
+        string actionText = enable ? "enable" : "disable";
+        if (MessageBox.Show(
+                this,
+                $"Do you want to {actionText} policy {selectedPolicy.PolicyName} on {selectedPolicy.ObjectName}?",
+                "VPD Policies",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        bool updated = _vpdService.SetVpdPolicyEnabled(selectedPolicy.ObjectName, selectedPolicy.PolicyName, enable);
+        if (!updated)
+        {
+            UpdateFooterStatus("VPD: Failed to change policy state.");
+            string detail = string.IsNullOrWhiteSpace(_vpdService.LastErrorMessage)
+                ? "Failed to change VPD policy state."
+                : _vpdService.LastErrorMessage;
+            MessageBox.Show(this, detail, "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        UpdateFooterStatus($"VPD: {(enable ? "Enabled" : "Disabled")} {selectedPolicy.PolicyName}.");
+        RefreshVpdPolicies();
+    }
+
+    private void RefreshVpdPolicies()
+    {
+        try
+        {
+            List<VpdPolicyItem> policies = _vpdService.GetVpdPolicies();
+
+            _vpdPoliciesGrid.DataSource = policies;
+            _vpdPoliciesInfoLabel.Text = $"VPD: {policies.Count} policy";
+            UpdateFooterStatus($"VPD: Loaded {policies.Count} policy records.");
+            UpdateVpdActionButtons();
+        }
+        catch (Exception ex)
+        {
+            _vpdPoliciesGrid.DataSource = new List<VpdPolicyItem>();
+            _vpdPoliciesInfoLabel.Text = "VPD: load failed";
+            UpdateFooterStatus("VPD: Load failed.");
+            UpdateVpdActionButtons();
+            MessageBox.Show(this, ex.Message, "VPD Policies", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void RefreshPatientUsersPage()
+    {
+        try
+        {
+            string cccdKeyword = _rbacService.NormalizeIdText(_patientSearchBox.Text);
+            if (string.IsNullOrWhiteSpace(cccdKeyword))
+            {
+                _patientUsersGrid.DataSource = new List<object>();
+                _patientPageInfoLabel.Text = "BN: Nhap CCCD de tim";
+                UpdateFooterStatus("BN: Nhap CCCD de tim.");
+                ShowProfileResult(null, "Chua co CCCD de tra cuu.");
+                return;
+            }
+
+            if (cccdKeyword.Length != 12)
+            {
+                _patientUsersGrid.DataSource = new List<object>();
+                _patientPageInfoLabel.Text = "BN: CCCD phai dung 12 so";
+                UpdateFooterStatus("BN: CCCD phai dung 12 so.");
+                ShowProfileResult(null, "CCCD phai dung 12 so moi xem duoc profile + role.");
+                return;
+            }
+
+            List<PatientUserDisplayItem> users = _rbacService.GetPatientUserDisplayByCccd(cccdKeyword);
+            _patientUsersGrid.DataSource = users;
+
+            _patientPageInfoLabel.Text = $"BN: Tim thay {users.Count} tai khoan (toi da 100 dong)";
+            UpdateFooterStatus($"BN: Tim thay {users.Count} tai khoan.");
+
+            UserSecurityProfileItem? profile = _rbacService.GetPatientProfileWithRolesByCccd(cccdKeyword);
+            ShowProfileResult(profile, $"Tra cuu theo CCCD: {cccdKeyword}");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Users - BN", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus("BN: Loi tra cuu.");
+            ShowProfileResult(null, "Loi khi tra cuu BN.");
+        }
+    }
+
+    private void RefreshStaffUsersPage()
+    {
+        try
+        {
+            string cmndKeyword = _staffSearchBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(cmndKeyword))
+            {
+                _staffUsersGrid.DataSource = new List<object>();
+                _staffPageInfoLabel.Text = "NV: Nhap CMND de tim";
+                UpdateFooterStatus("NV: Nhap CMND de tim.");
+                ShowProfileResult(null, "Chua co CMND de tra cuu.");
+                return;
+            }
+
+            List<StaffUserDisplayItem> users = _rbacService.GetStaffUserDisplayByCmnd(cmndKeyword);
+            _staffUsersGrid.DataSource = users;
+
+            _staffPageInfoLabel.Text = $"NV: Tim thay {users.Count} tai khoan";
+            UpdateFooterStatus($"NV: Tim thay {users.Count} tai khoan.");
+
+            string normalizedCmnd = _rbacService.NormalizeIdText(cmndKeyword);
+            if (normalizedCmnd.Length == 12)
+            {
+                UserSecurityProfileItem? profile = _rbacService.GetStaffProfileWithRolesByCmnd(normalizedCmnd);
+                ShowProfileResult(profile, $"Tra cuu theo CMND: {normalizedCmnd}");
+            }
+            else
+            {
+                ShowProfileResult(null, "CMND chua du 12 so, chi hien danh sach tim gan dung.");
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Users - NV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateFooterStatus("NV: Loi tra cuu.");
+            ShowProfileResult(null, "Loi khi tra cuu NV.");
+        }
+    }
+
+    private void ShowProfileResult(UserSecurityProfileItem? profile, string note)
+    {
+        _selectedProfile = profile;
+        bool canGrant = profile is not null && string.Equals(profile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(profile.Username);
+        bool canRevokeUser = profile is not null && !string.IsNullOrWhiteSpace(profile.Username);
+        _grantRoleButton.Enabled = canGrant;
+        _revokeUserButton.Enabled = canRevokeUser;
+        _grantRoleHintLabel.Text = canGrant
+            ? $"Dang chon: {profile!.Username}"
+            : canRevokeUser
+                ? $"Dang chon: {profile!.Username} (chi revoke user, khong grant role)"
+                : "Chi grant role khi dang hien profile STAFF.";
+
+        if (profile is null)
+        {
+            RefreshRoleGrid(null);
+            _securityProfileTextBox.Text = $"{note}{Environment.NewLine}{Environment.NewLine}Khong tim thay profile hoac chua du dieu kien tra cuu.";
+            return;
+        }
+
+        RefreshRoleGrid(profile);
+
+        string[] roleLines = profile.CurrentOracleRoles.Count == 0
+            ? new[] { "(Khong co role)" }
+            : profile.CurrentOracleRoles.ToArray();
+
+        if (string.Equals(profile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            _securityProfileTextBox.Text = string.Join(Environment.NewLine,
+                note,
+                string.Empty,
+                $"Loai: {profile.UserType}",
+                $"ID: {profile.UserId}",
+                $"Ho ten: {profile.FullName}",
+                $"Gioi tinh: {profile.Gender}",
+                $"Ngay sinh: {profile.BirthDate:dd/MM/yyyy}",
+                $"CMND: {profile.IdNumber}",
+                $"Username: {profile.Username}",
+                $"Que quan: {profile.Address}",
+                $"So DT: {profile.Phone}",
+                $"Vai tro nghiep vu: {profile.BusinessRole}",
+                $"Khoa: {profile.Department}",
+                "Role Oracle hien tai:",
+                string.Join(Environment.NewLine, roleLines.Select(r => $"- {r}")));
+            return;
+        }
+
+        _securityProfileTextBox.Text = string.Join(Environment.NewLine,
+            note,
+            string.Empty,
+            $"Loai: {profile.UserType}",
+            $"ID: {profile.UserId}",
+            $"Ho ten: {profile.FullName}",
+            $"Gioi tinh: {profile.Gender}",
+            $"Ngay sinh: {profile.BirthDate:dd/MM/yyyy}",
+            $"CCCD: {profile.IdNumber}",
+            $"Username: {profile.Username}",
+            $"Dia chi: {profile.SoNha}, {profile.TenDuong}, {profile.QuanHuyen}, {profile.TinhTp}",
+            $"Tien su benh: {profile.TienSuBenh}",
+            $"Tien su benh GD: {profile.TienSuBenhGiaDinh}",
+            $"Di ung thuoc: {profile.DiUngThuoc}",
+            "Role Oracle hien tai:",
+            string.Join(Environment.NewLine, roleLines.Select(r => $"- {r}")));
+    }
+
+    private void HandleGrantRoleClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+
+        if (_selectedProfile is null || !string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(this, "Hay tim nhan vien truoc khi grant role.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        string roleName = _grantRoleCombo.SelectedItem?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(roleName))
+        {
+            MessageBox.Show(this, "Role khong hop le.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        bool granted = _rbacService.GrantRoleToStaff(_selectedProfile.Username, roleName);
+        if (!granted)
+        {
+            string detail = string.IsNullOrWhiteSpace(_rbacService.LastErrorMessage) ? "Grant role failed." : _rbacService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        MessageBox.Show(this, $"Granted {roleName} to {_selectedProfile.Username}.", "Grant Role", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        ReloadSelectedProfile($"Cap nhat role cho user: {_selectedProfile.Username} (GRANTED)");
+    }
+
+    private void HandleRevokeUserClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+
+        if (_selectedProfile is null || string.IsNullOrWhiteSpace(_selectedProfile.Username))
+        {
+            MessageBox.Show(this, "Hay tim user truoc khi revoke.", "Revoke User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        string username = _selectedProfile.Username;
+        if (MessageBox.Show(this, $"Revoke user {username}? Tai khoan se bi khoa va thu hoi quyen truy cap.", "Revoke User", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        bool revoked = _userService.RevokeUserAccess(username);
+        if (!revoked)
+        {
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Revoke user failed." : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Revoke User", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        string selectedUserType = _selectedProfile.UserType;
+        MessageBox.Show(this, $"Revoked user {username} successfully.", "Revoke User", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        ReloadSelectedProfile($"Da revoke user: {username}");
+
+        if (string.Equals(selectedUserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            RefreshStaffUsersPage();
+        }
+        else
+        {
+            RefreshPatientUsersPage();
+        }
+    }
+
+    private static string GetMandatoryRoleForProfile(UserSecurityProfileItem profile)
+    {
+        if (string.Equals(profile.UserType, "PATIENT", StringComparison.OrdinalIgnoreCase))
+        {
+            return "BENH_NHAN";
+        }
+
+        string businessRole = (profile.BusinessRole ?? string.Empty).Trim().ToUpperInvariant();
+        if (businessRole.Contains("ĐIỀU PHỐI") || businessRole.Contains("DIEU PHOI") || businessRole.Replace(" ", string.Empty).Contains("DIEUPHOI"))
+        {
+            return "DIEU_PHOI_VIEN";
+        }
+
+        if (businessRole.Contains("BÁC SĨ") || businessRole.Contains("Y SĨ") || businessRole.Contains("BAC SI") || businessRole.Contains("Y SI") || businessRole.Contains("BACSI") || businessRole.Contains("YSI"))
+        {
+            return "BAC_SI_Y_SI";
+        }
+
+        if (businessRole.Contains("KỸ THUẬT") || businessRole.Contains("KY THUAT") || businessRole.Replace(" ", string.Empty).Contains("KYTHUAT"))
+        {
+            return "KY_THUAT_VIEN";
+        }
+
+        return string.Empty;
+    }
+
+    private void HandleRoleGridCellContentClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        _ = sender;
+        if (e.RowIndex < 0)
+        {
+            return;
+        }
+
+        if (_selectedProfile is null || string.IsNullOrWhiteSpace(_selectedProfile.Username))
+        {
+            return;
+        }
+
+        if (!string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(this, "Chi cho phep revoke role voi profile STAFF.", "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        DataGridViewColumn? revokeColumn = _roleGrid.Columns["RevokeRole"];
+        if (revokeColumn is null)
+        {
+            return;
+        }
+
+        int revokeColumnIndex = revokeColumn.Index;
+        if (e.ColumnIndex != revokeColumnIndex)
+        {
+            return;
+        }
+
+        string roleName = _roleGrid.Rows[e.RowIndex].Cells["RoleName"].Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(roleName))
+        {
+            return;
+        }
+
+        string mandatoryRole = GetMandatoryRoleForProfile(_selectedProfile);
+        if (!string.IsNullOrWhiteSpace(mandatoryRole) && string.Equals(mandatoryRole, roleName, StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(this, $"Khong duoc revoke role mac dinh {mandatoryRole} cua user.", "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        if (MessageBox.Show(this, $"Revoke role {roleName} from {_selectedProfile.Username}?", "Revoke Role", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        bool revoked = _rbacService.RevokeRoleFromUser(_selectedProfile.Username, roleName);
+        if (!revoked)
+        {
+            string detail = string.IsNullOrWhiteSpace(_rbacService.LastErrorMessage) ? "Revoke role failed." : _rbacService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        MessageBox.Show(this, $"Revoked {roleName} from {_selectedProfile.Username}.", "Revoke Role", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        ReloadSelectedProfile($"Cap nhat role cho user: {_selectedProfile.Username} (REVOKED)");
+    }
+
+    private void RefreshRoleGrid(UserSecurityProfileItem? profile)
+    {
+        _roleGrid.Rows.Clear();
+
+        if (profile is null)
+        {
+            return;
+        }
+
+        foreach (string role in profile.CurrentOracleRoles)
+        {
+            _roleGrid.Rows.Add(role);
+        }
+    }
+
+    private void ReloadSelectedProfile(string note)
+    {
+        if (_selectedProfile is null || string.IsNullOrWhiteSpace(_selectedProfile.IdNumber))
+        {
+            return;
+        }
+
+        UserSecurityProfileItem? refreshed = string.Equals(_selectedProfile.UserType, "STAFF", StringComparison.OrdinalIgnoreCase)
+            ? _rbacService.GetStaffProfileWithRolesByCmnd(_selectedProfile.IdNumber)
+            : _rbacService.GetPatientProfileWithRolesByCccd(_selectedProfile.IdNumber);
+
+        ShowProfileResult(refreshed, note);
+    }
+
+    private void ToggleCreateUserPanels()
+    {
+        bool isStaff = string.Equals(_createUserTypeCombo.SelectedItem?.ToString(), "STAFF", StringComparison.OrdinalIgnoreCase);
+        _createStaffPanel.Visible = isStaff;
+        _createPatientPanel.Visible = !isStaff;
+    }
+
+    private void HandleCreateUserClick(object? sender, EventArgs e)
+    {
+        _ = sender;
+        SetCreateFlowStep(1);
+
+        if (!TryBuildCreateUserRequest(out CreateUserRequest? request, out string validationMessage) || request is null)
+        {
+            MessageBox.Show(this, validationMessage, "Create User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        SetCreateFlowStep(2);
+        Application.DoEvents();
+        SetCreateFlowStep(3);
+        Application.DoEvents();
+
+        bool created = _userService.CreateUser(request);
+        if (!created)
+        {
+            string detail = string.IsNullOrWhiteSpace(_userService.LastErrorMessage) ? "Create user failed." : _userService.LastErrorMessage;
+            MessageBox.Show(this, detail, "Create User", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        SetCreateFlowStep(4);
+        Application.DoEvents();
+        SetCreateFlowStep(5);
+
+        MessageBox.Show(this, "User created successfully.", "Create User", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        if (string.Equals(request.UserType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            _staffSearchBox.Text = request.IDNumber;
+            RefreshStaffUsersPage();
+        }
+        else
+        {
+            _patientSearchBox.Text = request.IDNumber;
+            RefreshPatientUsersPage();
+        }
+    }
+
+    private bool TryBuildCreateUserRequest(out CreateUserRequest? request, out string message)
+    {
+        request = null;
+        message = string.Empty;
+
+        string userType = _createUserTypeCombo.SelectedItem?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(userType))
+        {
+            message = "UserType is required.";
+            return false;
+        }
+
+        string idNumber = new string((_createIdNumberTextBox.Text ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (string.IsNullOrWhiteSpace(_createUsernameTextBox.Text) ||
+            string.IsNullOrWhiteSpace(_createFullNameTextBox.Text) ||
+            string.IsNullOrWhiteSpace(idNumber))
+        {
+            message = "Username, FullName, and IDNumber are required.";
+            return false;
+        }
+
+        var built = new CreateUserRequest
+        {
+            UserType = userType,
+            Username = _createUsernameTextBox.Text.Trim(),
+            FullName = _createFullNameTextBox.Text.Trim(),
+            Gender = _createGenderCombo.SelectedItem?.ToString() ?? "Nam",
+            BirthDate = _createBirthDatePicker.Value.Date,
+            IDNumber = idNumber,
+            Address = _createStaffAddressTextBox.Text.Trim(),
+            Phone = _createStaffPhoneTextBox.Text.Trim(),
+            Role = _createStaffRoleCombo.SelectedItem?.ToString() ?? string.Empty,
+            Department = (_createStaffDepartmentCombo.SelectedItem as DepartmentOption)?.MAKHOA ?? string.Empty,
+            SONHA = _createPatientSoNhaTextBox.Text.Trim(),
+            TENDUONG = _createPatientTenDuongTextBox.Text.Trim(),
+            QUANHUYEN = _createPatientQuanHuyenTextBox.Text.Trim(),
+            TINHTP = _createPatientTinhTpTextBox.Text.Trim(),
+            TIENSUBENH = _createPatientTienSuBenhTextBox.Text.Trim(),
+            TIENSUBENHGD = _createPatientTienSuGdTextBox.Text.Trim(),
+            DIUNGTHUOC = _createPatientDiUngTextBox.Text.Trim()
+        };
+
+        if (string.Equals(userType, "STAFF", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(built.Address) ||
+                string.IsNullOrWhiteSpace(built.Phone) ||
+                string.IsNullOrWhiteSpace(built.Role) ||
+                string.IsNullOrWhiteSpace(built.Department))
+            {
+                message = "Address, Phone, Role, and Department are required for STAFF.";
+                return false;
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(built.SONHA) ||
+                string.IsNullOrWhiteSpace(built.TENDUONG) ||
+                string.IsNullOrWhiteSpace(built.QUANHUYEN) ||
+                string.IsNullOrWhiteSpace(built.TINHTP))
+            {
+                message = "SONHA, TENDUONG, QUANHUYEN, and TINHTP are required for PATIENT.";
+                return false;
+            }
+        }
+
+        request = built;
+        return true;
+    }
+
+    private void LoadDepartmentOptions()
+    {
+        _createStaffDepartmentCombo.BeginUpdate();
+        try
+        {
+            List<DepartmentOption> departments = _userService.GetDepartments();
+            _createStaffDepartmentCombo.Items.Clear();
+            foreach (DepartmentOption department in departments)
+            {
+                _createStaffDepartmentCombo.Items.Add(department);
+            }
+
+            if (_createStaffDepartmentCombo.Items.Count > 0)
+            {
+                _createStaffDepartmentCombo.SelectedIndex = 0;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _createStaffDepartmentCombo.Items.Clear();
+            MessageBox.Show(this, $"Unable to load KHOA list: {ex.Message}", "Create User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        finally
+        {
+            _createStaffDepartmentCombo.EndUpdate();
+        }
+    }
+
+    private void SetCreateFlowStep(int currentStep)
+    {
+        string[] steps =
+        {
+            "Step 1: Admin nhap thong tin",
+            "Step 2: Insert vao NHANVIEN / BENHNHAN",
+            "Step 3: CREATE USER trong Oracle",
+            "Step 4: GRANT ROLE",
+            "Step 5: Hoan tat"
+        };
+
+        for (int i = 0; i < steps.Length; i++)
+        {
+            bool isCurrent = (i + 1) == currentStep;
+            steps[i] = isCurrent ? $">> {steps[i]}" : $"   {steps[i]}";
+        }
+
+        _createFlowTextBox.Text = string.Join(Environment.NewLine, steps);
+    }
+
+    private sealed class StandardAuditGridItem
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public string Object { get; set; } = string.Empty;
+        public DateTime Time { get; set; }
+        public int ReturnCode { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    private sealed class SessionAuditGridItem
+    {
+        public string Username { get; set; } = string.Empty;
+        public string UserHost { get; set; } = string.Empty;
+        public string Terminal { get; set; } = string.Empty;
+        public DateTime LogonTime { get; set; }
+        public string LogoffTime { get; set; } = string.Empty;
+        public long SessionId { get; set; }
+    }
+
+    private sealed class FgaAuditGridItem
+    {
+        public string User { get; set; } = string.Empty;
+        public string Object { get; set; } = string.Empty;
+        public string Policy { get; set; } = string.Empty;
+        public string Statement { get; set; } = string.Empty;
+        public DateTime Time { get; set; }
+        public string SqlText { get; set; } = string.Empty;
+    }
+
+}

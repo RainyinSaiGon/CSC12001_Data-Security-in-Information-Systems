@@ -660,7 +660,6 @@ public class RBACService
     private static string Q(string identifier) =>
         '"' + identifier.Replace("\"", "\"\"") + '"';
 
-
     private static void ExecuteNonQuery(OracleConnection connection, OracleTransaction transaction, string sql)
     {
         using var command = connection.CreateCommand();

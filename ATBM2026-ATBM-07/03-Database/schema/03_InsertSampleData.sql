@@ -108,8 +108,8 @@ END;
 /
 
 /* ==========================================================================
-   BƯỚC 4: TẠO 100 BỆNH NHÂN (TÊN THẬT & CCCD RIÊNG BIỆT)
-   Range CCCD: 000... (000000000001 -> 000000000100)
+   BƯỚC 4: TẠO 100,000 BỆNH NHÂN (TÊN THẬT & CCCD RIÊNG BIỆT)
+   Range CCCD: 000... (000000000001 -> 000000100000)
    ========================================================================== */
 DECLARE
     TYPE t_arr IS TABLE OF NVARCHAR2(100);
@@ -131,7 +131,7 @@ DECLARE
     v_skipped NUMBER := 0;
 BEGIN
     DBMS_OUTPUT.PUT_LINE('>>> BẮT ĐẦU TẠO BỆNH NHÂN...');
-    FOR i IN 1..100 LOOP
+    FOR i IN 1..100000 LOOP
         IF DBMS_RANDOM.VALUE > 0.5 THEN
             v_phai := N'Nữ';
             v_hoten := v_ho(TRUNC(DBMS_RANDOM.VALUE(1, v_ho.COUNT + 1))) || ' ' ||
